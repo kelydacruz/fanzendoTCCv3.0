@@ -1,0 +1,35 @@
+<%- include('../partials/header') %>
+
+<section class="secao secao-formulario">
+    <div class="container formulario-layout">
+        <div class="formulario-apresentacao">
+            <span class="destaque">Bem-vindo de volta</span>
+            <h1>Entre para publicar e comentar.</h1>
+            <p>A consulta ao acervo é livre. A conta identifica a autoria das contribuições.</p>
+
+            <% if (modoDemo) { %>
+                <div class="credenciais-demo">
+                    <strong>Contas para testar</strong>
+                    <span>Aluno: aluna@exemplo.com / 123456</span>
+                    <span>Professor: professora@exemplo.com / 123456</span>
+                </div>
+            <% } %>
+        </div>
+
+        <form class="formulario bloco" action="/entrar" method="post">
+            <h2>Entrar</h2>
+            <% if (erro) { %><div class="erro-form" role="alert"><%= erro %></div><% } %>
+
+            <label for="email">E-mail</label>
+            <input id="email" type="email" name="email" value="<%= dados.email || '' %>" autocomplete="email" required>
+
+            <label for="senha">Senha</label>
+            <input id="senha" type="password" name="senha" autocomplete="current-password" required>
+
+            <button class="btn btn-primario btn-largura" type="submit">Entrar</button>
+            <p class="ajuda-form">Ainda não possui conta? <a href="/cadastro">Cadastre-se</a>.</p>
+        </form>
+    </div>
+</section>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,48 @@
+<div class="form-grid">
+    <div class="campo campo-completo">
+        <label for="titulo">Título *</label>
+        <input id="titulo" name="titulo" value="<%= dados.titulo || '' %>" required maxlength="180">
+    </div>
+
+    <div class="campo">
+        <label for="tema">Tema *</label>
+        <input id="tema" name="tema" value="<%= dados.tema || '' %>" required maxlength="100">
+    </div>
+
+    <div class="campo">
+        <label for="curso">Curso *</label>
+        <input id="curso" name="curso" value="<%= dados.curso || '' %>" required maxlength="100">
+    </div>
+
+    <div class="campo">
+        <label for="orientador">Professor orientador *</label>
+        <input id="orientador" name="orientador" value="<%= dados.orientador || '' %>" required maxlength="100">
+    </div>
+
+    <div class="campo">
+        <label for="ano">Ano de conclusão *</label>
+        <input id="ano" type="number" name="ano" value="<%= dados.ano || new Date().getFullYear() %>" min="1980" max="<%= new Date().getFullYear() %>" required>
+    </div>
+
+    <div class="campo campo-completo">
+        <label for="resumo">Resumo *</label>
+        <textarea id="resumo" name="resumo" rows="7" required maxlength="3000"><%= dados.resumo || '' %></textarea>
+        <small class="ajuda-campo">Explique o problema, o objetivo e a solução apresentada.</small>
+    </div>
+
+    <div class="campo">
+        <label for="coautores">Coautores</label>
+        <input id="coautores" name="coautores" value="<%= Array.isArray(dados.coautores) ? dados.coautores.join(', ') : (dados.coautores || '') %>" placeholder="Separe os nomes por vírgula">
+    </div>
+
+    <div class="campo">
+        <label for="palavrasChave">Palavras-chave</label>
+        <input id="palavrasChave" name="palavrasChave" value="<%= Array.isArray(dados.palavrasChave) ? dados.palavrasChave.join(', ') : (dados.palavrasChave || '') %>" placeholder="Ex.: web, educação, acessibilidade">
+    </div>
+
+    <div class="campo campo-completo">
+        <label for="pdf">Arquivo PDF <%= editando ? '(opcional para substituir)' : '(opcional)' %></label>
+        <input id="pdf" type="file" name="pdf" accept="application/pdf">
+        <small class="ajuda-campo">Somente PDF, com no máximo 5 MB.</small>
+    </div>
+</div>

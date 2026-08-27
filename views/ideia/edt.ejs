@@ -1,0 +1,23 @@
+<%- include('../partials/header') %>
+
+<section class="topo-pagina topo-ideias">
+    <div class="container container-form">
+        <a class="voltar voltar-claro" href="/ideia/detalhes/<%= idTexto(dados) %>">← Voltar aos detalhes</a>
+        <span class="destaque">Sua publicação</span>
+        <h1>Editar ideia</h1>
+        <p>Atualize a proposta ou informe que ela já está em desenvolvimento.</p>
+    </div>
+</section>
+
+<section class="secao container container-form">
+    <form class="formulario bloco" action="/ideia/edt/<%= idTexto(dados) %>" method="post">
+        <% if (erro) { %><div class="erro-form" role="alert"><%= erro %></div><% } %>
+        <%- include('_form', { dados }) %>
+        <div class="botoes-form">
+            <button class="btn btn-primario" type="submit">Salvar alterações</button>
+            <a class="btn btn-secundario" href="/ideia/detalhes/<%= idTexto(dados) %>">Cancelar</a>
+        </div>
+    </form>
+</section>
+
+<%- include('../partials/footer') %>

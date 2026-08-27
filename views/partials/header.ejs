@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Plataforma para publicação e consulta de TCCs e ideias">
+    <title><%= title %> | AcervoTCC</title>
+    <link rel="stylesheet" href="/public/css/style.css">
+</head>
+<body>
+    <a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
+
+    <header class="cabecalho">
+        <div class="container navegacao">
+            <a class="logo" href="/" aria-label="AcervoTCC - página inicial">
+                <span class="logo-simbolo" aria-hidden="true">AT</span>
+                <span>Acervo<strong>TCC</strong></span>
+            </a>
+
+            <button class="menu-botao" type="button" aria-label="Abrir menu" aria-controls="menu-principal" aria-expanded="false">
+                Menu
+            </button>
+
+            <nav class="menu" id="menu-principal" aria-label="Navegação principal">
+                <a class="<%= caminhoAtual === '/' ? 'ativo' : '' %>" href="/">Início</a>
+                <a class="<%= caminhoAtual.startsWith('/tcc') ? 'ativo' : '' %>" href="/tcc/lst">TCCs</a>
+                <a class="<%= caminhoAtual.startsWith('/ideia') ? 'ativo' : '' %>" href="/ideia/lst">Ideias</a>
+                <a class="<%= caminhoAtual === '/sobre' ? 'ativo' : '' %>" href="/sobre">Sobre</a>
+            </nav>
+
+            <div class="acoes-usuario">
+                <% if (usuario) { %>
+                    <a class="usuario-link" href="/painel"><%= usuario.nome.split(' ')[0] %></a>
+                    <form action="/sair" method="post">
+                        <button class="btn btn-secundario btn-pequeno" type="submit">Sair</button>
+                    </form>
+                <% } else { %>
+                    <a class="btn btn-secundario btn-pequeno" href="/entrar">Entrar</a>
+                    <a class="btn btn-primario btn-pequeno" href="/cadastro">Criar conta</a>
+                <% } %>
+            </div>
+        </div>
+    </header>
+
+    <% if (modoDemo) { %>
+        <div class="aviso-demo">
+            Modo demonstração ativo. Os dados serão reiniciados quando o servidor for desligado.
+        </div>
+    <% } %>
+
+    <% if (mensagem) { %>
+        <div class="container mensagem" role="status"><%= mensagem %></div>
+    <% } %>
+
+    <main id="conteudo">

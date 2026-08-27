@@ -1,0 +1,17 @@
+<article class="card card-tcc">
+    <div class="card-topo">
+        <span class="etiqueta"><%= tcc.tema %></span>
+        <span class="ano"><%= tcc.ano %></span>
+    </div>
+    <h3><a href="/tcc/detalhes/<%= idTexto(tcc) %>"><%= tcc.titulo %></a></h3>
+    <p><%= tcc.resumo %></p>
+    <div class="tags">
+        <% (tcc.palavrasChave || []).slice(0, 3).forEach((palavra) => { %>
+            <span><%= palavra %></span>
+        <% }) %>
+    </div>
+    <div class="card-rodape">
+        <span>Por <strong><%= tcc.autor?.nome || 'Autor não informado' %></strong></span>
+        <a href="/tcc/detalhes/<%= idTexto(tcc) %>">Detalhes →</a>
+    </div>
+</article>

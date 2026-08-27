@@ -1,0 +1,85 @@
+<%- include('partials/header') %>
+
+<section class="hero">
+    <div class="container hero-grid">
+        <div>
+            <span class="destaque">Ideias que viram projetos</span>
+            <h1>Encontre inspiração para criar um TCC mais original.</h1>
+            <p>
+                Consulte trabalhos concluídos, descubra sugestões de temas e converse com alunos e professores em um só lugar.
+            </p>
+            <form class="busca-principal" action="/tcc/lst" method="get">
+                <label class="sr-only" for="busca-home">Pesquisar TCC</label>
+                <input id="busca-home" type="search" name="q" placeholder="Digite um tema, título ou palavra-chave">
+                <button class="btn btn-primario" type="submit">Pesquisar</button>
+            </form>
+            <div class="hero-acoes">
+                <a class="btn btn-secundario" href="/ideia/lst">Explorar ideias</a>
+                <% if (usuario?.perfil === 'aluno') { %>
+                    <a class="link-seta" href="/tcc/add">Publicar meu TCC →</a>
+                <% } %>
+            </div>
+        </div>
+
+        <div class="hero-caderno" aria-label="Resumo da plataforma">
+            <span class="fita fita-1" aria-hidden="true"></span>
+            <span class="fita fita-2" aria-hidden="true"></span>
+            <p class="anotacao">Para começar:</p>
+            <ol>
+                <li>Pesquise trabalhos anteriores.</li>
+                <li>Compare temas e problemas.</li>
+                <li>Compartilhe uma nova ideia.</li>
+            </ol>
+            <div class="mini-estatisticas">
+                <span><strong><%= totalTccs %></strong> TCCs</span>
+                <span><strong><%= totalIdeias %></strong> ideias</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="secao container">
+    <div class="titulo-secao">
+        <div>
+            <span class="destaque">Acervo</span>
+            <h2>TCCs publicados recentemente</h2>
+            <p>Use os trabalhos como referência, respeitando sempre a autoria.</p>
+        </div>
+        <a class="link-seta" href="/tcc/lst">Ver todos →</a>
+    </div>
+    <div class="grade grade-3">
+        <% tccs.forEach((tcc) => { %>
+            <%- include('partials/tcc-card', { tcc }) %>
+        <% }) %>
+    </div>
+</section>
+
+<section class="secao secao-verde">
+    <div class="container">
+        <div class="titulo-secao titulo-claro">
+            <div>
+                <span class="destaque">Biblioteca colaborativa</span>
+                <h2>Ideias que ainda podem virar TCC</h2>
+                <p>Alunos e professores podem sugerir problemas reais e trocar orientações.</p>
+            </div>
+            <a class="btn btn-claro" href="/ideia/add">Compartilhar ideia</a>
+        </div>
+        <div class="grade grade-3">
+            <% ideias.forEach((ideia) => { %>
+                <%- include('partials/ideia-card', { ideia }) %>
+            <% }) %>
+        </div>
+    </div>
+</section>
+
+<section class="secao container como-funciona">
+    <span class="destaque">Como funciona</span>
+    <h2>Uma plataforma simples para organizar o conhecimento da escola.</h2>
+    <div class="grade grade-3 passos">
+        <article><span>01</span><h3>Consulte</h3><p>Pesquise TCCs por título, tema, resumo ou palavra-chave.</p></article>
+        <article><span>02</span><h3>Colabore</h3><p>Comente com dúvidas, sugestões e orientações construtivas.</p></article>
+        <article><span>03</span><h3>Publique</h3><p>Registre trabalhos concluídos e novas ideias com autoria identificada.</p></article>
+    </div>
+</section>
+
+<%- include('partials/footer') %>

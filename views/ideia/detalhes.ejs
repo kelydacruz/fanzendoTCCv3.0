@@ -1,0 +1,60 @@
+<%- include('../partials/header') %>
+
+<section class="topo-pagina topo-ideias detalhes-topo">
+    <div class="container">
+        <a class="voltar voltar-claro" href="/ideia/lst">← Voltar para ideias</a>
+        <div class="detalhes-cabecalho">
+            <div>
+                <span class="status status-<%= classeStatus(ideia.status) %>"><%= ideia.status %></span>
+                <h1><%= ideia.titulo %></h1>
+                <p>Compartilhada por <strong><%= ideia.autor?.nome || 'Autor não informado' %></strong> em <%= formatarData(ideia.createdAt) %>.</p>
+            </div>
+            <% if (podeEditar) { %>
+                <div class="botoes-linha">
+                    <a class="btn btn-claro" href="/ideia/edt/<%= idTexto(ideia) %>">Editar</a>
+                    <form action="/ideia/del/<%= idTexto(ideia) %>" method="post" data-confirm="Tem certeza que deseja excluir esta ideia?">
+                        <button class="btn btn-perigo" type="submit">Excluir</button>
+                    </form>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</section>
+
+<section class="secao container container-texto">
+    <article class="bloco ideia-detalhe">
+        <span class="destaque"><%= ideia.tema %></span>
+        <h2>Descrição da ideia</h2>
+        <p class="resumo"><%= ideia.descricao %></p>
+        <dl class="lista-dados lista-dados-compacta">
+            <div><dt>Curso relacionado</dt><dd><%= ideia.curso %></dd></div>
+            <div><dt>Status</dt><dd><%= ideia.status %></dd></div>
+        </dl>
+    </article>
+
+    <section class="bloco comentarios">
+        <h2>Conversa sobre a ideia <span>(<%= comentarios.length %>)</span></h2>
+
+        <% if (usuario) { %>
+            <form class="comentario-form" action="/ideia/comentario/<%= idTexto(ideia) %>" method="post">
+                <label for="texto">Compartilhe uma sugestão ou pergunta</label>
+                <textarea id="texto" name="texto" rows="3" maxlength="500" required></textarea>
+                <button class="btn btn-primario" type="submit">Comentar</button>
+            </form>
+        <% } else { %>
+            <p class="chamada-login"><a href="/entrar">Entre na sua conta</a> para participar da conversa.</p>
+        <% } %>
+
+        <div class="lista-comentarios">
+            <% comentarios.forEach((comentario) => { %>
+                <article>
+                    <div><strong><%= comentario.autor?.nome || 'Usuário' %></strong><span><%= comentario.autor?.perfil || '' %> · <%= formatarData(comentario.createdAt) %></span></div>
+                    <p><%= comentario.texto %></p>
+                </article>
+            <% }) %>
+            <% if (!comentarios.length) { %><p>Ainda não há comentários. Seja a primeira pessoa a contribuir.</p><% } %>
+        </div>
+    </section>
+</section>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,53 @@
+<%- include('../partials/header') %>
+
+<section class="topo-pagina">
+    <div class="container topo-pagina-flex">
+        <div>
+            <span class="destaque">Repositório acadêmico</span>
+            <h1>TCCs publicados</h1>
+            <p>Consulte trabalhos anteriores por título, tema, resumo ou palavra-chave.</p>
+        </div>
+        <% if (usuario?.perfil === 'aluno') { %>
+            <a class="btn btn-primario" href="/tcc/add">+ Publicar TCC</a>
+        <% } %>
+    </div>
+</section>
+
+<section class="secao container">
+    <form class="filtros bloco" action="/tcc/lst" method="get">
+        <div class="campo campo-busca">
+            <label for="q">Pesquisar</label>
+            <input id="q" type="search" name="q" value="<%= filtros.q || '' %>" placeholder="Título, tema ou palavra-chave">
+        </div>
+        <div class="campo">
+            <label for="tema">Tema</label>
+            <input id="tema" name="tema" value="<%= filtros.tema || '' %>" placeholder="Ex.: acessibilidade">
+        </div>
+        <div class="campo campo-ano">
+            <label for="ano">Ano</label>
+            <input id="ano" type="number" name="ano" value="<%= filtros.ano || '' %>" min="1980" max="<%= new Date().getFullYear() %>">
+        </div>
+        <button class="btn btn-primario" type="submit">Buscar</button>
+        <a class="btn btn-texto" href="/tcc/lst">Limpar</a>
+    </form>
+
+    <div class="resultado-cabecalho">
+        <p><strong><%= tccs.length %></strong> trabalho<%= tccs.length === 1 ? '' : 's' %> encontrado<%= tccs.length === 1 ? '' : 's' %>.</p>
+    </div>
+
+    <% if (tccs.length) { %>
+        <div class="grade grade-3">
+            <% tccs.forEach((tcc) => { %>
+                <%- include('../partials/tcc-card', { tcc }) %>
+            <% }) %>
+        </div>
+    <% } else { %>
+        <div class="estado-vazio bloco">
+            <h2>Nenhum TCC encontrado.</h2>
+            <p>Tente pesquisar por outro termo ou remova algum filtro.</p>
+            <a class="btn btn-secundario" href="/tcc/lst">Limpar pesquisa</a>
+        </div>
+    <% } %>
+</section>
+
+<%- include('../partials/footer') %>

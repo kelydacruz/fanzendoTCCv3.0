@@ -1,0 +1,33 @@
+<%- include('partials/header') %>
+
+<section class="topo-pagina">
+    <div class="container">
+        <span class="destaque">Área do usuário</span>
+        <h1>Olá, <%= usuario.nome.split(' ')[0] %>!</h1>
+        <p>Seu perfil está cadastrado como <strong><%= usuario.perfil %></strong>.</p>
+    </div>
+</section>
+
+<section class="secao container">
+    <div class="grade grade-3 numeros-painel">
+        <article><strong><%= resumo.totalTccs %></strong><span>TCCs publicados</span></article>
+        <article><strong><%= resumo.totalIdeias %></strong><span>Ideias compartilhadas</span></article>
+        <article><strong><%= resumo.totalComentarios %></strong><span>Comentários realizados</span></article>
+    </div>
+
+    <div class="bloco painel-acoes">
+        <div>
+            <span class="destaque">Ações rápidas</span>
+            <h2>O que você deseja fazer?</h2>
+        </div>
+        <div class="botoes-linha">
+            <% if (usuario.perfil === 'aluno') { %>
+                <a class="btn btn-primario" href="/tcc/add">Publicar TCC</a>
+            <% } %>
+            <a class="btn btn-secundario" href="/ideia/add">Compartilhar ideia</a>
+            <a class="btn btn-secundario" href="/tcc/lst">Consultar acervo</a>
+        </div>
+    </div>
+</section>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,23 @@
+<%- include('../partials/header') %>
+
+<section class="topo-pagina topo-ideias">
+    <div class="container container-form">
+        <a class="voltar voltar-claro" href="/ideia/lst">← Voltar para ideias</a>
+        <span class="destaque">Nova sugestão</span>
+        <h1>Compartilhar ideia de TCC</h1>
+        <p>Descreva uma proposta que possa inspirar alunos e receber contribuições da comunidade.</p>
+    </div>
+</section>
+
+<section class="secao container container-form">
+    <form class="formulario bloco" action="/ideia/add" method="post">
+        <% if (erro) { %><div class="erro-form" role="alert"><%= erro %></div><% } %>
+        <%- include('_form', { dados }) %>
+        <div class="botoes-form">
+            <button class="btn btn-primario" type="submit">Publicar ideia</button>
+            <a class="btn btn-secundario" href="/ideia/lst">Cancelar</a>
+        </div>
+    </form>
+</section>
+
+<%- include('../partials/footer') %>

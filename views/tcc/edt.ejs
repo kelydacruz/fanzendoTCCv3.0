@@ -1,0 +1,23 @@
+<%- include('../partials/header') %>
+
+<section class="topo-pagina">
+    <div class="container container-form">
+        <a class="voltar" href="/tcc/detalhes/<%= idTexto(dados) %>">← Voltar aos detalhes</a>
+        <span class="destaque">Sua publicação</span>
+        <h1>Editar TCC</h1>
+        <p>Atualize as informações do trabalho mantendo a autoria e o objetivo originais.</p>
+    </div>
+</section>
+
+<section class="secao container container-form">
+    <form class="formulario bloco" action="/tcc/edt/<%= idTexto(dados) %>" method="post" enctype="multipart/form-data">
+        <% if (erro) { %><div class="erro-form" role="alert"><%= erro %></div><% } %>
+        <%- include('_form', { dados, editando: true }) %>
+        <div class="botoes-form">
+            <button class="btn btn-primario" type="submit">Salvar alterações</button>
+            <a class="btn btn-secundario" href="/tcc/detalhes/<%= idTexto(dados) %>">Cancelar</a>
+        </div>
+    </form>
+</section>
+
+<%- include('../partials/footer') %>

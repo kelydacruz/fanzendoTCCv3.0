@@ -1,0 +1,13 @@
+<article class="card card-ideia">
+    <div class="card-topo">
+        <span class="status status-<%= classeStatus(ideia.status) %>"><%= ideia.status %></span>
+        <span class="data"><%= formatarData(ideia.createdAt) %></span>
+    </div>
+    <span class="tema"><%= ideia.tema %></span>
+    <h3><a href="/ideia/detalhes/<%= idTexto(ideia) %>"><%= ideia.titulo %></a></h3>
+    <p><%= ideia.descricao %></p>
+    <div class="card-rodape">
+        <span><%= ideia.curso %></span>
+        <a href="/ideia/detalhes/<%= idTexto(ideia) %>">Conversar →</a>
+    </div>
+</article>
