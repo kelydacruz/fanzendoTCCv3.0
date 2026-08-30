@@ -32,6 +32,8 @@
             <h2>Informações do trabalho</h2>
             <dl class="lista-dados">
                 <div><dt>Curso</dt><dd><%= tcc.curso %></dd></div>
+                <div><dt>Área</dt><dd><%= tcc.area %></dd></div>
+                <div><dt>Turma</dt><dd><%= tcc.turma %></dd></div>
                 <div><dt>Ano</dt><dd><%= tcc.ano %></dd></div>
                 <div><dt>Orientador</dt><dd><%= tcc.orientador %></dd></div>
                 <div><dt>Autor principal</dt><dd><%= tcc.autor?.nome || 'Não informado' %></dd></div>
@@ -73,6 +75,10 @@
     <aside class="bloco documento-box">
         <span class="documento-icone" aria-hidden="true">PDF</span>
         <h2>Trabalho completo</h2>
+        <div class="metricas-documento">
+            <span><strong><%= formatarNumero(tcc.visualizacoes) %></strong> visualizações</span>
+            <span><strong><%= formatarNumero(tcc.downloads) %></strong> acessos ao PDF</span>
+        </div>
         <% if (temPdf) { %>
             <p>Consulte o documento enviado pelo autor em uma nova aba.</p>
             <a class="btn btn-primario btn-largura" href="/tcc/pdf/<%= idTexto(tcc) %>" target="_blank" rel="noopener">Visualizar PDF</a>
@@ -83,5 +89,22 @@
         <button class="btn btn-secundario btn-largura copiar-link" type="button">Copiar link</button>
     </aside>
 </section>
+
+<% if (relacionados.length) { %>
+    <section class="secao container relacionados">
+        <div class="titulo-secao">
+            <div>
+                <span class="destaque">Continue pesquisando</span>
+                <h2>TCCs relacionados</h2>
+            </div>
+            <a class="link-seta" href="/tcc/lst?curso=<%= encodeURIComponent(tcc.curso) %>">Ver o curso →</a>
+        </div>
+        <div class="grade grade-3">
+            <% relacionados.forEach((relacionado) => { %>
+                <%- include('../partials/tcc-card', { tcc: relacionado }) %>
+            <% }) %>
+        </div>
+    </section>
+<% } %>
 
 <%- include('../partials/footer') %>

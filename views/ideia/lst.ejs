@@ -35,6 +35,15 @@
                 <% }) %>
             </select>
         </div>
+        <div class="campo">
+            <label for="dificuldade">Dificuldade</label>
+            <select id="dificuldade" name="dificuldade">
+                <option value="">Todas</option>
+                <% ['Iniciante', 'Intermediária', 'Avançada'].forEach((nivel) => { %>
+                    <option value="<%= nivel %>" <%= filtros.dificuldade === nivel ? 'selected' : '' %>><%= nivel %></option>
+                <% }) %>
+            </select>
+        </div>
         <button class="btn btn-primario" type="submit">Buscar</button>
         <a class="btn btn-texto" href="/ideia/lst">Limpar</a>
     </form>

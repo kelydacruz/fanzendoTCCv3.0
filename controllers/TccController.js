@@ -5,6 +5,9 @@ import {
     atualizarTcc,
     excluirTcc,
     obterPdfTcc,
+    listarTccsRelacionados,
+    registrarVisualizacaoTcc,
+    registrarDownloadTcc,
     listarComentarios,
     cadastrarComentario,
 } from '../services/repositorio.js';
@@ -19,6 +22,8 @@ function dadosDoFormulario(body, arquivo) {
         tema: String(body.tema || '').trim(),
         resumo: String(body.resumo || '').trim(),
         curso: String(body.curso || '').trim(),
+        area: String(body.area || '').trim(),
+        turma: String(body.turma || '').trim(),
         orientador: String(body.orientador || '').trim(),
         ano: Number(body.ano),
         coautores: separarLista(body.coautores),
@@ -40,6 +45,8 @@ function dadosValidos(dados) {
         && textoComTamanho(dados.tema, 2, 100)
         && textoComTamanho(dados.resumo, 30, 3000)
         && textoComTamanho(dados.curso, 2, 100)
+        && textoComTamanho(dados.area, 2, 100)
+        && textoComTamanho(dados.turma, 2, 50)
         && textoComTamanho(dados.orientador, 3, 100)
         && anoValido(dados.ano)
         && dados.coautores.every((nome) => textoComTamanho(nome, 1, 100))
@@ -52,9 +59,27 @@ export default class TccController {
 
         this.list = async (req, res, next) => {
             try {
-                const filtros = { q: req.query.q, tema: req.query.tema, ano: req.query.ano };
-                const tccs = await listarTccs(filtros);
-                res.render(`${caminhoBase}lst`, { title: 'TCCs publicados', tccs, filtros });
+                const filtros = {
+                    q: req.query.q,
+                    curso: req.query.curso,
+                    ano: req.query.ano,
+                    area: req.query.area,
+                    orientador: req.query.orientador,
+                    ordem: req.query.ordem || 'recentes',
+                };
+                const [tccs, todos] = await Promise.all([
+                    listarTccs(filtros),
+                    listarTccs(),
+                ]);
+                const opcoes = {
+                    cursos: [...new Set(todos.map((tcc) => tcc.curso))].sort(),
+                    anos: [...new Set(todos.map((tcc) => tcc.ano))].sort((a, b) => b - a),
+                    areas: [...new Set(todos.map((tcc) => tcc.area).filter(Boolean))].sort(),
+                    orientadores: [...new Set(todos.map((tcc) => tcc.orientador))].sort(),
+                };
+                res.render(`${caminhoBase}lst`, {
+                    title: 'TCCs publicados', tccs, filtros, opcoes,
+                });
             } catch (erro) {
                 next(erro);
             }
@@ -62,13 +87,18 @@ export default class TccController {
 
         this.details = async (req, res, next) => {
             try {
+                await registrarVisualizacaoTcc(req.params.id);
                 const tcc = await buscarTccPorId(req.params.id);
                 if (!tcc) return res.status(404).render('404', { title: 'TCC não encontrado' });
-                const comentarios = await listarComentarios('tcc', req.params.id);
+                const [comentarios, relacionados] = await Promise.all([
+                    listarComentarios('tcc', req.params.id),
+                    listarTccsRelacionados(tcc),
+                ]);
                 return res.render(`${caminhoBase}detalhes`, {
                     title: tcc.titulo,
                     tcc,
                     comentarios,
+                    relacionados,
                     podeEditar: usuarioEhDono(req.session.usuario, tcc),
                     temPdf: Boolean(tcc.pdf?.nome || tcc.pdf?.dados),
                 });
@@ -165,6 +195,7 @@ export default class TccController {
                 if (!pdf) return res.status(404).render('erro', {
                     title: 'PDF indisponível', mensagemErro: 'Este TCC ainda não possui um PDF anexado.',
                 });
+                await registrarDownloadTcc(req.params.id);
                 res.type(pdf.tipo || 'application/pdf');
                 res.setHeader('Content-Disposition', `inline; filename="${String(pdf.nome || 'tcc.pdf').replaceAll('"', '')}"`);
                 return res.send(pdf.dados);

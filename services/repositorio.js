@@ -55,7 +55,14 @@ export async function cadastrarUsuario(dados) {
     return usuario;
 }
 
-export async function listarTccs({ q = '', tema = '', ano = '' } = {}) {
+export async function listarTccs({
+    q = '',
+    curso = '',
+    ano = '',
+    area = '',
+    orientador = '',
+    ordem = 'recentes',
+} = {}) {
     if (usandoMongo()) {
         const filtros = {};
         if (q) {
@@ -65,31 +72,59 @@ export async function listarTccs({ q = '', tema = '', ano = '' } = {}) {
                 { tema: termo },
                 { resumo: termo },
                 { orientador: termo },
+                { curso: termo },
+                { area: termo },
                 { palavrasChave: termo },
             ];
         }
-        if (tema) filtros.tema = new RegExp(escaparRegex(tema), 'i');
+        if (curso) filtros.curso = new RegExp(`^${escaparRegex(curso)}$`, 'i');
         if (ano) filtros.ano = Number(ano);
+        if (area) filtros.area = new RegExp(`^${escaparRegex(area)}$`, 'i');
+        if (orientador) filtros.orientador = new RegExp(`^${escaparRegex(orientador)}$`, 'i');
 
-        return Tcc.find(filtros).populate('autor', 'nome perfil curso').sort({ createdAt: -1 }).lean();
+        const ordenacoes = {
+            recentes: { createdAt: -1 },
+            visualizados: { visualizacoes: -1, createdAt: -1 },
+            downloads: { downloads: -1, createdAt: -1 },
+            az: { titulo: 1 },
+        };
+
+        return Tcc.find(filtros)
+            .populate('autor', 'nome perfil curso')
+            .sort(ordenacoes[ordem] || ordenacoes.recentes)
+            .lean();
     }
 
     const termo = normalizarTexto(q);
-    return tccs
+    const resultado = tccs
         .filter((tcc) => {
+            const autor = autorDemo(tcc.autorId);
             const texto = normalizarTexto([
                 tcc.titulo,
                 tcc.tema,
                 tcc.resumo,
+                tcc.curso,
+                tcc.area,
                 tcc.orientador,
+                autor?.nome,
                 ...tcc.palavrasChave,
             ].join(' '));
             return (!termo || texto.includes(termo))
-                && (!tema || normalizarTexto(tcc.tema).includes(normalizarTexto(tema)))
-                && (!ano || String(tcc.ano) === String(ano));
+                && (!curso || normalizarTexto(tcc.curso) === normalizarTexto(curso))
+                && (!ano || String(tcc.ano) === String(ano))
+                && (!area || normalizarTexto(tcc.area) === normalizarTexto(area))
+                && (!orientador || normalizarTexto(tcc.orientador) === normalizarTexto(orientador));
         })
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         .map(preencherPublicacaoDemo);
+
+    const comparadores = {
+        recentes: (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+        visualizados: (a, b) => (b.visualizacoes || 0) - (a.visualizacoes || 0),
+        downloads: (a, b) => (b.downloads || 0) - (a.downloads || 0),
+        az: (a, b) => a.titulo.localeCompare(b.titulo, 'pt-BR'),
+    };
+
+    return resultado.sort(comparadores[ordem] || comparadores.recentes);
 }
 
 export async function buscarTccPorId(id) {
@@ -103,7 +138,14 @@ export async function buscarTccPorId(id) {
 
 export async function cadastrarTcc(dados) {
     if (usandoMongo()) return Tcc.create(dados);
-    const tcc = { id: novoId(), createdAt: new Date(), ...dados, autorId: String(dados.autor) };
+    const tcc = {
+        id: novoId(),
+        createdAt: new Date(),
+        visualizacoes: 0,
+        downloads: 0,
+        ...dados,
+        autorId: String(dados.autor),
+    };
     delete tcc.autor;
     tccs.push(tcc);
     return preencherPublicacaoDemo(tcc);
@@ -141,7 +183,40 @@ export async function obterPdfTcc(id) {
     return tccs.find((item) => item.id === String(id))?.pdf || null;
 }
 
-export async function listarIdeias({ q = '', curso = '', status = '' } = {}) {
+export async function registrarVisualizacaoTcc(id) {
+    if (usandoMongo()) {
+        if (!idValido(id)) return;
+        await Tcc.findByIdAndUpdate(id, { $inc: { visualizacoes: 1 } });
+        return;
+    }
+
+    const tcc = tccs.find((item) => item.id === String(id));
+    if (tcc) tcc.visualizacoes = (tcc.visualizacoes || 0) + 1;
+}
+
+export async function registrarDownloadTcc(id) {
+    if (usandoMongo()) {
+        if (!idValido(id)) return;
+        await Tcc.findByIdAndUpdate(id, { $inc: { downloads: 1 } });
+        return;
+    }
+
+    const tcc = tccs.find((item) => item.id === String(id));
+    if (tcc) tcc.downloads = (tcc.downloads || 0) + 1;
+}
+
+export async function listarTccsRelacionados(tcc, limite = 3) {
+    if (!tcc) return [];
+    const idAtual = String(tcc.id || tcc._id);
+    const todos = await listarTccs();
+
+    return todos
+        .filter((item) => String(item.id || item._id) !== idAtual)
+        .filter((item) => item.curso === tcc.curso || item.area === tcc.area)
+        .slice(0, limite);
+}
+
+export async function listarIdeias({ q = '', curso = '', status = '', dificuldade = '' } = {}) {
     if (usandoMongo()) {
         const filtros = {};
         if (q) {
@@ -150,6 +225,7 @@ export async function listarIdeias({ q = '', curso = '', status = '' } = {}) {
         }
         if (curso) filtros.curso = curso;
         if (status) filtros.status = status;
+        if (dificuldade) filtros.dificuldade = dificuldade;
         return Ideia.find(filtros).populate('autor', 'nome perfil curso areaAtuacao').sort({ createdAt: -1 }).lean();
     }
 
@@ -159,7 +235,8 @@ export async function listarIdeias({ q = '', curso = '', status = '' } = {}) {
             const texto = normalizarTexto(`${ideia.titulo} ${ideia.tema} ${ideia.descricao}`);
             return (!termo || texto.includes(termo))
                 && (!curso || ideia.curso === curso)
-                && (!status || ideia.status === status);
+                && (!status || ideia.status === status)
+                && (!dificuldade || ideia.dificuldade === dificuldade);
         })
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         .map(preencherPublicacaoDemo);

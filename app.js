@@ -70,6 +70,7 @@ app.use(async (req, res, next) => {
 app.use(adicionarUsuarioNasTelas);
 
 app.locals.formatarData = (data) => new Intl.DateTimeFormat('pt-BR').format(new Date(data));
+app.locals.formatarNumero = (valor) => new Intl.NumberFormat('pt-BR').format(Number(valor) || 0);
 app.locals.idTexto = (valor) => String(valor?.id || valor?._id || valor || '');
 app.locals.classeStatus = classeStatus;
 

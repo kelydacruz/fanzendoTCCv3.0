@@ -17,6 +17,9 @@ function dadosDoFormulario(body) {
         tema: String(body.tema || '').trim(),
         descricao: String(body.descricao || '').trim(),
         curso: String(body.curso || '').trim(),
+        dificuldade: ['Iniciante', 'Intermediária', 'Avançada'].includes(body.dificuldade)
+            ? body.dificuldade
+            : 'Intermediária',
         status: ['Disponível', 'Em desenvolvimento', 'Concluída'].includes(body.status)
             ? body.status
             : 'Disponível',
@@ -36,7 +39,12 @@ export default class IdeiaController {
 
         this.list = async (req, res, next) => {
             try {
-                const filtros = { q: req.query.q, curso: req.query.curso, status: req.query.status };
+                const filtros = {
+                    q: req.query.q,
+                    curso: req.query.curso,
+                    status: req.query.status,
+                    dificuldade: req.query.dificuldade,
+                };
                 const ideias = await listarIdeias(filtros);
                 const cursos = [...new Set((await listarIdeias()).map((ideia) => ideia.curso))].sort();
                 res.render(`${caminhoBase}lst`, { title: 'Banco de ideias', ideias, cursos, filtros });

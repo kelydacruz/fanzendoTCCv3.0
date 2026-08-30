@@ -38,6 +38,34 @@
     </div>
 </section>
 
+<section class="faixa-estatisticas" aria-label="Números do acervo">
+    <div class="container estatisticas-grid">
+        <div><strong><%= formatarNumero(totalTccs) %></strong><span>TCCs publicados</span></div>
+        <div><strong><%= formatarNumero(cursos.length) %></strong><span>Cursos no acervo</span></div>
+        <div><strong><%= formatarNumero(totalVisualizacoes) %></strong><span>Visualizações</span></div>
+        <div><strong><%= formatarNumero(totalIdeias) %></strong><span>Ideias compartilhadas</span></div>
+    </div>
+</section>
+
+<section class="secao container">
+    <div class="titulo-secao">
+        <div>
+            <span class="destaque">Explore por curso</span>
+            <h2>Encontre referências da sua área</h2>
+            <p>Escolha um curso para ver trabalhos publicados por outros estudantes.</p>
+        </div>
+    </div>
+    <div class="cursos-grid">
+        <% cursos.forEach((curso, indice) => { %>
+            <a class="curso-card" href="/tcc/lst?curso=<%= encodeURIComponent(curso.nome) %>">
+                <span class="curso-icone" aria-hidden="true"><%= String(indice + 1).padStart(2, '0') %></span>
+                <span><strong><%= curso.nome %></strong><small><%= curso.total %> trabalho<%= curso.total === 1 ? '' : 's' %></small></span>
+                <span aria-hidden="true">→</span>
+            </a>
+        <% }) %>
+    </div>
+</section>
+
 <section class="secao container">
     <div class="titulo-secao">
         <div>
@@ -54,7 +82,7 @@
     </div>
 </section>
 
-<section class="secao secao-verde">
+<section class="secao secao-azul">
     <div class="container">
         <div class="titulo-secao titulo-claro">
             <div>
@@ -69,6 +97,17 @@
                 <%- include('partials/ideia-card', { ideia }) %>
             <% }) %>
         </div>
+    </div>
+</section>
+
+<section class="secao container">
+    <div class="chamada-aprender">
+        <div>
+            <span class="destaque">Guia prático</span>
+            <h2>Não sabe por onde começar o TCC?</h2>
+            <p>Acompanhe uma trilha simples, da escolha do tema até o checklist da apresentação.</p>
+        </div>
+        <a class="btn btn-claro" href="/aprender">Aprenda a fazer seu TCC</a>
     </div>
 </section>
 
