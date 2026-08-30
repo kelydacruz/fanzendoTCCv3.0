@@ -14,21 +14,60 @@
 </section>
 
 <section class="secao container">
-    <form class="filtros bloco" action="/tcc/lst" method="get">
+    <form class="filtros filtros-completos bloco" action="/tcc/lst" method="get">
         <div class="campo campo-busca">
             <label for="q">Pesquisar</label>
-            <input id="q" type="search" name="q" value="<%= filtros.q || '' %>" placeholder="Título, tema ou palavra-chave">
+            <input id="q" type="search" name="q" value="<%= filtros.q || '' %>" placeholder="Título, tema, resumo ou palavra-chave">
         </div>
         <div class="campo">
-            <label for="tema">Tema</label>
-            <input id="tema" name="tema" value="<%= filtros.tema || '' %>" placeholder="Ex.: acessibilidade">
+            <label for="curso">Curso</label>
+            <select id="curso" name="curso">
+                <option value="">Todos</option>
+                <% opcoes.cursos.forEach((curso) => { %>
+                    <option value="<%= curso %>" <%= filtros.curso === curso ? 'selected' : '' %>><%= curso %></option>
+                <% }) %>
+            </select>
         </div>
-        <div class="campo campo-ano">
+        <div class="campo">
             <label for="ano">Ano</label>
-            <input id="ano" type="number" name="ano" value="<%= filtros.ano || '' %>" min="1980" max="<%= new Date().getFullYear() %>">
+            <select id="ano" name="ano">
+                <option value="">Todos</option>
+                <% opcoes.anos.forEach((ano) => { %>
+                    <option value="<%= ano %>" <%= String(filtros.ano) === String(ano) ? 'selected' : '' %>><%= ano %></option>
+                <% }) %>
+            </select>
         </div>
-        <button class="btn btn-primario" type="submit">Buscar</button>
-        <a class="btn btn-texto" href="/tcc/lst">Limpar</a>
+        <div class="campo">
+            <label for="area">Área</label>
+            <select id="area" name="area">
+                <option value="">Todas</option>
+                <% opcoes.areas.forEach((area) => { %>
+                    <option value="<%= area %>" <%= filtros.area === area ? 'selected' : '' %>><%= area %></option>
+                <% }) %>
+            </select>
+        </div>
+        <div class="campo">
+            <label for="orientador">Orientador</label>
+            <select id="orientador" name="orientador">
+                <option value="">Todos</option>
+                <% opcoes.orientadores.forEach((orientador) => { %>
+                    <option value="<%= orientador %>" <%= filtros.orientador === orientador ? 'selected' : '' %>><%= orientador %></option>
+                <% }) %>
+            </select>
+        </div>
+        <div class="campo">
+            <label for="ordem">Ordenar por</label>
+            <select id="ordem" name="ordem">
+                <option value="recentes" <%= filtros.ordem === 'recentes' ? 'selected' : '' %>>Mais recentes</option>
+                <option value="visualizados" <%= filtros.ordem === 'visualizados' ? 'selected' : '' %>>Mais visualizados</option>
+                <option value="downloads" <%= filtros.ordem === 'downloads' ? 'selected' : '' %>>Mais acessados</option>
+                <option value="az" <%= filtros.ordem === 'az' ? 'selected' : '' %>>Título de A a Z</option>
+            </select>
+        </div>
+        <div class="filtros-acoes">
+            <button class="btn btn-primario" type="submit">Aplicar filtros</button>
+            <a class="btn btn-texto" href="/tcc/lst">Limpar</a>
+        </div>
     </form>
 
     <div class="resultado-cabecalho">

@@ -4,16 +4,21 @@ O **AcervoTCC** é uma plataforma web acadêmica para guardar trabalhos concluí
 
 ## Funcionalidades implementadas
 
-- cadastro e login com perfis de aluno e professor;
+- cadastro e login com perfis de aluno e professor (mantidos como estavam nesta etapa);
 - senha protegida com hash;
-- catálogo público de TCCs com pesquisa e filtros;
+- catálogo público de TCCs com pesquisa, filtros por curso, ano, área e orientador;
+- ordenação por data, visualizações, acessos ao PDF e título;
+- métricas de visualizações e acessos ao PDF;
+- sugestões de TCCs relacionados por curso ou área;
 - publicação, edição e exclusão de TCC pelo próprio aluno autor;
 - envio opcional do trabalho em PDF, limitado a 5 MB;
-- banco de ideias com pesquisa, curso e status;
+- banco de ideias com pesquisa, curso, status e nível de dificuldade;
 - publicação, edição e exclusão de ideias pelo próprio autor;
 - comentários de alunos e professores em TCCs e ideias;
 - filtro configurável de termos inadequados;
 - painel com o resumo das contribuições do usuário;
+- trilha pública “Aprenda a fazer seu TCC” com 11 etapas;
+- exploração dos trabalhos por curso na página inicial;
 - interface responsiva e acessível;
 - modo demonstração quando o MongoDB não está configurado;
 - execução local e entrada preparada para a Vercel.
@@ -64,8 +69,8 @@ npm --version
 ### 2. Baixar e abrir o projeto
 
 ```bash
-git clone https://github.com/kelydacruz/TCC-fazendo-2.0.git
-cd TCC-fazendo-2.0
+git clone https://github.com/kelydacruz/fanzendoTCCv3.0.git
+cd fanzendoTCCv3.0
 ```
 
 ### 3. Instalar as dependências
@@ -140,4 +145,4 @@ O projeto já possui `vercel.json` e `api/index.js`. Antes de publicar, cadastre
 
 ## Limites desta etapa
 
-Esta versão permite escolher o perfil no cadastro para facilitar a demonstração acadêmica. Em uma implantação real da escola, o perfil de professor deve ser confirmado pela instituição. Recuperação de senha, aprovação administrativa, notificações e armazenamento externo dos PDFs são evoluções previstas para uma etapa futura.
+A autenticação existente foi mantida sem novas decisões nesta etapa. A forma final de login, cadastro e confirmação de perfis será definida posteriormente. Recuperação de senha, aprovação administrativa, notificações e armazenamento externo dos PDFs também podem ser tratados em uma etapa futura.

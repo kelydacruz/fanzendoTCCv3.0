@@ -3,6 +3,7 @@
         <span class="etiqueta"><%= tcc.tema %></span>
         <span class="ano"><%= tcc.ano %></span>
     </div>
+    <span class="tema"><%= tcc.area %> · <%= tcc.curso %></span>
     <h3><a href="/tcc/detalhes/<%= idTexto(tcc) %>"><%= tcc.titulo %></a></h3>
     <p><%= tcc.resumo %></p>
     <div class="tags">
@@ -11,7 +12,7 @@
         <% }) %>
     </div>
     <div class="card-rodape">
-        <span>Por <strong><%= tcc.autor?.nome || 'Autor não informado' %></strong></span>
+        <span>Por <strong><%= tcc.autor?.nome || 'Autor não informado' %></strong> · <%= formatarNumero(tcc.visualizacoes) %> visitas</span>
         <a href="/tcc/detalhes/<%= idTexto(tcc) %>">Detalhes →</a>
     </div>
 </article>

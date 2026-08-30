@@ -7,6 +7,7 @@ const controle = new GeralController();
 
 router.get('/', controle.home);
 router.get('/painel', somenteAutenticado, controle.painel);
+router.get('/aprender', controle.aprender);
 router.get('/sobre', controle.sobre);
 router.get('/saude', controle.saude);
 

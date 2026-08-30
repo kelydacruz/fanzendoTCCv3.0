@@ -28,4 +28,13 @@
             <% }) %>
         </select>
     </div>
+
+    <div class="campo">
+        <label for="dificuldade">Nível de dificuldade</label>
+        <select id="dificuldade" name="dificuldade">
+            <% ['Iniciante', 'Intermediária', 'Avançada'].forEach((nivel) => { %>
+                <option value="<%= nivel %>" <%= dados.dificuldade === nivel ? 'selected' : '' %>><%= nivel %></option>
+            <% }) %>
+        </select>
+    </div>
 </div>

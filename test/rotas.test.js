@@ -53,6 +53,7 @@ test('renderiza páginas públicas e arquivos estáticos', async () => {
         ['/tcc/detalhes/horta-inteligente', 'Horta inteligente'],
         ['/ideia/lst', 'Banco de ideias'],
         ['/ideia/detalhes/ideia-enchentes', 'Aplicativo de alerta'],
+        ['/aprender', 'Aprenda a fazer seu TCC'],
         ['/sobre', 'Por que criar o AcervoTCC?'],
     ];
 
@@ -68,6 +69,22 @@ test('renderiza páginas públicas e arquivos estáticos', async () => {
 
     const paginaInexistente = await requisicao('/pagina-inexistente');
     assert.equal(paginaInexistente.status, 404);
+});
+
+test('filtra e ordena o catálogo de TCCs', async () => {
+    const filtrada = await requisicao('/tcc/lst?curso=T%C3%A9cnico%20em%20Meio%20Ambiente');
+    assert.equal(filtrada.status, 200);
+    const htmlFiltrado = await filtrada.text();
+    assert.match(htmlFiltrado, /Descarte Certo/);
+    assert.doesNotMatch(htmlFiltrado, /Horta inteligente/);
+
+    const ordenada = await requisicao('/tcc/lst?ordem=visualizados');
+    assert.equal(ordenada.status, 200);
+    assert.match(await ordenada.text(), /Mais visualizados/);
+
+    const ideiasIniciantes = await requisicao('/ideia/lst?dificuldade=Iniciante');
+    assert.equal(ideiasIniciantes.status, 200);
+    assert.match(await ideiasIniciantes.text(), /Educa%C3%A7%C3%A3o financeira|Educação financeira/i);
 });
 
 test('protege páginas privadas e respeita o perfil do usuário', async () => {
@@ -94,6 +111,7 @@ test('executa o fluxo de criação, comentário, edição e exclusão de ideia',
         descricao: 'Plataforma para registrar barreiras e recursos acessíveis nos espaços da comunidade escolar.',
         curso: 'Técnico em Informática',
         status: 'Disponível',
+        dificuldade: 'Intermediária',
     }, cookieAluno);
 
     assert.equal(criacao.status, 302);
@@ -116,6 +134,7 @@ test('executa o fluxo de criação, comentário, edição e exclusão de ideia',
         descricao: 'Plataforma para registrar barreiras e recursos acessíveis nos espaços da comunidade escolar.',
         curso: 'Técnico em Informática',
         status: 'Em desenvolvimento',
+        dificuldade: 'Avançada',
     }, cookieAluno);
     assert.equal(edicao.status, 302);
 
@@ -134,6 +153,8 @@ test('publica um TCC e bloqueia conteúdo configurado como inadequado', async ()
         tema: 'Educação e tecnologia',
         resumo: 'Aplicação web para organizar tarefas acadêmicas, registrar avanços e apoiar a rotina de estudantes do ensino técnico.',
         curso: 'Técnico em Informática',
+        area: 'Desenvolvimento web',
+        turma: '3º ano',
         orientador: 'Prof. Carlos Souza',
         ano: String(new Date().getFullYear()),
         coautores: '',
@@ -149,6 +170,7 @@ test('publica um TCC e bloqueia conteúdo configurado como inadequado', async ()
         descricao: 'Esta descrição possui tamanho suficiente para validar corretamente o formulário.',
         curso: 'Técnico em Informática',
         status: 'Disponível',
+        dificuldade: 'Iniciante',
     }, cookieAluno);
 
     assert.equal(conteudoBloqueado.status, 400);

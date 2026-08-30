@@ -15,6 +15,16 @@
     </div>
 
     <div class="campo">
+        <label for="area">Área do conhecimento *</label>
+        <input id="area" name="area" value="<%= dados.area || '' %>" required maxlength="100" placeholder="Ex.: Desenvolvimento web">
+    </div>
+
+    <div class="campo">
+        <label for="turma">Turma *</label>
+        <input id="turma" name="turma" value="<%= dados.turma || '' %>" required maxlength="50" placeholder="Ex.: 3º ano">
+    </div>
+
+    <div class="campo">
         <label for="orientador">Professor orientador *</label>
         <input id="orientador" name="orientador" value="<%= dados.orientador || '' %>" required maxlength="100">
     </div>

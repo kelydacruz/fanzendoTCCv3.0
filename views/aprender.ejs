@@ -1,0 +1,59 @@
+<%- include('partials/header') %>
+
+<section class="aprender-hero">
+    <div class="container aprender-hero-grid">
+        <div>
+            <span class="destaque destaque-claro">Guia acadêmico</span>
+            <h1>Aprenda a fazer seu TCC, passo a passo.</h1>
+            <p>Uma trilha direta para organizar a ideia, a pesquisa, o desenvolvimento e a apresentação do trabalho.</p>
+            <a class="btn btn-claro" href="#trilha">Começar a trilha</a>
+        </div>
+        <div class="aprender-resumo">
+            <strong><%= modulos.length %></strong>
+            <span>etapas práticas</span>
+            <p>Abra cada módulo, faça suas anotações e confirme as regras específicas com seu professor orientador.</p>
+        </div>
+    </div>
+</section>
+
+<section class="secao container trilha-aprender" id="trilha">
+    <div class="titulo-secao">
+        <div>
+            <span class="destaque">Trilha de aprendizagem</span>
+            <h2>Do tema à apresentação</h2>
+            <p>Os módulos são independentes. Você pode começar pela etapa em que está agora.</p>
+        </div>
+    </div>
+
+    <div class="lista-modulos">
+        <% modulos.forEach((modulo, indice) => { %>
+            <details class="modulo-aprender" <%= indice === 0 ? 'open' : '' %>>
+                <summary>
+                    <span class="numero-modulo"><%= String(indice + 1).padStart(2, '0') %></span>
+                    <span><strong><%= modulo.titulo %></strong><small>Ver orientação</small></span>
+                    <span class="modulo-seta" aria-hidden="true">+</span>
+                </summary>
+                <div class="modulo-conteudo">
+                    <p><%= modulo.descricao %></p>
+                    <p class="dica-modulo"><strong>Dica:</strong> registre esta etapa em poucas frases e leve suas dúvidas para a orientação.</p>
+                </div>
+            </details>
+        <% }) %>
+    </div>
+</section>
+
+<section class="secao container">
+    <div class="checklist-final">
+        <div>
+            <span class="destaque destaque-claro">Próximo passo</span>
+            <h2>Transforme a pesquisa em uma proposta.</h2>
+            <p>Consulte trabalhos do acervo para conhecer referências ou explore ideias que ainda podem ser desenvolvidas.</p>
+        </div>
+        <div class="botoes-linha">
+            <a class="btn btn-claro" href="/tcc/lst">Consultar TCCs</a>
+            <a class="btn btn-contorno-claro" href="/ideia/lst">Explorar ideias</a>
+        </div>
+    </div>
+</section>
+
+<%- include('partials/footer') %>
