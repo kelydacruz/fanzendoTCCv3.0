@@ -19,6 +19,7 @@ const root = dirname(fileURLToPath(import.meta.url));
 const emProducao = process.env.NODE_ENV === 'production';
 
 if (emProducao) app.set('trust proxy', 1);
+app.disable('x-powered-by');
 
 app.set('view engine', 'ejs');
 app.set('views', join(root, 'views'));
@@ -40,9 +41,11 @@ if (emProducao && !process.env.SESSION_SECRET) {
 }
 
 const configuracaoSessao = {
+    name: 'acervotcc.sid',
     secret: process.env.SESSION_SECRET || 'segredo-apenas-para-desenvolvimento',
     resave: false,
     saveUninitialized: false,
+    rolling: true,
     cookie: {
         httpOnly: true,
         sameSite: 'lax',
@@ -84,8 +87,6 @@ app.use((req, res) => {
 });
 
 app.use((erro, req, res, next) => {
-    console.error(erro);
-
     if (erro.code === 'LIMIT_FILE_SIZE') {
         return res.status(400).render('erro', {
             title: 'Arquivo muito grande',
@@ -99,6 +100,8 @@ app.use((erro, req, res, next) => {
             mensagemErro: erro.message,
         });
     }
+
+    console.error(erro);
 
     return res.status(500).render('erro', {
         title: 'Erro no sistema',

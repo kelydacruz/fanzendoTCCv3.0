@@ -197,7 +197,9 @@ export default class TccController {
                 });
                 await registrarDownloadTcc(req.params.id);
                 res.type(pdf.tipo || 'application/pdf');
-                res.setHeader('Content-Disposition', `inline; filename="${String(pdf.nome || 'tcc.pdf').replaceAll('"', '')}"`);
+                const nomeSeguro = String(pdf.nome || 'tcc.pdf').replace(/[^a-zA-Z0-9._-]/g, '_');
+                res.setHeader('Content-Disposition', `inline; filename="${nomeSeguro}"`);
+                res.setHeader('X-Content-Type-Options', 'nosniff');
                 return res.send(pdf.dados);
             } catch (erro) {
                 return next(erro);

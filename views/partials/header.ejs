@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#12377a">
     <meta name="description" content="Plataforma para publicação e consulta de TCCs e ideias">
     <title><%= title %> | AcervoTCC</title>
     <link rel="stylesheet" href="/public/css/style.css">
@@ -14,11 +15,15 @@
         <div class="container navegacao">
             <a class="logo" href="/" aria-label="AcervoTCC - página inicial">
                 <span class="logo-simbolo" aria-hidden="true">AT</span>
-                <span>Acervo<strong>TCC</strong></span>
+                <span class="logo-texto">
+                    <span>Acervo<strong>TCC</strong></span>
+                    <small>Portal acadêmico</small>
+                </span>
             </a>
 
             <button class="menu-botao" type="button" aria-label="Abrir menu" aria-controls="menu-principal" aria-expanded="false">
-                Menu
+                <span class="menu-icone" aria-hidden="true"><i></i><i></i><i></i></span>
+                <span>Menu</span>
             </button>
 
             <nav class="menu" id="menu-principal" aria-label="Navegação principal">
@@ -31,7 +36,10 @@
 
             <div class="acoes-usuario">
                 <% if (usuario) { %>
-                    <a class="usuario-link" href="/painel"><%= usuario.nome.split(' ')[0] %></a>
+                    <a class="usuario-link" href="/painel">
+                        <span class="usuario-avatar" aria-hidden="true"><%= usuario.nome.charAt(0).toUpperCase() %></span>
+                        <span><%= usuario.nome.split(' ')[0] %></span>
+                    </a>
                     <form action="/sair" method="post">
                         <button class="btn btn-secundario btn-pequeno" type="submit">Sair</button>
                     </form>
