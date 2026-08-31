@@ -9,9 +9,14 @@ import { emailValido, perfilValido, textoComTamanho } from '../services/validaca
 
 export const limitarLogin = rateLimit({
     windowMs: 15 * 60 * 1000,
-    limit: 20,
+    limit: 10,
     standardHeaders: true,
     legacyHeaders: false,
+    handler: (req, res) => res.status(429).render('usuario/login', {
+        title: 'Entrar',
+        erro: 'Muitas tentativas de acesso. Aguarde alguns minutos e tente novamente.',
+        dados: { email: normalizarTexto(req.body.email) },
+    }),
 });
 
 function iniciarSessao(req, res, next, usuario, mensagem) {
@@ -121,7 +126,7 @@ export default class UsuarioController {
         this.logout = (req, res, next) => {
             req.session.destroy((erro) => {
                 if (erro) return next(erro);
-                res.clearCookie('connect.sid');
+                res.clearCookie('acervotcc.sid');
                 return res.redirect('/?mensagem=Você saiu da sua conta.');
             });
         };

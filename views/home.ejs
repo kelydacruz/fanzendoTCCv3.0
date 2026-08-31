@@ -3,10 +3,10 @@
 <section class="hero">
     <div class="container hero-grid">
         <div>
-            <span class="destaque">Ideias que viram projetos</span>
-            <h1>Encontre inspiração para criar um TCC mais original.</h1>
+            <span class="destaque destaque-com-linha">Conhecimento que continua</span>
+            <h1>Encontre referências para construir um TCC melhor.</h1>
             <p>
-                Consulte trabalhos concluídos, descubra sugestões de temas e converse com alunos e professores em um só lugar.
+                Pesquise trabalhos concluídos, descubra ideias de projetos e compartilhe conhecimento com a comunidade acadêmica.
             </p>
             <form class="busca-principal" action="/tcc/lst" method="get">
                 <label class="sr-only" for="busca-home">Pesquisar TCC</label>
@@ -21,29 +21,34 @@
             </div>
         </div>
 
-        <div class="hero-caderno" aria-label="Resumo da plataforma">
-            <span class="fita fita-1" aria-hidden="true"></span>
-            <span class="fita fita-2" aria-hidden="true"></span>
-            <p class="anotacao">Para começar:</p>
-            <ol>
-                <li>Pesquise trabalhos anteriores.</li>
-                <li>Compare temas e problemas.</li>
-                <li>Compartilhe uma nova ideia.</li>
-            </ol>
-            <div class="mini-estatisticas">
-                <span><strong><%= totalTccs %></strong> TCCs</span>
-                <span><strong><%= totalIdeias %></strong> ideias</span>
+        <aside class="hero-painel" aria-label="Resumo da plataforma">
+            <div class="hero-painel-topo">
+                <span>Acervo acadêmico</span>
+                <span class="indicador-ativo">Disponível</span>
             </div>
-        </div>
+            <div class="documento-destaque">
+                <span class="documento-miniatura" aria-hidden="true">TCC</span>
+                <div>
+                    <strong>Pesquisa organizada e acessível</strong>
+                    <p>Trabalhos, ideias e orientações reunidos em uma única plataforma.</p>
+                </div>
+            </div>
+            <dl class="hero-resumo-dados">
+                <div><dt>Trabalhos</dt><dd><%= formatarNumero(totalTccs) %></dd></div>
+                <div><dt>Cursos</dt><dd><%= formatarNumero(cursos.length) %></dd></div>
+                <div><dt>Ideias</dt><dd><%= formatarNumero(totalIdeias) %></dd></div>
+            </dl>
+            <a class="hero-painel-link" href="/tcc/lst">Acessar o acervo completo <span aria-hidden="true">→</span></a>
+        </aside>
     </div>
 </section>
 
 <section class="faixa-estatisticas" aria-label="Números do acervo">
     <div class="container estatisticas-grid">
-        <div><strong><%= formatarNumero(totalTccs) %></strong><span>TCCs publicados</span></div>
-        <div><strong><%= formatarNumero(cursos.length) %></strong><span>Cursos no acervo</span></div>
-        <div><strong><%= formatarNumero(totalVisualizacoes) %></strong><span>Visualizações</span></div>
-        <div><strong><%= formatarNumero(totalIdeias) %></strong><span>Ideias compartilhadas</span></div>
+        <div><span class="estatistica-rotulo">TCCs publicados</span><strong><%= formatarNumero(totalTccs) %></strong></div>
+        <div><span class="estatistica-rotulo">Cursos no acervo</span><strong><%= formatarNumero(cursos.length) %></strong></div>
+        <div><span class="estatistica-rotulo">Visualizações</span><strong><%= formatarNumero(totalVisualizacoes) %></strong></div>
+        <div><span class="estatistica-rotulo">Ideias compartilhadas</span><strong><%= formatarNumero(totalIdeias) %></strong></div>
     </div>
 </section>
 

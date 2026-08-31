@@ -48,7 +48,7 @@ async function entrar(email, senha) {
 
 test('renderiza páginas públicas e arquivos estáticos', async () => {
     const paginas = [
-        ['/', 'Encontre inspiração'],
+        ['/', 'Encontre referências'],
         ['/tcc/lst', 'TCCs publicados'],
         ['/tcc/detalhes/horta-inteligente', 'Horta inteligente'],
         ['/ideia/lst', 'Banco de ideias'],
@@ -69,6 +69,45 @@ test('renderiza páginas públicas e arquivos estáticos', async () => {
 
     const paginaInexistente = await requisicao('/pagina-inexistente');
     assert.equal(paginaInexistente.status, 404);
+});
+
+test('envia cabeçalhos de segurança e usa cookie próprio para a sessão', async () => {
+    const pagina = await requisicao('/');
+    assert.equal(pagina.headers.get('x-powered-by'), null);
+    assert.equal(pagina.headers.get('x-content-type-options'), 'nosniff');
+    assert.match(pagina.headers.get('content-security-policy') || '', /default-src/);
+
+    const login = await enviarFormulario('/entrar', {
+        email: 'aluna@exemplo.com',
+        senha: '123456',
+    });
+    const cookie = login.headers.get('set-cookie') || '';
+    assert.match(cookie, /^acervotcc\.sid=/);
+    assert.match(cookie, /HttpOnly/i);
+    assert.match(cookie, /SameSite=Lax/i);
+});
+
+test('recusa arquivo falso mesmo quando o tipo informado é PDF', async () => {
+    const cookieAluno = await entrar('aluna@exemplo.com', '123456');
+    const formulario = new FormData();
+    formulario.append('titulo', 'Documento acadêmico de demonstração');
+    formulario.append('tema', 'Segurança de arquivos');
+    formulario.append('resumo', 'Trabalho de demonstração com conteúdo suficiente para validar o formulário e testar o envio seguro de documentos.');
+    formulario.append('curso', 'Técnico em Informática');
+    formulario.append('area', 'Desenvolvimento web');
+    formulario.append('turma', '3º ano');
+    formulario.append('orientador', 'Prof. Carlos Souza');
+    formulario.append('ano', String(new Date().getFullYear()));
+    formulario.append('pdf', new Blob(['arquivo que não é PDF'], { type: 'application/pdf' }), 'falso.pdf');
+
+    const resposta = await requisicao('/tcc/add', {
+        method: 'POST',
+        headers: { cookie: cookieAluno },
+        body: formulario,
+    });
+
+    assert.equal(resposta.status, 400);
+    assert.match(await resposta.text(), /Envie apenas arquivos PDF/);
 });
 
 test('filtra e ordena o catálogo de TCCs', async () => {
