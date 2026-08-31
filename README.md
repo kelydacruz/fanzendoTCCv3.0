@@ -20,7 +20,6 @@ O **AcervoTCC** é uma plataforma web acadêmica para guardar trabalhos concluí
 - trilha pública “Aprenda a fazer seu TCC” com 11 etapas;
 - exploração dos trabalhos por curso na página inicial;
 - interface responsiva e acessível;
-- identidade visual institucional em tons de azul;
 - modo demonstração quando o MongoDB não está configurado;
 - execução local e entrada preparada para a Vercel.
 
@@ -33,23 +32,6 @@ O **AcervoTCC** é uma plataforma web acadêmica para guardar trabalhos concluí
 - `bcryptjs` para senhas;
 - `multer` para arquivos PDF;
 - `helmet` e limite de tentativas de login.
-
-## Segurança aplicada
-
-- dependências mantidas em versões sem alertas conhecidos no `npm audit`;
-- senhas armazenadas com hash;
-- sessão regenerada depois do login, cookie `httpOnly`, `sameSite` e `secure` em produção;
-- limite de tentativas de login;
-- permissões de edição e exclusão verificadas no servidor;
-- limite de 5 MB e verificação da assinatura interna dos arquivos PDF;
-- cabeçalhos de segurança configurados com Helmet;
-- mensagens exibidas pelo EJS com escape automático.
-
-## Próxima etapa recomendada: administração
-
-Uma área administrativa é recomendada, mas deve ser criada junto da definição final do login. O perfil `admin` não deve aparecer como opção no cadastro público. Ele deve ser concedido somente no banco de dados ou por outro administrador.
-
-O painel administrativo pode começar com três funções simples: aprovar ou ocultar publicações, moderar comentários e bloquear contas. Todas as rotas administrativas devem usar um middleware `somenteAdmin`; esconder links no HTML não substitui a verificação no servidor. Também é recomendado registrar quem realizou cada ação administrativa.
 
 ## Organização do projeto
 
@@ -163,4 +145,4 @@ O projeto já possui `vercel.json` e `api/index.js`. Antes de publicar, cadastre
 
 ## Limites desta etapa
 
-A autenticação existente foi mantida sem novas decisões de papéis nesta etapa. A forma final de login, cadastro, confirmação de professores e criação do primeiro administrador será definida posteriormente. Proteção CSRF, recuperação de senha, notificações e armazenamento externo dos PDFs também devem ser tratados antes de uma implantação real.
+A autenticação existente foi mantida sem novas decisões nesta etapa. A forma final de login, cadastro e confirmação de perfis será definida posteriormente. Recuperação de senha, aprovação administrativa, notificações e armazenamento externo dos PDFs também podem ser tratados em uma etapa futura.
