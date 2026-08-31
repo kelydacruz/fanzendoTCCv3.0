@@ -131,6 +131,10 @@ test('protege páginas privadas e respeita o perfil do usuário', async () => {
     assert.equal(semLogin.status, 302);
     assert.match(semLogin.headers.get('location'), /^\/entrar/);
 
+    const codigoSemLogin = await requisicao('/confirmar-codigo');
+    assert.equal(codigoSemLogin.status, 302);
+    assert.equal(codigoSemLogin.headers.get('location'), '/entrar');
+
     const cookieProfessor = await entrar('professora@exemplo.com', '123456');
     const publicarTcc = await requisicao('/tcc/add', { headers: { cookie: cookieProfessor } });
     assert.equal(publicarTcc.status, 302);

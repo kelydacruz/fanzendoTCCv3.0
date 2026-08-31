@@ -25,10 +25,13 @@ app.set('view engine', 'ejs');
 app.set('views', join(root, 'views'));
 
 app.use(helmet({
+    crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
     contentSecurityPolicy: {
         directives: {
-            "script-src": ["'self'"],
-            "img-src": ["'self'", 'data:'],
+            'script-src': ["'self'", 'https://accounts.google.com'],
+            'connect-src': ["'self'", 'https://accounts.google.com'],
+            'frame-src': ['https://accounts.google.com'],
+            'img-src': ["'self'", 'data:'],
         },
     },
 }));
@@ -71,6 +74,11 @@ app.use(async (req, res, next) => {
 });
 
 app.use(adicionarUsuarioNasTelas);
+
+app.use((req, res, next) => {
+    res.locals.googleClientId = process.env.GOOGLE_CLIENT_ID || '';
+    next();
+});
 
 app.locals.formatarData = (data) => new Intl.DateTimeFormat('pt-BR').format(new Date(data));
 app.locals.formatarNumero = (valor) => new Intl.NumberFormat('pt-BR').format(Number(valor) || 0);

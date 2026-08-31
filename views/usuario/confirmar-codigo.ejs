@@ -1,0 +1,38 @@
+<%- include('../partials/header') %>
+
+<section class="secao secao-formulario">
+    <div class="container confirmacao-layout">
+        <div class="confirmacao-icone" aria-hidden="true">6</div>
+        <span class="destaque">Última etapa</span>
+        <h1>Confira seu e-mail</h1>
+        <p>Enviamos um código de 6 números para <strong><%= emailMascarado %></strong>.</p>
+
+        <form class="formulario bloco confirmacao-card" action="/confirmar-codigo" method="post">
+            <% if (erro) { %><div class="erro-form" role="alert"><%= erro %></div><% } %>
+            <% if (mensagemCodigo) { %><div class="sucesso-form" role="status"><%= mensagemCodigo %></div><% } %>
+
+            <label for="codigo">Código de confirmação</label>
+            <input id="codigo"
+                class="campo-codigo"
+                name="codigo"
+                inputmode="numeric"
+                autocomplete="one-time-code"
+                pattern="[0-9]{6}"
+                minlength="6"
+                maxlength="6"
+                placeholder="000000"
+                autofocus
+                required>
+
+            <button class="btn btn-primario btn-largura" type="submit">Confirmar e entrar</button>
+        </form>
+
+        <form class="reenvio-codigo" action="/confirmar-codigo/reenviar" method="post">
+            <span>Não recebeu?</span>
+            <button class="btn btn-texto" type="submit">Enviar outro código</button>
+        </form>
+        <a class="voltar-login" href="/entrar">Voltar para o login</a>
+    </div>
+</section>
+
+<%- include('../partials/footer') %>

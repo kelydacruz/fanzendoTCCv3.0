@@ -1126,6 +1126,103 @@ input[type="file"] {
     font-size: 0.85rem;
 }
 
+.sucesso-form {
+    padding: 11px 13px;
+    margin-bottom: 18px;
+    color: #165f43;
+    background: #ecf8f2;
+    border: 1px solid #bce5d2;
+    border-radius: 9px;
+    font-size: 0.85rem;
+}
+
+.separador-login {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 22px 0;
+    color: var(--texto-suave);
+    font-size: 0.78rem;
+    font-weight: 750;
+    text-transform: uppercase;
+}
+
+.separador-login::before,
+.separador-login::after {
+    height: 1px;
+    flex: 1;
+    content: "";
+    background: var(--linha);
+}
+
+.google-login {
+    display: flex;
+    min-height: 44px;
+    justify-content: center;
+}
+
+.confirmacao-layout {
+    display: flex;
+    max-width: 620px;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+}
+
+.confirmacao-layout h1 {
+    margin: 12px 0;
+    font-size: clamp(2rem, 5vw, 3.1rem);
+}
+
+.confirmacao-layout > p {
+    max-width: 520px;
+    color: var(--texto-suave);
+}
+
+.confirmacao-icone {
+    display: grid;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 18px;
+    place-items: center;
+    color: var(--branco);
+    background: linear-gradient(135deg, var(--azul), var(--azul-escuro));
+    border-radius: 18px;
+    box-shadow: 0 14px 30px rgba(29, 78, 216, 0.24);
+    font-size: 1.8rem;
+    font-weight: 900;
+}
+
+.confirmacao-card {
+    width: 100%;
+    max-width: 480px;
+    margin-top: 22px;
+    text-align: left;
+}
+
+.confirmacao-card .campo-codigo {
+    font-size: 1.65rem;
+    font-weight: 850;
+    letter-spacing: 0.42em;
+    text-align: center;
+}
+
+.reenvio-codigo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 12px;
+    color: var(--texto-suave);
+    font-size: 0.85rem;
+}
+
+.voltar-login {
+    color: var(--azul);
+    font-size: 0.84rem;
+    font-weight: 800;
+}
+
 .credenciais-demo {
     display: grid;
     gap: 4px;

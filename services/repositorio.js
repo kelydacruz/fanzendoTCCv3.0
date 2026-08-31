@@ -36,8 +36,15 @@ function preencherPublicacaoDemo(publicacao) {
 }
 
 export async function buscarUsuarioPorEmail(email) {
-    if (usandoMongo()) return Usuario.findOne({ email: normalizarTexto(email) });
+    if (usandoMongo()) {
+        return Usuario.findOne({ email: normalizarTexto(email) }).select('+senha +googleId');
+    }
     return usuarios.find((usuario) => usuario.email === normalizarTexto(email)) || null;
+}
+
+export async function buscarUsuarioPorGoogleId(googleId) {
+    if (!usandoMongo() || !googleId) return null;
+    return Usuario.findOne({ googleId }).select('+senha +googleId');
 }
 
 export async function buscarUsuarioPorId(id) {
@@ -53,6 +60,24 @@ export async function cadastrarUsuario(dados) {
     const usuario = { id: novoId(), ...dados };
     usuarios.push(usuario);
     return usuario;
+}
+
+export async function vincularContaGoogle(usuarioId, googleId) {
+    if (!usandoMongo() || !idValido(usuarioId)) return null;
+    return Usuario.findByIdAndUpdate(
+        usuarioId,
+        { googleId },
+        { new: true, runValidators: true },
+    ).select('+senha +googleId');
+}
+
+export async function confirmarAcessoUsuario(usuarioId) {
+    if (!usandoMongo() || !idValido(usuarioId)) return buscarUsuarioPorId(usuarioId);
+    return Usuario.findByIdAndUpdate(
+        usuarioId,
+        { emailVerificado: true, ultimoLogin: new Date() },
+        { new: true },
+    );
 }
 
 export async function listarTccs({

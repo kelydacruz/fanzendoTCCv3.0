@@ -4,14 +4,15 @@
     <div class="container formulario-layout">
         <div class="formulario-apresentacao">
             <span class="destaque">Bem-vindo de volta</span>
-            <h1>Entre para publicar e comentar.</h1>
-            <p>A consulta ao acervo é livre. A conta identifica a autoria das contribuições.</p>
+            <h1>Um acesso simples, com uma confirmação a mais.</h1>
+            <p>Entre com senha ou Google. Nas duas opções, enviaremos um código temporário para proteger sua conta.</p>
 
             <% if (modoDemo) { %>
                 <div class="credenciais-demo">
                     <strong>Contas para testar</strong>
                     <span>Aluno: aluna@exemplo.com / 123456</span>
                     <span>Professor: professora@exemplo.com / 123456</span>
+                    <span>No modo demonstração, o código por e-mail é dispensado.</span>
                 </div>
             <% } %>
         </div>
@@ -27,9 +28,37 @@
             <input id="senha" type="password" name="senha" autocomplete="current-password" required>
 
             <button class="btn btn-primario btn-largura" type="submit">Entrar</button>
+
+            <% if (googleClientId) { %>
+                <div class="separador-login"><span>ou</span></div>
+                <div class="google-login">
+                    <div id="g_id_onload"
+                        data-client_id="<%= googleClientId %>"
+                        data-callback="receberCredencialGoogle"
+                        data-nonce="<%= googleNonce %>"
+                        data-auto_prompt="false"></div>
+                    <div class="g_id_signin"
+                        data-type="standard"
+                        data-shape="rectangular"
+                        data-theme="outline"
+                        data-text="continue_with"
+                        data-size="large"
+                        data-logo_alignment="left"
+                        data-width="360"></div>
+                </div>
+            <% } %>
+
             <p class="ajuda-form">Ainda não possui conta? <a href="/cadastro">Cadastre-se</a>.</p>
         </form>
     </div>
 </section>
+
+<% if (googleClientId) { %>
+    <form id="form-google" class="sr-only" action="/entrar/google" method="post">
+        <input id="credencial-google" name="credential" type="hidden">
+    </form>
+    <script src="/public/js/google-login.js" defer></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+<% } %>
 
 <%- include('../partials/footer') %>
