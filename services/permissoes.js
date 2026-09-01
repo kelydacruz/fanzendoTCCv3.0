@@ -10,3 +10,15 @@ export function usuarioEhDono(usuario, publicacao) {
 export function podePublicarTcc(usuario) {
     return usuario?.perfil === 'aluno';
 }
+
+export function usuarioEhProfessor(usuario) {
+    return usuario?.perfil === 'professor';
+}
+
+export function usuarioEhAdmin(usuario) {
+    return usuario?.perfil === 'admin';
+}
+
+export function podeModerar(usuario) {
+    return usuarioEhProfessor(usuario) || usuarioEhAdmin(usuario);
+}

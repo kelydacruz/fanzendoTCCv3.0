@@ -1,0 +1,30 @@
+<%- include('../partials/header') %>
+
+<section class="topo-pagina topo-admin">
+    <div class="container">
+        <span class="destaque">Acesso restrito</span>
+        <h1>Área administrativa</h1>
+        <p>Gerencie a organização acadêmica, os usuários e o conteúdo do AcervoTCC.</p>
+    </div>
+</section>
+
+<section class="secao container">
+    <%- include('_nav') %>
+    <div class="metricas-painel metricas-admin">
+        <article><strong><%= resumo.totalUsuarios %></strong><span>Usuários</span></article>
+        <article><strong><%= resumo.totalAlunos %></strong><span>Alunos</span></article>
+        <article><strong><%= resumo.totalProfessores %></strong><span>Professores</span></article>
+        <article><strong><%= resumo.tccsPendentes %></strong><span>TCCs em acompanhamento</span></article>
+        <article><strong><%= resumo.totalCursos %></strong><span>Cursos</span></article>
+        <article><strong><%= resumo.totalTurmas %></strong><span>Turmas</span></article>
+        <article><strong><%= resumo.totalIdeias %></strong><span>Ideias compartilhadas</span></article>
+    </div>
+
+    <div class="grade grade-3 admin-atalhos">
+        <a class="bloco" href="/admin/usuarios"><span class="etiqueta">Contas</span><h2>Gerenciar usuários</h2><p>Consulte perfis e bloqueie acessos quando necessário.</p></a>
+        <a class="bloco" href="/admin/cursos"><span class="etiqueta">Acadêmico</span><h2>Organizar cursos</h2><p>Cadastre os cursos técnicos disponíveis.</p></a>
+        <a class="bloco" href="/admin/tccs"><span class="etiqueta">Acervo</span><h2>Moderar TCCs</h2><p>Acompanhe trabalhos pendentes, aprovados e devolvidos.</p></a>
+    </div>
+</section>
+
+<%- include('../partials/footer') %>

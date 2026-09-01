@@ -18,20 +18,21 @@
             <label for="email">E-mail confirmado pelo Google</label>
             <input id="email" type="email" value="<%= dados.email || '' %>" disabled>
 
-            <label for="perfil">Perfil *</label>
-            <select id="perfil" name="perfil" required>
-                <option value="">Selecione</option>
-                <option value="aluno" <%= dados.perfil === 'aluno' ? 'selected' : '' %>>Aluno</option>
-                <option value="professor" <%= dados.perfil === 'professor' ? 'selected' : '' %>>Professor</option>
-            </select>
+            <div class="perfil-confirmado">
+                Perfil identificado: <strong><%= dados.perfil === 'aluno' ? 'Aluno' : 'Professor' %></strong>
+            </div>
 
-            <label for="curso">Curso <small>(para aluno)</small></label>
-            <input id="curso" name="curso" value="<%= dados.curso || '' %>" maxlength="100">
+            <% if (dados.perfil === 'aluno') { %>
+                <label for="curso">Curso *</label>
+                <input id="curso" name="curso" value="<%= dados.curso || '' %>" maxlength="100" required>
+            <% } %>
 
-            <label for="areaAtuacao">Área de atuação <small>(para professor)</small></label>
-            <input id="areaAtuacao" name="areaAtuacao" value="<%= dados.areaAtuacao || '' %>" maxlength="100">
+            <% if (dados.perfil === 'professor') { %>
+                <label for="areaAtuacao">Área de atuação *</label>
+                <input id="areaAtuacao" name="areaAtuacao" value="<%= dados.areaAtuacao || '' %>" maxlength="100" required>
+            <% } %>
 
-            <button class="btn btn-primario btn-largura" type="submit">Salvar e receber o código</button>
+            <button class="btn btn-primario btn-largura" type="submit">Salvar e acessar</button>
         </form>
     </div>
 </section>

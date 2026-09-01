@@ -1,0 +1,35 @@
+<%- include('../partials/header') %>
+
+<section class="topo-pagina">
+    <div class="container container-form">
+        <a class="voltar" href="/painel">← Voltar para o painel</a>
+        <span class="destaque">Minha conta</span>
+        <h1>Segurança da conta</h1>
+        <p>Gerencie as formas disponíveis para entrar no AcervoTCC.</p>
+    </div>
+</section>
+
+<section class="secao container container-form">
+    <div class="grade-seguranca">
+        <article class="bloco item-seguranca">
+            <div>
+                <span class="etiqueta"><%= temGoogle ? 'Ativo' : 'Não vinculado' %></span>
+                <h2>Entrar com Google</h2>
+                <p><%= temGoogle ? 'Sua conta Google está vinculada e pode ser usada diretamente.' : 'Entre uma vez pelo Google com o mesmo e-mail para vincular.' %></p>
+            </div>
+        </article>
+
+        <article class="bloco item-seguranca">
+            <div>
+                <span class="etiqueta"><%= temSenha ? 'Configurada' : 'Ainda não criada' %></span>
+                <h2>Senha do AcervoTCC</h2>
+                <p>Para criar ou trocar a senha, enviaremos um único código ao seu e-mail.</p>
+            </div>
+            <form action="/conta/definir-senha/solicitar" method="post">
+                <button class="btn btn-primario" type="submit"><%= temSenha ? 'Trocar senha' : 'Criar senha' %></button>
+            </form>
+        </article>
+    </div>
+</section>
+
+<%- include('../partials/footer') %>

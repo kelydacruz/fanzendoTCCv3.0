@@ -32,11 +32,17 @@
                 <a class="<%= caminhoAtual.startsWith('/ideia') ? 'ativo' : '' %>" href="/ideia/lst">Ideias</a>
                 <a class="<%= caminhoAtual === '/aprender' ? 'ativo' : '' %>" href="/aprender">Aprender</a>
                 <a class="<%= caminhoAtual === '/sobre' ? 'ativo' : '' %>" href="/sobre">Sobre</a>
+                <% if (usuario?.perfil === 'professor') { %>
+                    <a class="<%= caminhoAtual.startsWith('/orientacoes') ? 'ativo' : '' %>" href="/orientacoes">Orientações</a>
+                <% } %>
+                <% if (usuario?.perfil === 'admin') { %>
+                    <a class="<%= caminhoAtual.startsWith('/admin') ? 'ativo' : '' %>" href="/admin">Administração</a>
+                <% } %>
             </nav>
 
             <div class="acoes-usuario">
                 <% if (usuario) { %>
-                    <a class="usuario-link" href="/painel">
+                    <a class="usuario-link" href="<%= usuario.perfil === 'admin' ? '/admin' : '/painel' %>">
                         <span class="usuario-avatar" aria-hidden="true"><%= usuario.nome.charAt(0).toUpperCase() %></span>
                         <span><%= usuario.nome.split(' ')[0] %></span>
                     </a>

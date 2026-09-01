@@ -1,7 +1,7 @@
 import express from 'express';
 import multer from 'multer';
 import TccController from '../controllers/TccController.js';
-import { somenteAutenticado, somenteAluno } from '../middleware/autenticacao.js';
+import { somenteAutenticado, somenteAluno, somenteProfessor } from '../middleware/autenticacao.js';
 
 const router = express.Router();
 const controle = new TccController();
@@ -30,6 +30,8 @@ router.get('/tcc/edt/:id', somenteAluno, controle.openEdt);
 router.post('/tcc/edt/:id', somenteAluno, upload.single('pdf'), validarAssinaturaPdf, controle.edt);
 router.post('/tcc/del/:id', somenteAluno, controle.del);
 router.post('/tcc/comentario/:id', somenteAutenticado, controle.comment);
+router.get('/orientacoes', somenteProfessor, controle.orientacoes);
+router.post('/orientacoes/:id/avaliar', somenteProfessor, controle.avaliar);
 
 router.get('/tccs', (req, res) => res.redirect(`/tcc/lst${req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : ''}`));
 router.get('/tccs/:id', (req, res) => res.redirect(`/tcc/detalhes/${req.params.id}`));

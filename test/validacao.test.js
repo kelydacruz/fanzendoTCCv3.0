@@ -18,9 +18,10 @@ test('aceita somente e-mails com estrutura básica válida', () => {
     assert.equal(emailValido('email-incompleto'), false);
 });
 
-test('aceita os dois perfis previstos nos requisitos', () => {
+test('aceita somente os perfis previstos no sistema', () => {
     assert.equal(perfilValido('aluno'), true);
     assert.equal(perfilValido('professor'), true);
+    assert.equal(perfilValido('admin'), true);
     assert.equal(perfilValido('visitante'), false);
 });
 

@@ -25,8 +25,15 @@
     </div>
 
     <div class="campo">
-        <label for="orientador">Professor orientador *</label>
-        <input id="orientador" name="orientador" value="<%= dados.orientador || '' %>" required maxlength="100">
+        <label for="orientadorUsuario">Professor orientador *</label>
+        <% const orientadorSelecionado = idTexto(dados.orientadorUsuario || dados.orientadorId); %>
+        <select id="orientadorUsuario" name="orientadorUsuario" required>
+            <option value="">Selecione</option>
+            <% professores.forEach((professor) => { %>
+                <option value="<%= idTexto(professor) %>" <%= orientadorSelecionado === idTexto(professor) ? 'selected' : '' %>><%= professor.nome %> — <%= professor.areaAtuacao || 'Professor' %></option>
+            <% }) %>
+        </select>
+        <% if (!professores.length) { %><small class="ajuda-campo">Nenhum professor confirmado está disponível. Peça à administração para conferir os cadastros.</small><% } %>
     </div>
 
     <div class="campo">

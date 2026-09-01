@@ -3,11 +3,15 @@ import Usuario from '../models/usuario.js';
 import Tcc from '../models/tcc.js';
 import Ideia from '../models/ideia.js';
 import Comentario from '../models/comentario.js';
+import Curso from '../models/curso.js';
+import Turma from '../models/turma.js';
 import {
     usuarios,
     tccs,
     ideias,
     comentarios,
+    cursos,
+    turmas,
     novoId,
 } from '../data/mock.js';
 import { normalizarTexto, escaparRegex } from './texto.js';
@@ -24,6 +28,8 @@ function usuarioPublico(usuario) {
         perfil: usuario.perfil,
         curso: usuario.curso || '',
         areaAtuacao: usuario.areaAtuacao || '',
+        ativo: usuario.ativo !== false,
+        emailVerificado: usuario.emailVerificado === true,
     };
 }
 
@@ -32,7 +38,11 @@ function autorDemo(autorId) {
 }
 
 function preencherPublicacaoDemo(publicacao) {
-    return { ...publicacao, autor: autorDemo(publicacao.autorId) };
+    return {
+        ...publicacao,
+        autor: autorDemo(publicacao.autorId),
+        orientadorUsuario: autorDemo(publicacao.orientadorId),
+    };
 }
 
 export async function buscarUsuarioPorEmail(email) {
@@ -53,6 +63,14 @@ export async function buscarUsuarioPorId(id) {
         return Usuario.findById(id);
     }
     return usuarios.find((usuario) => usuario.id === String(id)) || null;
+}
+
+export async function buscarUsuarioComCredenciaisPorId(id) {
+    if (usandoMongo()) {
+        if (!idValido(id)) return null;
+        return Usuario.findById(id).select('+senha +googleId');
+    }
+    return buscarUsuarioPorId(id);
 }
 
 export async function cadastrarUsuario(dados) {
@@ -80,6 +98,81 @@ export async function confirmarAcessoUsuario(usuarioId) {
     );
 }
 
+export async function registrarLoginUsuario(usuarioId) {
+    if (!usandoMongo() || !idValido(usuarioId)) return buscarUsuarioPorId(usuarioId);
+    return Usuario.findByIdAndUpdate(
+        usuarioId,
+        { ultimoLogin: new Date() },
+        { new: true },
+    );
+}
+
+export async function atualizarSenhaUsuario(usuarioId, senha) {
+    if (usandoMongo()) {
+        if (!idValido(usuarioId)) return null;
+        return Usuario.findByIdAndUpdate(
+            usuarioId,
+            { senha },
+            { new: true, runValidators: true },
+        );
+    }
+    const usuario = usuarios.find((item) => item.id === String(usuarioId));
+    if (!usuario) return null;
+    usuario.senha = senha;
+    return usuario;
+}
+
+export async function listarUsuarios(q = '') {
+    if (usandoMongo()) {
+        const filtro = q ? {
+            $or: [
+                { nome: new RegExp(escaparRegex(q), 'i') },
+                { email: new RegExp(escaparRegex(q), 'i') },
+            ],
+        } : {};
+        return Usuario.find(filtro).sort({ nome: 1 }).lean();
+    }
+    const termo = normalizarTexto(q);
+    return usuarios
+        .filter((usuario) => !termo || normalizarTexto(`${usuario.nome} ${usuario.email}`).includes(termo))
+        .map(usuarioPublico)
+        .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+}
+
+export async function alterarStatusUsuario(usuarioId, ativo) {
+    if (usandoMongo()) {
+        if (!idValido(usuarioId)) return null;
+        return Usuario.findByIdAndUpdate(usuarioId, { ativo }, { new: true });
+    }
+    const usuario = usuarios.find((item) => item.id === String(usuarioId));
+    if (!usuario) return null;
+    usuario.ativo = ativo;
+    return usuario;
+}
+
+export async function atualizarPerfilUsuario(usuarioId, perfil) {
+    if (usandoMongo()) {
+        if (!idValido(usuarioId)) return null;
+        return Usuario.findByIdAndUpdate(usuarioId, { perfil }, { new: true, runValidators: true })
+            .select('+senha +googleId');
+    }
+    const usuario = usuarios.find((item) => item.id === String(usuarioId));
+    if (!usuario) return null;
+    usuario.perfil = perfil;
+    return usuario;
+}
+
+export async function listarProfessores() {
+    if (usandoMongo()) {
+        return Usuario.find({ perfil: 'professor', ativo: { $ne: false }, emailVerificado: true })
+            .sort({ nome: 1 })
+            .lean();
+    }
+    return usuarios
+        .filter((usuario) => usuario.perfil === 'professor' && usuario.ativo !== false)
+        .map(usuarioPublico);
+}
+
 export async function listarTccs({
     q = '',
     curso = '',
@@ -89,10 +182,10 @@ export async function listarTccs({
     ordem = 'recentes',
 } = {}) {
     if (usandoMongo()) {
-        const filtros = {};
+        const filtros = { $and: [{ $or: [{ status: 'publicado' }, { status: { $exists: false } }] }] };
         if (q) {
             const termo = new RegExp(escaparRegex(q), 'i');
-            filtros.$or = [
+            filtros.$and.push({ $or: [
                 { titulo: termo },
                 { tema: termo },
                 { resumo: termo },
@@ -100,7 +193,7 @@ export async function listarTccs({
                 { curso: termo },
                 { area: termo },
                 { palavrasChave: termo },
-            ];
+            ] });
         }
         if (curso) filtros.curso = new RegExp(`^${escaparRegex(curso)}$`, 'i');
         if (ano) filtros.ano = Number(ano);
@@ -134,7 +227,8 @@ export async function listarTccs({
                 autor?.nome,
                 ...tcc.palavrasChave,
             ].join(' '));
-            return (!termo || texto.includes(termo))
+            return (tcc.status === 'publicado' || !tcc.status)
+                && (!termo || texto.includes(termo))
                 && (!curso || normalizarTexto(tcc.curso) === normalizarTexto(curso))
                 && (!ano || String(tcc.ano) === String(ano))
                 && (!area || normalizarTexto(tcc.area) === normalizarTexto(area))
@@ -155,7 +249,10 @@ export async function listarTccs({
 export async function buscarTccPorId(id) {
     if (usandoMongo()) {
         if (!idValido(id)) return null;
-        return Tcc.findById(id).populate('autor', 'nome perfil curso').lean();
+        return Tcc.findById(id)
+            .populate('autor', 'nome perfil curso')
+            .populate('orientadorUsuario', 'nome email perfil')
+            .lean();
     }
     const tcc = tccs.find((item) => item.id === String(id));
     return tcc ? preencherPublicacaoDemo(tcc) : null;
@@ -168,12 +265,63 @@ export async function cadastrarTcc(dados) {
         createdAt: new Date(),
         visualizacoes: 0,
         downloads: 0,
+        status: 'em_analise',
+        feedbackOrientador: '',
         ...dados,
         autorId: String(dados.autor),
     };
     delete tcc.autor;
     tccs.push(tcc);
     return preencherPublicacaoDemo(tcc);
+}
+
+export async function buscarTccDoAluno(usuarioId) {
+    if (usandoMongo()) {
+        if (!idValido(usuarioId)) return null;
+        return Tcc.findOne({ autor: usuarioId })
+            .populate('autor', 'nome perfil curso')
+            .populate('orientadorUsuario', 'nome email perfil')
+            .lean();
+    }
+    const tcc = tccs.find((item) => item.autorId === String(usuarioId));
+    return tcc ? preencherPublicacaoDemo(tcc) : null;
+}
+
+export async function listarTccsDoOrientador(usuarioId) {
+    if (usandoMongo()) {
+        if (!idValido(usuarioId)) return [];
+        return Tcc.find({ orientadorUsuario: usuarioId })
+            .populate('autor', 'nome email curso perfil')
+            .sort({ updatedAt: -1 })
+            .lean();
+    }
+    return tccs
+        .filter((item) => item.orientadorId === String(usuarioId))
+        .map(preencherPublicacaoDemo);
+}
+
+export async function listarTodosTccs() {
+    if (usandoMongo()) {
+        return Tcc.find({})
+            .populate('autor', 'nome email curso perfil')
+            .populate('orientadorUsuario', 'nome email perfil')
+            .sort({ updatedAt: -1 })
+            .lean();
+    }
+    return tccs.map(preencherPublicacaoDemo);
+}
+
+export async function avaliarTcc(id, { status, feedbackOrientador }) {
+    const dados = {
+        status,
+        feedbackOrientador: String(feedbackOrientador || '').trim(),
+        avaliadoEm: new Date(),
+    };
+    if (usandoMongo()) {
+        if (!idValido(id)) return null;
+        return Tcc.findByIdAndUpdate(id, dados, { new: true, runValidators: true });
+    }
+    return atualizarTcc(id, dados);
 }
 
 export async function atualizarTcc(id, dados) {
@@ -357,5 +505,94 @@ export async function resumoDoPainel(usuarioId) {
         totalTccs: tccs.filter((tcc) => tcc.autorId === String(usuarioId)).length,
         totalIdeias: ideias.filter((ideia) => ideia.autorId === String(usuarioId)).length,
         totalComentarios: comentarios.filter((comentario) => comentario.autorId === String(usuarioId)).length,
+    };
+}
+
+function preencherTurmaDemo(turma) {
+    const curso = cursos.find((item) => item.id === turma.cursoId) || null;
+    return { ...turma, curso };
+}
+
+export async function listarCursos({ somenteAtivos = false } = {}) {
+    if (usandoMongo()) {
+        const filtro = somenteAtivos ? { ativo: true } : {};
+        return Curso.find(filtro).sort({ nome: 1 }).lean();
+    }
+    return cursos
+        .filter((curso) => !somenteAtivos || curso.ativo)
+        .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+}
+
+export async function cadastrarCurso(dados) {
+    if (usandoMongo()) return Curso.create(dados);
+    const curso = { id: novoId(), ativo: true, ...dados };
+    cursos.push(curso);
+    return curso;
+}
+
+export async function atualizarCurso(id, dados) {
+    if (usandoMongo()) {
+        if (!idValido(id)) return null;
+        return Curso.findByIdAndUpdate(id, dados, { new: true, runValidators: true });
+    }
+    const indice = cursos.findIndex((item) => item.id === String(id));
+    if (indice < 0) return null;
+    cursos[indice] = { ...cursos[indice], ...dados };
+    return cursos[indice];
+}
+
+export async function listarTurmas({ somenteAtivas = false } = {}) {
+    if (usandoMongo()) {
+        const filtro = somenteAtivas ? { ativo: true } : {};
+        return Turma.find(filtro).populate('curso', 'nome sigla ativo').sort({ ano: -1, nome: 1 }).lean();
+    }
+    return turmas
+        .filter((turma) => !somenteAtivas || turma.ativo)
+        .map(preencherTurmaDemo)
+        .sort((a, b) => b.ano - a.ano || a.nome.localeCompare(b.nome, 'pt-BR'));
+}
+
+export async function cadastrarTurma(dados) {
+    if (usandoMongo()) return Turma.create(dados);
+    const turma = { id: novoId(), ativo: true, cursoId: String(dados.curso), ...dados };
+    delete turma.curso;
+    turmas.push(turma);
+    return preencherTurmaDemo(turma);
+}
+
+export async function atualizarTurma(id, dados) {
+    if (usandoMongo()) {
+        if (!idValido(id)) return null;
+        return Turma.findByIdAndUpdate(id, dados, { new: true, runValidators: true });
+    }
+    const indice = turmas.findIndex((item) => item.id === String(id));
+    if (indice < 0) return null;
+    const cursoId = dados.curso ? String(dados.curso) : turmas[indice].cursoId;
+    turmas[indice] = { ...turmas[indice], ...dados, cursoId };
+    delete turmas[indice].curso;
+    return preencherTurmaDemo(turmas[indice]);
+}
+
+export async function resumoAdministrativo() {
+    if (usandoMongo()) {
+        const [totalUsuarios, totalAlunos, totalProfessores, tccsPendentes, totalCursos, totalTurmas, totalIdeias] = await Promise.all([
+            Usuario.countDocuments(),
+            Usuario.countDocuments({ perfil: 'aluno' }),
+            Usuario.countDocuments({ perfil: 'professor' }),
+            Tcc.countDocuments({ status: { $in: ['em_analise', 'correcao_solicitada'] } }),
+            Curso.countDocuments(),
+            Turma.countDocuments(),
+            Ideia.countDocuments(),
+        ]);
+        return { totalUsuarios, totalAlunos, totalProfessores, tccsPendentes, totalCursos, totalTurmas, totalIdeias };
+    }
+    return {
+        totalUsuarios: usuarios.length,
+        totalAlunos: usuarios.filter((usuario) => usuario.perfil === 'aluno').length,
+        totalProfessores: usuarios.filter((usuario) => usuario.perfil === 'professor').length,
+        tccsPendentes: tccs.filter((tcc) => ['em_analise', 'correcao_solicitada'].includes(tcc.status)).length,
+        totalCursos: cursos.length,
+        totalTurmas: turmas.length,
+        totalIdeias: ideias.length,
     };
 }

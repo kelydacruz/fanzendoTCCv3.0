@@ -10,7 +10,7 @@
 
 <section class="secao container">
     <div class="grade grade-3 numeros-painel">
-        <article><strong><%= resumo.totalTccs %></strong><span>TCCs publicados</span></article>
+        <article><strong><%= resumo.totalTccs %></strong><span>TCCs cadastrados</span></article>
         <article><strong><%= resumo.totalIdeias %></strong><span>Ideias compartilhadas</span></article>
         <article><strong><%= resumo.totalComentarios %></strong><span>Comentários realizados</span></article>
     </div>
@@ -22,10 +22,14 @@
         </div>
         <div class="botoes-linha">
             <% if (usuario.perfil === 'aluno') { %>
-                <a class="btn btn-primario" href="/tcc/add">Publicar TCC</a>
+                <a class="btn btn-primario" href="/tcc/add">Meu TCC</a>
+            <% } %>
+            <% if (usuario.perfil === 'professor') { %>
+                <a class="btn btn-primario" href="/orientacoes">TCCs orientados</a>
             <% } %>
             <a class="btn btn-secundario" href="/ideia/add">Compartilhar ideia</a>
             <a class="btn btn-secundario" href="/tcc/lst">Consultar acervo</a>
+            <a class="btn btn-secundario" href="/conta/seguranca">Segurança da conta</a>
         </div>
     </div>
 </section>

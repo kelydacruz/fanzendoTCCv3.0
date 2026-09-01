@@ -1,0 +1,29 @@
+<%- include('../partials/header') %>
+
+<section class="topo-pagina"><div class="container"><span class="destaque">Administração</span><h1>Turmas técnicas</h1><p>Relacione cada turma a um curso cadastrado.</p></div></section>
+
+<section class="secao container">
+    <%- include('_nav') %>
+    <div class="admin-duas-colunas">
+        <form class="formulario bloco" action="/admin/turmas" method="post">
+            <h2>Nova turma</h2>
+            <% if (erro) { %><div class="erro-form" role="alert"><%= erro %></div><% } %>
+            <label for="nome">Nome *</label><input id="nome" name="nome" maxlength="50" required placeholder="3º ano A">
+            <label for="ano">Ano *</label><input id="ano" type="number" name="ano" min="2000" max="<%= new Date().getFullYear() + 5 %>" value="<%= new Date().getFullYear() %>" required>
+            <label for="curso">Curso *</label>
+            <select id="curso" name="curso" required><option value="">Selecione</option><% cursos.forEach((curso) => { %><option value="<%= idTexto(curso) %>"><%= curso.nome %></option><% }) %></select>
+            <button class="btn btn-primario" type="submit">Cadastrar turma</button>
+        </form>
+
+        <div class="lista-admin">
+            <% turmas.forEach((turma) => { %>
+                <article class="bloco item-admin">
+                    <div><span class="etiqueta"><%= turma.ano %></span><h2><%= turma.nome %></h2><p><%= turma.curso?.nome || 'Curso não informado' %> · <%= turma.ativo ? 'Ativa' : 'Inativa' %></p></div>
+                    <form action="/admin/turmas/<%= idTexto(turma) %>/status" method="post"><input type="hidden" name="ativo" value="<%= turma.ativo ? 'false' : 'true' %>"><button class="btn btn-secundario btn-pequeno" type="submit"><%= turma.ativo ? 'Desativar' : 'Reativar' %></button></form>
+                </article>
+            <% }) %>
+        </div>
+    </div>
+</section>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,37 @@
+<%- include('../partials/header') %>
+
+<section class="topo-pagina"><div class="container"><span class="destaque">Administração</span><h1>Usuários</h1><p>Consulte alunos, professores e administradores cadastrados.</p></div></section>
+
+<section class="secao container">
+    <%- include('_nav') %>
+    <form class="filtros bloco" action="/admin/usuarios" method="get">
+        <div class="campo campo-busca"><label for="q">Pesquisar</label><input id="q" name="q" value="<%= busca %>" placeholder="Nome ou e-mail"></div>
+        <button class="btn btn-primario" type="submit">Pesquisar</button>
+    </form>
+
+    <div class="tabela-responsiva bloco">
+        <table class="tabela-admin">
+            <thead><tr><th>Usuário</th><th>Perfil</th><th>Vínculo</th><th>Situação</th><th>Ação</th></tr></thead>
+            <tbody>
+                <% usuarios.forEach((item) => { %>
+                    <tr>
+                        <td><strong><%= item.nome %></strong><small><%= item.email %></small></td>
+                        <td><span class="status status-<%= item.perfil %>"><%= item.perfil %></span></td>
+                        <td><%= item.curso || item.areaAtuacao || 'Administração' %></td>
+                        <td><%= item.ativo === false ? 'Bloqueado' : 'Ativo' %></td>
+                        <td>
+                            <% if (idTexto(item) !== usuario.id) { %>
+                                <form action="/admin/usuarios/<%= idTexto(item) %>/status" method="post">
+                                    <input type="hidden" name="ativo" value="<%= item.ativo === false ? 'true' : 'false' %>">
+                                    <button class="btn btn-pequeno <%= item.ativo === false ? 'btn-primario' : 'btn-perigo' %>" type="submit"><%= item.ativo === false ? 'Reativar' : 'Bloquear' %></button>
+                                </form>
+                            <% } else { %><span class="texto-suave">Conta atual</span><% } %>
+                        </td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<%- include('../partials/footer') %>

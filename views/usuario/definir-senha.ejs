@@ -1,0 +1,23 @@
+<%- include('../partials/header') %>
+
+<section class="secao secao-formulario">
+    <div class="container formulario-layout">
+        <div class="formulario-apresentacao">
+            <span class="destaque">Segurança confirmada</span>
+            <h1>Defina sua senha.</h1>
+            <p>Depois disso, você poderá entrar tanto com Google quanto com e-mail e senha.</p>
+        </div>
+
+        <form class="formulario bloco" action="/conta/definir-senha" method="post">
+            <h2>Nova senha</h2>
+            <% if (erro) { %><div class="erro-form" role="alert"><%= erro %></div><% } %>
+            <label for="senha">Senha *</label>
+            <input id="senha" type="password" name="senha" autocomplete="new-password" minlength="8" maxlength="72" required>
+            <label for="confirmacao">Repita a senha *</label>
+            <input id="confirmacao" type="password" name="confirmacao" autocomplete="new-password" minlength="8" maxlength="72" required>
+            <button class="btn btn-primario btn-largura" type="submit">Salvar senha</button>
+        </form>
+    </div>
+</section>
+
+<%- include('../partials/footer') %>

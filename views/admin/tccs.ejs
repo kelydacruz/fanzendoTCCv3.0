@@ -1,0 +1,26 @@
+<%- include('../partials/header') %>
+
+<section class="topo-pagina"><div class="container"><span class="destaque">Administração</span><h1>Moderação de TCCs</h1><p>Acompanhe o caminho dos trabalhos até o acervo público.</p></div></section>
+
+<section class="secao container">
+    <%- include('_nav') %>
+    <div class="lista-admin">
+        <% tccs.forEach((tcc) => { %>
+            <article class="bloco item-tcc-admin">
+                <div>
+                    <span class="status status-<%= classeStatus(tcc.status || 'publicado') %>"><%= (tcc.status || 'publicado').replaceAll('_', ' ') %></span>
+                    <h2><a href="/tcc/detalhes/<%= idTexto(tcc) %>"><%= tcc.titulo %></a></h2>
+                    <p><strong>Aluno:</strong> <%= tcc.autor?.nome || 'Não informado' %> · <strong>Orientador:</strong> <%= tcc.orientadorUsuario?.nome || tcc.orientador %></p>
+                </div>
+                <form class="form-status" action="/admin/tccs/<%= idTexto(tcc) %>/status" method="post">
+                    <label>Situação<select name="status"><option value="em_analise" <%= tcc.status === 'em_analise' ? 'selected' : '' %>>Em análise</option><option value="correcao_solicitada" <%= tcc.status === 'correcao_solicitada' ? 'selected' : '' %>>Correção solicitada</option><option value="publicado" <%= (tcc.status || 'publicado') === 'publicado' ? 'selected' : '' %>>Publicado</option><option value="rejeitado" <%= tcc.status === 'rejeitado' ? 'selected' : '' %>>Rejeitado</option></select></label>
+                    <label>Observação<textarea name="feedbackOrientador" rows="2" maxlength="2000"><%= tcc.feedbackOrientador || '' %></textarea></label>
+                    <button class="btn btn-primario btn-pequeno" type="submit">Salvar</button>
+                </form>
+            </article>
+        <% }) %>
+        <% if (!tccs.length) { %><div class="estado-vazio bloco"><h2>Nenhum TCC cadastrado.</h2></div><% } %>
+    </div>
+</section>
+
+<%- include('../partials/footer') %>

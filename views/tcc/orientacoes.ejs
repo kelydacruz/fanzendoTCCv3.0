@@ -1,0 +1,29 @@
+<%- include('../partials/header') %>
+
+<section class="topo-pagina">
+    <div class="container">
+        <span class="destaque">Professor orientador</span>
+        <h1>TCCs orientados</h1>
+        <p>Analise os trabalhos enviados, peça correções ou aprove a publicação no acervo.</p>
+    </div>
+</section>
+
+<section class="secao container">
+    <div class="lista-admin">
+        <% tccs.forEach((tcc) => { %>
+            <article class="bloco item-tcc-admin">
+                <div>
+                    <span class="status status-<%= classeStatus(tcc.status || 'em_analise') %>"><%= (tcc.status || 'em_analise').replaceAll('_', ' ') %></span>
+                    <h2><a href="/tcc/detalhes/<%= idTexto(tcc) %>"><%= tcc.titulo %></a></h2>
+                    <p><strong>Aluno:</strong> <%= tcc.autor?.nome || 'Não informado' %> · <%= tcc.curso %> · <%= tcc.turma %></p>
+                </div>
+                <a class="btn btn-secundario" href="/tcc/detalhes/<%= idTexto(tcc) %>">Analisar trabalho</a>
+            </article>
+        <% }) %>
+        <% if (!tccs.length) { %>
+            <div class="estado-vazio bloco"><h2>Nenhum TCC foi enviado para você.</h2><p>Quando um aluno selecionar seu nome como orientador, o trabalho aparecerá aqui.</p></div>
+        <% } %>
+    </div>
+</section>
+
+<%- include('../partials/footer') %>

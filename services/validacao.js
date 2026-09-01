@@ -10,7 +10,7 @@ export function emailValido(valor) {
 }
 
 export function perfilValido(valor) {
-    return ['aluno', 'professor'].includes(valor);
+    return ['aluno', 'professor', 'admin'].includes(valor);
 }
 
 export function anoValido(valor) {

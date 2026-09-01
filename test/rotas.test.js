@@ -46,6 +46,16 @@ async function entrar(email, senha) {
     return resposta.headers.get('set-cookie').split(';')[0];
 }
 
+async function entrarAdmin() {
+    const resposta = await enviarFormulario('/entrar', {
+        email: 'admin@exemplo.com',
+        senha: '123456',
+    });
+    assert.equal(resposta.status, 302);
+    assert.match(resposta.headers.get('location'), /^\/admin/);
+    return resposta.headers.get('set-cookie').split(';')[0];
+}
+
 test('renderiza páginas públicas e arquivos estáticos', async () => {
     const paginas = [
         ['/', 'Encontre referências'],
@@ -218,4 +228,46 @@ test('publica um TCC e bloqueia conteúdo configurado como inadequado', async ()
 
     assert.equal(conteudoBloqueado.status, 400);
     assert.match(await conteudoBloqueado.text(), /termo não permitido/);
+});
+
+test('protege e renderiza os módulos da área administrativa', async () => {
+    const semLogin = await requisicao('/admin');
+    assert.equal(semLogin.status, 302);
+    assert.match(semLogin.headers.get('location'), /^\/entrar/);
+
+    const cookieProfessor = await entrar('professora@exemplo.com', '123456');
+    const adminNegado = await requisicao('/admin', { headers: { cookie: cookieProfessor } });
+    assert.equal(adminNegado.status, 302);
+    assert.match(adminNegado.headers.get('location'), /^\/painel/);
+
+    const cookieAdmin = await entrarAdmin();
+    for (const caminho of ['/admin', '/admin/usuarios', '/admin/cursos', '/admin/turmas', '/admin/tccs', '/admin/ideias']) {
+        const resposta = await requisicao(caminho, { headers: { cookie: cookieAdmin } });
+        assert.equal(resposta.status, 200, caminho);
+    }
+});
+
+test('professor pede correções e aprova a publicação no acervo', async () => {
+    const cookieProfessor = await entrar('professora@exemplo.com', '123456');
+    const orientacoes = await requisicao('/orientacoes', { headers: { cookie: cookieProfessor } });
+    assert.equal(orientacoes.status, 200);
+    assert.match(await orientacoes.text(), /Horta inteligente/i);
+
+    const correcao = await enviarFormulario('/orientacoes/horta-inteligente/avaliar', {
+        acao: 'corrigir',
+        feedbackOrientador: 'Revise a justificativa e detalhe melhor os resultados obtidos.',
+    }, cookieProfessor);
+    assert.equal(correcao.status, 302);
+
+    const privado = await requisicao('/tcc/detalhes/horta-inteligente');
+    assert.equal(privado.status, 404);
+
+    const aprovacao = await enviarFormulario('/orientacoes/horta-inteligente/avaliar', {
+        acao: 'aprovar',
+        feedbackOrientador: 'Trabalho aprovado para publicação.',
+    }, cookieProfessor);
+    assert.equal(aprovacao.status, 302);
+
+    const publicado = await requisicao('/tcc/detalhes/horta-inteligente');
+    assert.equal(publicado.status, 200);
 });

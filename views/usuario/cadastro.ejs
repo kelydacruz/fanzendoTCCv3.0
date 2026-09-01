@@ -5,7 +5,7 @@
         <div class="formulario-apresentacao">
             <span class="destaque">Faça parte</span>
             <h1>Crie sua conta acadêmica.</h1>
-            <p>Escolha o perfil correto. Depois do cadastro, enviaremos um código para confirmar o e-mail.</p>
+            <p>Seu perfil será identificado automaticamente pelo e-mail institucional. O código é enviado somente para confirmar o cadastro.</p>
         </div>
 
         <form class="formulario bloco" action="/cadastro" method="post">
@@ -15,25 +15,23 @@
             <label for="nome">Nome completo *</label>
             <input id="nome" name="nome" value="<%= dados.nome || '' %>" autocomplete="name" required maxlength="100">
 
-            <label for="email">E-mail *</label>
-            <input id="email" type="email" name="email" value="<%= dados.email || '' %>" autocomplete="email" required maxlength="150">
+            <label for="email">E-mail institucional *</label>
+            <input id="email" type="email" name="email" value="<%= dados.email || '' %>" autocomplete="email" required maxlength="150" data-identificar-perfil data-dominio-aluno="<%= dominioAluno %>" data-dominio-professor="<%= dominioProfessor %>">
+            <small id="perfil-identificado" class="ajuda-campo">Aluno: @<%= dominioAluno %> · Professor: @<%= dominioProfessor %></small>
 
-            <label for="perfil">Perfil *</label>
-            <select id="perfil" name="perfil" required>
-                <option value="">Selecione</option>
-                <option value="aluno" <%= dados.perfil === 'aluno' ? 'selected' : '' %>>Aluno</option>
-                <option value="professor" <%= dados.perfil === 'professor' ? 'selected' : '' %>>Professor</option>
-            </select>
+            <div data-campo-aluno>
+                <label for="curso">Curso <small>(para aluno)</small></label>
+                <input id="curso" name="curso" value="<%= dados.curso || '' %>" maxlength="100">
+            </div>
 
-            <label for="curso">Curso <small>(para aluno)</small></label>
-            <input id="curso" name="curso" value="<%= dados.curso || '' %>" maxlength="100">
-
-            <label for="areaAtuacao">Área de atuação <small>(para professor)</small></label>
-            <input id="areaAtuacao" name="areaAtuacao" value="<%= dados.areaAtuacao || '' %>" maxlength="100">
+            <div data-campo-professor>
+                <label for="areaAtuacao">Área de atuação <small>(para professor)</small></label>
+                <input id="areaAtuacao" name="areaAtuacao" value="<%= dados.areaAtuacao || '' %>" maxlength="100">
+            </div>
 
             <label for="senha">Senha *</label>
-            <input id="senha" type="password" name="senha" autocomplete="new-password" minlength="6" required>
-            <small class="ajuda-campo">Use de 6 a 72 caracteres.</small>
+            <input id="senha" type="password" name="senha" autocomplete="new-password" minlength="8" required>
+            <small class="ajuda-campo">Use de 8 a 72 caracteres.</small>
 
             <button class="btn btn-primario btn-largura" type="submit">Criar conta e receber código</button>
             <p class="ajuda-form">Já possui conta? <a href="/entrar">Entre aqui</a>.</p>

@@ -7,12 +7,13 @@ import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
 import conectarBanco from './config/conexao.js';
-import { adicionarUsuarioNasTelas } from './middleware/autenticacao.js';
+import { adicionarUsuarioNasTelas, validarUsuarioDaSessao } from './middleware/autenticacao.js';
 import { classeStatus } from './services/texto.js';
 import routes from './routes/route.js';
 import usuarioRoutes from './routes/UsuarioRoutes.js';
 import tccRoutes from './routes/TccRoutes.js';
 import ideiaRoutes from './routes/IdeiaRoutes.js';
+import adminRoutes from './routes/AdminRoutes.js';
 
 const app = express();
 const root = dirname(fileURLToPath(import.meta.url));
@@ -73,10 +74,13 @@ app.use(async (req, res, next) => {
     next();
 });
 
+app.use(validarUsuarioDaSessao);
 app.use(adicionarUsuarioNasTelas);
 
 app.use((req, res, next) => {
     res.locals.googleClientId = process.env.GOOGLE_CLIENT_ID || '';
+    res.locals.dominioAluno = process.env.DOMINIO_ALUNO || 'academico.ifsul.edu.br';
+    res.locals.dominioProfessor = process.env.DOMINIO_PROFESSOR || 'ifsul.edu.br';
     next();
 });
 
@@ -88,6 +92,7 @@ app.locals.classeStatus = classeStatus;
 app.use(usuarioRoutes);
 app.use(tccRoutes);
 app.use(ideiaRoutes);
+app.use(adminRoutes);
 app.use(routes);
 
 app.use((req, res) => {

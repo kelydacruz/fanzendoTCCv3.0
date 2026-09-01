@@ -2,38 +2,35 @@ import bcrypt from 'bcryptjs';
 import { randomBytes } from 'crypto';
 import { rateLimit } from 'express-rate-limit';
 import {
+    atualizarPerfilUsuario,
+    atualizarSenhaUsuario,
     buscarUsuarioPorEmail,
     buscarUsuarioPorGoogleId,
     buscarUsuarioPorId,
+    buscarUsuarioComCredenciaisPorId,
     cadastrarUsuario,
     confirmarAcessoUsuario,
+    registrarLoginUsuario,
     vincularContaGoogle,
 } from '../services/repositorio.js';
 import { verificarCredencialGoogle } from '../services/autenticacaoGoogle.js';
 import { normalizarTexto } from '../services/texto.js';
-import { emailValido, perfilValido, textoComTamanho } from '../services/validacao.js';
-import {
-    criarVerificacao,
-    mascararEmail,
-    validarCodigo,
-} from '../services/verificacaoLogin.js';
+import { perfilPeloEmail } from '../services/perfis.js';
+import { emailValido, textoComTamanho } from '../services/validacao.js';
+import { criarVerificacao, mascararEmail, validarCodigo } from '../services/verificacaoLogin.js';
 
 function renderLogin(req, res, status, erro, email = '') {
     req.session.googleNonce = randomBytes(32).toString('hex');
     return res.status(status).render('usuario/login', {
-        title: 'Entrar',
-        erro,
-        dados: { email },
-        googleNonce: req.session.googleNonce,
+        title: 'Entrar', erro, dados: { email }, googleNonce: req.session.googleNonce,
     });
 }
 
 function renderConfirmacao(req, res, status = 200, erro = '', mensagem = '') {
     const pendente = req.session.autenticacaoPendente;
     if (!pendente) return res.redirect('/entrar');
-
     return res.status(status).render('usuario/confirmar-codigo', {
-        title: 'Confirmar acesso',
+        title: pendente.acao === 'definir_senha' ? 'Confirmar alteração' : 'Confirmar acesso',
         erro,
         mensagemCodigo: mensagem,
         emailMascarado: mascararEmail(pendente.email),
@@ -45,13 +42,7 @@ export const limitarLogin = rateLimit({
     limit: 10,
     standardHeaders: true,
     legacyHeaders: false,
-    handler: (req, res) => renderLogin(
-        req,
-        res,
-        429,
-        'Muitas tentativas de acesso. Aguarde alguns minutos e tente novamente.',
-        normalizarTexto(req.body.email),
-    ),
+    handler: (req, res) => renderLogin(req, res, 429, 'Muitas tentativas de acesso. Aguarde alguns minutos e tente novamente.', normalizarTexto(req.body.email)),
 });
 
 export const limitarConfirmacao = rateLimit({
@@ -59,12 +50,7 @@ export const limitarConfirmacao = rateLimit({
     limit: 15,
     standardHeaders: true,
     legacyHeaders: false,
-    handler: (req, res) => renderConfirmacao(
-        req,
-        res,
-        429,
-        'Muitas tentativas. Solicite um novo código em alguns minutos.',
-    ),
+    handler: (req, res) => renderConfirmacao(req, res, 429, 'Muitas tentativas. Solicite um novo código em alguns minutos.'),
 });
 
 export const limitarReenvio = rateLimit({
@@ -72,12 +58,7 @@ export const limitarReenvio = rateLimit({
     limit: 3,
     standardHeaders: true,
     legacyHeaders: false,
-    handler: (req, res) => renderConfirmacao(
-        req,
-        res,
-        429,
-        'Limite de reenvios atingido. Aguarde alguns minutos.',
-    ),
+    handler: (req, res) => renderConfirmacao(req, res, 429, 'Limite de reenvios atingido. Aguarde alguns minutos.'),
 });
 
 function regenerarSessao(req) {
@@ -92,6 +73,10 @@ function salvarSessao(req) {
     });
 }
 
+function usuarioAtivo(usuario) {
+    return usuario && usuario.ativo !== false;
+}
+
 async function iniciarSessao(req, res, usuario, mensagem) {
     await regenerarSessao(req);
     req.session.usuario = {
@@ -101,39 +86,46 @@ async function iniciarSessao(req, res, usuario, mensagem) {
         perfil: usuario.perfil,
     };
     await salvarSessao(req);
-    return res.redirect(`/painel?mensagem=${encodeURIComponent(mensagem)}`);
+    const destino = usuario.perfil === 'admin' ? '/admin' : '/painel';
+    return res.redirect(`${destino}?mensagem=${encodeURIComponent(mensagem)}`);
 }
 
-async function iniciarVerificacao(req, res, usuario, finalidade, mensagem) {
+async function iniciarVerificacao(req, res, usuario, finalidade, mensagem, acao = 'login') {
     if (req.modoDemo) return iniciarSessao(req, res, usuario, mensagem);
-
     const verificacao = await criarVerificacao(usuario, finalidade);
     await regenerarSessao(req);
     req.session.autenticacaoPendente = {
         usuarioId: String(usuario._id),
         identificador: verificacao.identificador,
         email: usuario.email,
+        finalidade,
         mensagem,
+        acao,
     };
     await salvarSessao(req);
     return res.redirect('/confirmar-codigo');
 }
 
-function dadosCadastro(req) {
+function dadosCadastro(req, emailForcado = '', perfilForcado = '') {
+    const email = normalizarTexto(emailForcado || req.body.email);
     return {
         nome: String(req.body.nome || '').trim(),
-        email: normalizarTexto(req.body.email),
-        perfil: req.body.perfil,
+        email,
+        perfil: perfilForcado || perfilPeloEmail(email),
         curso: String(req.body.curso || '').trim(),
         areaAtuacao: String(req.body.areaAtuacao || '').trim(),
     };
 }
 
 function validarCadastro(dados) {
-    if (!textoComTamanho(dados.nome, 3, 100)
-        || !emailValido(dados.email)
-        || !perfilValido(dados.perfil)) {
-        return 'Informe nome, e-mail e perfil válidos.';
+    if (!textoComTamanho(dados.nome, 3, 100) || !emailValido(dados.email)) {
+        return 'Informe nome e e-mail válidos.';
+    }
+    if (!dados.perfil) {
+        return 'Use o e-mail acadêmico do IFSul para aluno ou o e-mail institucional para professor.';
+    }
+    if (dados.perfil === 'admin') {
+        return 'A conta administrativa deve ser criada pelo botão Entrar com Google.';
     }
     if (dados.perfil === 'aluno' && !textoComTamanho(dados.curso, 2, 100)) {
         return 'Informe o curso do aluno.';
@@ -153,29 +145,24 @@ export default class UsuarioController {
 
         this.login = async (req, res, next) => {
             const email = normalizarTexto(req.body.email);
-
             try {
                 const usuario = await buscarUsuarioPorEmail(email);
-                const senhaCorreta = Boolean(
-                    usuario?.senha
-                    && await bcrypt.compare(req.body.senha || '', usuario.senha),
-                );
+                const senhaCorreta = Boolean(usuario?.senha && await bcrypt.compare(req.body.senha || '', usuario.senha));
+                if (!senhaCorreta) return renderLogin(req, res, 401, 'E-mail ou senha incorretos.', email);
+                if (!usuarioAtivo(usuario)) return renderLogin(req, res, 403, 'Esta conta está bloqueada. Procure a administração.', email);
 
-                if (!senhaCorreta) {
-                    return renderLogin(req, res, 401, 'E-mail ou senha incorretos.', email);
+                if (usuario.perfil === 'admin' && !req.modoDemo) {
+                    return await iniciarVerificacao(req, res, usuario, 'admin_login', 'Acesso administrativo confirmado.');
                 }
 
-                return await iniciarVerificacao(
-                    req,
-                    res,
-                    usuario,
-                    'login',
-                    'Login realizado com sucesso.',
-                );
+                if (!usuario.emailVerificado && !req.modoDemo) {
+                    return await iniciarVerificacao(req, res, usuario, 'confirmar_email', 'E-mail confirmado e login realizado.');
+                }
+
+                const atualizado = await registrarLoginUsuario(usuario.id || usuario._id);
+                return iniciarSessao(req, res, atualizado || usuario, 'Login realizado com sucesso.');
             } catch (erro) {
-                if (erro.code === 'EMAIL_NAO_CONFIGURADO') {
-                    return renderLogin(req, res, 503, erro.message, email);
-                }
+                if (erro.code === 'EMAIL_NAO_CONFIGURADO') return renderLogin(req, res, 503, erro.message, email);
                 return next(erro);
             }
         };
@@ -183,59 +170,58 @@ export default class UsuarioController {
         this.loginGoogle = async (req, res, next) => {
             try {
                 if (req.modoDemo) {
-                    return renderLogin(
-                        req,
-                        res,
-                        503,
-                        'O login com Google fica disponível quando MongoDB e as credenciais forem configurados.',
-                    );
+                    return renderLogin(req, res, 503, 'O login com Google fica disponível quando MongoDB e as credenciais forem configurados.');
                 }
 
                 let dadosGoogle;
                 try {
-                    dadosGoogle = await verificarCredencialGoogle(
-                        req.body.credential,
-                        req.session.googleNonce,
-                    );
+                    dadosGoogle = await verificarCredencialGoogle(req.body.credential, req.session.googleNonce);
                 } catch (erroGoogle) {
-                    if (erroGoogle.code === 'GOOGLE_NAO_CONFIGURADO') {
-                        return renderLogin(req, res, 503, erroGoogle.message);
-                    }
+                    if (erroGoogle.code === 'GOOGLE_NAO_CONFIGURADO') return renderLogin(req, res, 503, erroGoogle.message);
                     return renderLogin(req, res, 401, 'Não foi possível confirmar o acesso com Google.');
                 }
+
+                const perfil = perfilPeloEmail(dadosGoogle.email);
+                if (!perfil) {
+                    return renderLogin(req, res, 403, 'Use uma conta institucional do IFSul autorizada para acessar o sistema.', dadosGoogle.email);
+                }
+
                 let usuario = await buscarUsuarioPorGoogleId(dadosGoogle.googleId);
+                if (!usuario) usuario = await buscarUsuarioPorEmail(dadosGoogle.email);
 
-                if (!usuario) {
-                    usuario = await buscarUsuarioPorEmail(dadosGoogle.email);
+                if (usuario?.googleId && usuario.googleId !== dadosGoogle.googleId) {
+                    return renderLogin(req, res, 401, 'Não foi possível vincular esta conta Google.');
+                }
+                if (!usuarioAtivo(usuario) && usuario) return renderLogin(req, res, 403, 'Esta conta está bloqueada. Procure a administração.');
 
-                    if (usuario?.googleId && usuario.googleId !== dadosGoogle.googleId) {
-                        return renderLogin(req, res, 401, 'Não foi possível vincular esta conta Google.');
+                if (usuario) {
+                    if (!usuario.googleId) usuario = await vincularContaGoogle(usuario._id, dadosGoogle.googleId);
+                    if (usuario.perfil !== perfil) usuario = await atualizarPerfilUsuario(usuario._id, perfil);
+                    usuario = await confirmarAcessoUsuario(usuario._id);
+                    if (perfil === 'admin') {
+                        return iniciarVerificacao(req, res, usuario, 'admin_login', 'Acesso administrativo confirmado.');
                     }
-
-                    if (usuario) {
-                        usuario = await vincularContaGoogle(usuario._id, dadosGoogle.googleId);
-                    } else {
-                        await regenerarSessao(req);
-                        req.session.cadastroGoogle = dadosGoogle;
-                        await salvarSessao(req);
-                        return res.redirect('/cadastro/google');
-                    }
+                    return iniciarSessao(req, res, usuario, 'Acesso com Google confirmado.');
                 }
 
-                return await iniciarVerificacao(
-                    req,
-                    res,
-                    usuario,
-                    'google',
-                    'Acesso com Google confirmado.',
-                );
+                if (perfil === 'admin') {
+                    usuario = await cadastrarUsuario({
+                        nome: dadosGoogle.nome,
+                        email: dadosGoogle.email,
+                        perfil: 'admin',
+                        googleId: dadosGoogle.googleId,
+                        emailVerificado: true,
+                        ativo: true,
+                    });
+                    return iniciarVerificacao(req, res, usuario, 'admin_login', 'Conta administrativa criada com segurança.');
+                }
+
+                await regenerarSessao(req);
+                req.session.cadastroGoogle = { ...dadosGoogle, perfil };
+                await salvarSessao(req);
+                return res.redirect('/cadastro/google');
             } catch (erro) {
-                if (erro.code === 'EMAIL_NAO_CONFIGURADO') {
-                    return renderLogin(req, res, 503, erro.message);
-                }
-                if (erro.code === 11000) {
-                    return renderLogin(req, res, 409, 'Este e-mail já está ligado a outra conta.');
-                }
+                if (erro.code === 11000) return renderLogin(req, res, 409, 'Este e-mail já está ligado a outra conta.');
                 return next(erro);
             }
         };
@@ -247,59 +233,26 @@ export default class UsuarioController {
 
         this.cadastro = async (req, res, next) => {
             const dados = dadosCadastro(req);
-
             try {
                 const erroDados = validarCadastro(dados);
-                if (erroDados) {
-                    return res.status(400).render('usuario/cadastro', {
-                        title: 'Criar conta', erro: erroDados, dados,
-                    });
-                }
-                if (!textoComTamanho(req.body.senha, 6, 72)) {
-                    return res.status(400).render('usuario/cadastro', {
-                        title: 'Criar conta',
-                        erro: 'A senha deve ter entre 6 e 72 caracteres.',
-                        dados,
-                    });
+                if (erroDados) return res.status(400).render('usuario/cadastro', { title: 'Criar conta', erro: erroDados, dados });
+                if (!textoComTamanho(req.body.senha, 8, 72)) {
+                    return res.status(400).render('usuario/cadastro', { title: 'Criar conta', erro: 'A senha deve ter entre 8 e 72 caracteres.', dados });
                 }
                 if (await buscarUsuarioPorEmail(dados.email)) {
-                    return res.status(409).render('usuario/cadastro', {
-                        title: 'Criar conta', erro: 'Já existe uma conta com este e-mail.', dados,
-                    });
+                    return res.status(409).render('usuario/cadastro', { title: 'Criar conta', erro: 'Este e-mail já possui uma conta. Entre para continuar.', dados });
                 }
 
                 const usuario = await cadastrarUsuario({
                     ...dados,
                     senha: await bcrypt.hash(req.body.senha, 10),
                     emailVerificado: false,
+                    ativo: true,
                 });
-
-                try {
-                    return await iniciarVerificacao(
-                        req,
-                        res,
-                        usuario,
-                        'cadastro',
-                        'Conta criada e e-mail confirmado.',
-                    );
-                } catch (erroEmail) {
-                    if (erroEmail.code === 'EMAIL_NAO_CONFIGURADO') {
-                        return renderLogin(
-                            req,
-                            res,
-                            503,
-                            'A conta foi criada, mas o envio de e-mail ainda não está configurado.',
-                            dados.email,
-                        );
-                    }
-                    throw erroEmail;
-                }
+                return await iniciarVerificacao(req, res, usuario, 'cadastro', 'Conta criada e e-mail confirmado.');
             } catch (erro) {
-                if (erro.code === 11000) {
-                    return res.status(409).render('usuario/cadastro', {
-                        title: 'Criar conta', erro: 'Já existe uma conta com este e-mail.', dados,
-                    });
-                }
+                if (erro.code === 'EMAIL_NAO_CONFIGURADO') return renderLogin(req, res, 503, 'A conta foi criada, mas o envio de e-mail ainda não está configurado.', dados.email);
+                if (erro.code === 11000) return res.status(409).render('usuario/cadastro', { title: 'Criar conta', erro: 'Já existe uma conta com este e-mail.', dados });
                 return next(erro);
             }
         };
@@ -307,63 +260,33 @@ export default class UsuarioController {
         this.openCadastroGoogle = (req, res) => {
             if (req.session.usuario) return res.redirect('/painel');
             if (!req.session.cadastroGoogle) return res.redirect('/entrar');
-
-            return res.render('usuario/cadastro-google', {
-                title: 'Completar cadastro',
-                erro: '',
-                dados: {
-                    nome: req.session.cadastroGoogle.nome,
-                    email: req.session.cadastroGoogle.email,
-                },
-            });
+            return res.render('usuario/cadastro-google', { title: 'Completar cadastro', erro: '', dados: req.session.cadastroGoogle });
         };
 
         this.cadastroGoogle = async (req, res, next) => {
             const contaGoogle = req.session.cadastroGoogle;
             if (!contaGoogle) return res.redirect('/entrar');
-
-            const dados = {
-                ...dadosCadastro(req),
-                email: contaGoogle.email,
-            };
-
+            const dados = dadosCadastro(req, contaGoogle.email, contaGoogle.perfil);
             try {
                 const erroDados = validarCadastro(dados);
-                if (erroDados) {
-                    return res.status(400).render('usuario/cadastro-google', {
-                        title: 'Completar cadastro', erro: erroDados, dados,
-                    });
-                }
+                if (erroDados) return res.status(400).render('usuario/cadastro-google', { title: 'Completar cadastro', erro: erroDados, dados });
 
                 let usuario = await buscarUsuarioPorEmail(contaGoogle.email);
-                if (usuario?.googleId && usuario.googleId !== contaGoogle.googleId) {
-                    return renderLogin(req, res, 401, 'Não foi possível vincular esta conta Google.');
-                }
-
-                if (usuario) {
-                    usuario = await vincularContaGoogle(usuario._id, contaGoogle.googleId);
-                } else {
+                if (usuario?.googleId && usuario.googleId !== contaGoogle.googleId) return renderLogin(req, res, 401, 'Não foi possível vincular esta conta Google.');
+                if (usuario) usuario = await vincularContaGoogle(usuario._id, contaGoogle.googleId);
+                else {
                     usuario = await cadastrarUsuario({
                         ...dados,
                         googleId: contaGoogle.googleId,
-                        emailVerificado: false,
+                        emailVerificado: true,
+                        ativo: true,
                     });
                 }
 
-                return await iniciarVerificacao(
-                    req,
-                    res,
-                    usuario,
-                    'google',
-                    'Conta Google cadastrada e confirmada.',
-                );
+                usuario = await confirmarAcessoUsuario(usuario._id);
+                return iniciarSessao(req, res, usuario, 'Conta Google cadastrada com sucesso.');
             } catch (erro) {
-                if (erro.code === 'EMAIL_NAO_CONFIGURADO') {
-                    return renderLogin(req, res, 503, erro.message, contaGoogle.email);
-                }
-                if (erro.code === 11000) {
-                    return renderLogin(req, res, 409, 'Este e-mail já está ligado a outra conta.');
-                }
+                if (erro.code === 11000) return renderLogin(req, res, 409, 'Este e-mail já está ligado a outra conta.');
                 return next(erro);
             }
         };
@@ -373,16 +296,20 @@ export default class UsuarioController {
         this.confirmarCodigo = async (req, res, next) => {
             const pendente = req.session.autenticacaoPendente;
             if (!pendente) return res.redirect('/entrar');
-
             try {
                 const resultado = await validarCodigo(pendente.identificador, req.body.codigo);
-                if (!resultado.ok) {
-                    return renderConfirmacao(req, res, 400, resultado.erro);
+                if (!resultado.ok) return renderConfirmacao(req, res, 400, resultado.erro);
+
+                if (pendente.acao === 'definir_senha') {
+                    req.session.senhaAutorizada = { usuarioId: pendente.usuarioId, expiraEm: Date.now() + 10 * 60 * 1000 };
+                    delete req.session.autenticacaoPendente;
+                    await salvarSessao(req);
+                    return res.redirect('/conta/definir-senha');
                 }
 
                 const usuario = await confirmarAcessoUsuario(pendente.usuarioId);
                 if (!usuario) return res.redirect('/entrar');
-                return await iniciarSessao(req, res, usuario, pendente.mensagem);
+                return iniciarSessao(req, res, usuario, pendente.mensagem);
             } catch (erro) {
                 return next(erro);
             }
@@ -391,19 +318,82 @@ export default class UsuarioController {
         this.reenviarCodigo = async (req, res, next) => {
             const pendente = req.session.autenticacaoPendente;
             if (!pendente) return res.redirect('/entrar');
-
             try {
                 const usuario = await buscarUsuarioPorId(pendente.usuarioId);
                 if (!usuario) return res.redirect('/entrar');
-
-                const verificacao = await criarVerificacao(usuario, 'login');
+                const verificacao = await criarVerificacao(usuario, pendente.finalidade || 'login');
                 req.session.autenticacaoPendente.identificador = verificacao.identificador;
                 await salvarSessao(req);
                 return renderConfirmacao(req, res, 200, '', 'Um novo código foi enviado.');
             } catch (erro) {
-                if (erro.code === 'EMAIL_NAO_CONFIGURADO') {
-                    return renderConfirmacao(req, res, 503, erro.message);
+                if (erro.code === 'EMAIL_NAO_CONFIGURADO') return renderConfirmacao(req, res, 503, erro.message);
+                return next(erro);
+            }
+        };
+
+        this.seguranca = async (req, res, next) => {
+            try {
+                const usuario = await buscarUsuarioComCredenciaisPorId(req.session.usuario.id);
+                if (!usuario) return res.redirect('/entrar');
+                return res.render('usuario/seguranca', {
+                    title: 'Segurança da conta', temSenha: Boolean(usuario.senha), temGoogle: Boolean(usuario.googleId),
+                });
+            } catch (erro) {
+                return next(erro);
+            }
+        };
+
+        this.solicitarSenha = async (req, res, next) => {
+            try {
+                const usuario = await buscarUsuarioPorId(req.session.usuario.id);
+                if (!usuario) return res.redirect('/entrar');
+                if (req.modoDemo) {
+                    req.session.senhaAutorizada = {
+                        usuarioId: String(usuario.id || usuario._id),
+                        expiraEm: Date.now() + 10 * 60 * 1000,
+                    };
+                    await salvarSessao(req);
+                    return res.redirect('/conta/definir-senha');
                 }
+                const verificacao = await criarVerificacao(usuario, 'definir_senha');
+                req.session.autenticacaoPendente = {
+                    usuarioId: String(usuario.id || usuario._id),
+                    identificador: verificacao.identificador,
+                    email: usuario.email,
+                    finalidade: 'definir_senha',
+                    acao: 'definir_senha',
+                };
+                await salvarSessao(req);
+                return res.redirect('/confirmar-codigo');
+            } catch (erro) {
+                return next(erro);
+            }
+        };
+
+        this.openDefinirSenha = (req, res) => {
+            const autorizacao = req.session.senhaAutorizada;
+            if (!autorizacao || autorizacao.expiraEm < Date.now()) {
+                delete req.session.senhaAutorizada;
+                return res.redirect('/conta/seguranca?mensagem=Solicite um novo código para definir a senha.');
+            }
+            return res.render('usuario/definir-senha', { title: 'Definir senha', erro: '' });
+        };
+
+        this.definirSenha = async (req, res, next) => {
+            const autorizacao = req.session.senhaAutorizada;
+            if (!autorizacao || autorizacao.expiraEm < Date.now()) return res.redirect('/conta/seguranca?mensagem=A autorização expirou.');
+            if (!textoComTamanho(req.body.senha, 8, 72)) {
+                return res.status(400).render('usuario/definir-senha', { title: 'Definir senha', erro: 'A senha deve ter entre 8 e 72 caracteres.' });
+            }
+            if (req.body.senha !== req.body.confirmacao) {
+                return res.status(400).render('usuario/definir-senha', { title: 'Definir senha', erro: 'As senhas informadas são diferentes.' });
+            }
+            try {
+                await atualizarSenhaUsuario(autorizacao.usuarioId, await bcrypt.hash(req.body.senha, 10));
+                delete req.session.senhaAutorizada;
+                await salvarSessao(req);
+                return res.redirect('/conta/seguranca?mensagem=Senha definida com sucesso.');
+            } catch (erro) {
                 return next(erro);
             }
         };

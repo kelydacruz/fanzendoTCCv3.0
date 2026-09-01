@@ -5,16 +5,18 @@
         <a class="voltar" href="/tcc/lst">← Voltar para TCCs</a>
         <div class="detalhes-cabecalho">
             <div>
-                <span class="etiqueta"><%= tcc.tema %></span>
+                <span class="status status-<%= classeStatus(tcc.status || 'publicado') %>"><%= (tcc.status || 'publicado').replaceAll('_', ' ') %></span>
                 <h1><%= tcc.titulo %></h1>
-                <p>Publicado por <strong><%= tcc.autor?.nome || 'Autor não informado' %></strong> em <%= formatarData(tcc.createdAt) %>.</p>
+                <p><%= (tcc.status || 'publicado') === 'publicado' ? 'Publicado' : 'Enviado' %> por <strong><%= tcc.autor?.nome || 'Autor não informado' %></strong> em <%= formatarData(tcc.createdAt) %>.</p>
             </div>
-            <% if (podeEditar) { %>
+            <% if (podeEditar || podeExcluir) { %>
                 <div class="botoes-linha">
-                    <a class="btn btn-secundario" href="/tcc/edt/<%= idTexto(tcc) %>">Editar</a>
-                    <form action="/tcc/del/<%= idTexto(tcc) %>" method="post" data-confirm="Tem certeza que deseja excluir este TCC?">
-                        <button class="btn btn-perigo" type="submit">Excluir</button>
-                    </form>
+                    <% if (podeEditar) { %><a class="btn btn-secundario" href="/tcc/edt/<%= idTexto(tcc) %>">Editar</a><% } %>
+                    <% if (podeExcluir) { %>
+                        <form action="/tcc/del/<%= idTexto(tcc) %>" method="post" data-confirm="Tem certeza que deseja excluir este TCC?">
+                            <button class="btn btn-perigo" type="submit">Excluir</button>
+                        </form>
+                    <% } %>
                 </div>
             <% } %>
         </div>
@@ -28,6 +30,28 @@
             <p class="resumo"><%= tcc.resumo %></p>
         </div>
 
+        <% if (tcc.status && tcc.status !== 'publicado') { %>
+            <div class="bloco acompanhamento-tcc">
+                <span class="destaque">Acompanhamento</span>
+                <h2><%= tcc.status === 'correcao_solicitada' ? 'O orientador solicitou correções' : (tcc.status === 'rejeitado' ? 'O trabalho precisa ser revisto' : 'O trabalho está com o orientador') %></h2>
+                <p><%= tcc.feedbackOrientador || 'Ainda não há uma observação do professor orientador.' %></p>
+                <% if (podeEditar) { %><a class="btn btn-primario" href="/tcc/edt/<%= idTexto(tcc) %>">Revisar e reenviar</a><% } %>
+            </div>
+        <% } %>
+
+        <% if (podeAvaliar) { %>
+            <form class="bloco formulario avaliacao-tcc" action="/orientacoes/<%= idTexto(tcc) %>/avaliar" method="post">
+                <span class="destaque">Parecer do orientador</span>
+                <h2>Avaliar trabalho</h2>
+                <label for="feedbackOrientador">Correções ou observação</label>
+                <textarea id="feedbackOrientador" name="feedbackOrientador" rows="5" maxlength="2000"><%= tcc.feedbackOrientador || '' %></textarea>
+                <div class="botoes-linha">
+                    <button class="btn btn-secundario" name="acao" value="corrigir" type="submit">Pedir correções</button>
+                    <button class="btn btn-primario" name="acao" value="aprovar" type="submit">Aprovar e publicar</button>
+                </div>
+            </form>
+        <% } %>
+
         <div class="bloco">
             <h2>Informações do trabalho</h2>
             <dl class="lista-dados">
@@ -35,7 +59,7 @@
                 <div><dt>Área</dt><dd><%= tcc.area %></dd></div>
                 <div><dt>Turma</dt><dd><%= tcc.turma %></dd></div>
                 <div><dt>Ano</dt><dd><%= tcc.ano %></dd></div>
-                <div><dt>Orientador</dt><dd><%= tcc.orientador %></dd></div>
+                <div><dt>Orientador</dt><dd><%= tcc.orientadorUsuario?.nome || tcc.orientador %></dd></div>
                 <div><dt>Autor principal</dt><dd><%= tcc.autor?.nome || 'Não informado' %></dd></div>
                 <div><dt>Coautores</dt><dd><%= (tcc.coautores || []).join(', ') || 'Nenhum' %></dd></div>
                 <div><dt>Tema</dt><dd><%= tcc.tema %></dd></div>

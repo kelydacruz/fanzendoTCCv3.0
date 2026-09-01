@@ -1,0 +1,23 @@
+<%- include('../partials/header') %>
+
+<section class="topo-pagina"><div class="container"><span class="destaque">Administração</span><h1>Moderação de ideias</h1><p>Consulte e remova conteúdos que não estejam de acordo com a proposta do portal.</p></div></section>
+
+<section class="secao container">
+    <%- include('_nav') %>
+    <form class="filtros bloco" action="/admin/ideias" method="get">
+        <div class="campo campo-busca"><label for="q">Pesquisar</label><input id="q" name="q" value="<%= busca %>" placeholder="Título, tema ou descrição"></div>
+        <button class="btn btn-primario" type="submit">Pesquisar</button>
+    </form>
+
+    <div class="lista-admin">
+        <% ideias.forEach((ideia) => { %>
+            <article class="bloco item-admin">
+                <div><span class="etiqueta"><%= ideia.tema %></span><h2><a href="/ideia/detalhes/<%= idTexto(ideia) %>"><%= ideia.titulo %></a></h2><p>Por <%= ideia.autor?.nome || 'Usuário' %> · <%= ideia.status %></p></div>
+                <form action="/admin/ideias/<%= idTexto(ideia) %>/excluir" method="post" data-confirm="Tem certeza que deseja remover esta ideia?"><button class="btn btn-perigo btn-pequeno" type="submit">Remover</button></form>
+            </article>
+        <% }) %>
+        <% if (!ideias.length) { %><div class="estado-vazio bloco"><h2>Nenhuma ideia encontrada.</h2></div><% } %>
+    </div>
+</section>
+
+<%- include('../partials/footer') %>

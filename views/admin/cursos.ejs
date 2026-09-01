@@ -1,0 +1,28 @@
+<%- include('../partials/header') %>
+
+<section class="topo-pagina"><div class="container"><span class="destaque">Administração</span><h1>Cursos técnicos</h1><p>Cadastre e organize os cursos usados no acervo.</p></div></section>
+
+<section class="secao container">
+    <%- include('_nav') %>
+    <div class="admin-duas-colunas">
+        <form class="formulario bloco" action="/admin/cursos" method="post">
+            <h2>Novo curso</h2>
+            <% if (erro) { %><div class="erro-form" role="alert"><%= erro %></div><% } %>
+            <label for="nome">Nome *</label><input id="nome" name="nome" maxlength="100" required placeholder="Técnico em Informática">
+            <label for="sigla">Sigla *</label><input id="sigla" name="sigla" maxlength="20" required placeholder="INFO">
+            <label for="area">Área *</label><input id="area" name="area" maxlength="100" required placeholder="Tecnologia">
+            <button class="btn btn-primario" type="submit">Cadastrar curso</button>
+        </form>
+
+        <div class="lista-admin">
+            <% cursos.forEach((curso) => { %>
+                <article class="bloco item-admin">
+                    <div><span class="etiqueta"><%= curso.sigla %></span><h2><%= curso.nome %></h2><p><%= curso.area %> · <%= curso.ativo ? 'Ativo' : 'Inativo' %></p></div>
+                    <form action="/admin/cursos/<%= idTexto(curso) %>/status" method="post"><input type="hidden" name="ativo" value="<%= curso.ativo ? 'false' : 'true' %>"><button class="btn btn-secundario btn-pequeno" type="submit"><%= curso.ativo ? 'Desativar' : 'Reativar' %></button></form>
+                </article>
+            <% }) %>
+        </div>
+    </div>
+</section>
+
+<%- include('../partials/footer') %>

@@ -32,6 +32,7 @@ export default class GeralController {
 
         this.painel = async (req, res, next) => {
             try {
+                if (req.session.usuario.perfil === 'admin') return res.redirect('/admin');
                 const resumo = await resumoDoPainel(req.session.usuario.id);
                 res.render('painel', { title: 'Meu painel', resumo });
             } catch (erro) {

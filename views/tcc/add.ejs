@@ -3,9 +3,9 @@
 <section class="topo-pagina">
     <div class="container container-form">
         <a class="voltar" href="/tcc/lst">← Voltar para TCCs</a>
-        <span class="destaque">Nova publicação</span>
-        <h1>Publicar TCC</h1>
-        <p>Preencha as informações mínimas para que o trabalho possa ser encontrado e consultado.</p>
+        <span class="destaque">Nova submissão</span>
+        <h1>Enviar TCC</h1>
+        <p>O trabalho será encaminhado ao professor orientador e aparecerá no acervo somente depois da aprovação.</p>
     </div>
 </section>
 
@@ -14,7 +14,7 @@
         <% if (erro) { %><div class="erro-form" role="alert"><%= erro %></div><% } %>
         <%- include('_form', { dados, editando: false }) %>
         <div class="botoes-form">
-            <button class="btn btn-primario" type="submit">Publicar TCC</button>
+            <button class="btn btn-primario" type="submit">Enviar para análise</button>
             <a class="btn btn-secundario" href="/tcc/lst">Cancelar</a>
         </div>
     </form>

@@ -42,15 +42,32 @@ document.querySelectorAll('.copiar-link').forEach((botao) => {
     });
 });
 
-const campoPerfil = document.querySelector('#perfil');
+const campoEmailPerfil = document.querySelector('[data-identificar-perfil]');
 const campoCurso = document.querySelector('#curso');
 const campoArea = document.querySelector('#areaAtuacao');
+const grupoAluno = document.querySelector('[data-campo-aluno]');
+const grupoProfessor = document.querySelector('[data-campo-professor]');
+const textoPerfil = document.querySelector('#perfil-identificado');
 
 function atualizarCamposDoPerfil() {
-    if (!campoPerfil || !campoCurso || !campoArea) return;
-    campoCurso.required = campoPerfil.value === 'aluno';
-    campoArea.required = campoPerfil.value === 'professor';
+    if (!campoEmailPerfil || !campoCurso || !campoArea) return;
+    const email = campoEmailPerfil.value.trim().toLowerCase();
+    const dominioAluno = campoEmailPerfil.dataset.dominioAluno;
+    const dominioProfessor = campoEmailPerfil.dataset.dominioProfessor;
+    const aluno = email.endsWith(`@${dominioAluno}`);
+    const professor = email.endsWith(`@${dominioProfessor}`);
+
+    campoCurso.required = aluno;
+    campoArea.required = professor;
+    if (grupoAluno) grupoAluno.hidden = professor;
+    if (grupoProfessor) grupoProfessor.hidden = aluno;
+
+    if (textoPerfil) {
+        if (aluno) textoPerfil.textContent = 'Perfil identificado: Aluno';
+        else if (professor) textoPerfil.textContent = 'Perfil identificado: Professor';
+        else textoPerfil.textContent = `Aluno: @${dominioAluno} · Professor: @${dominioProfessor}`;
+    }
 }
 
-campoPerfil?.addEventListener('change', atualizarCamposDoPerfil);
+campoEmailPerfil?.addEventListener('input', atualizarCamposDoPerfil);
 atualizarCamposDoPerfil();
