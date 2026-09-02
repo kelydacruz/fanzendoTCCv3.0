@@ -6,6 +6,7 @@ import {
     buscarUsuarioPorId,
     cadastrarComentario,
     cadastrarTcc,
+    criarNotificacao,
     excluirTcc,
     listarComentarios,
     listarProfessores,
@@ -166,6 +167,15 @@ export default class TccController {
                     feedbackOrientador: '',
                     enviadoEm: new Date(),
                 });
+                if (dados.orientadorUsuario) {
+                    await criarNotificacao({
+                        destinatario: dados.orientadorUsuario,
+                        remetente: req.session.usuario.id,
+                        tipo: 'tcc_recebido',
+                        mensagem: `${req.session.usuario.nome} enviou um TCC para sua orientação.`,
+                        link: `/tcc/detalhes/${obterId(tcc)}`,
+                    });
+                }
                 return res.redirect(`/tcc/detalhes/${obterId(tcc)}?mensagem=${encodeURIComponent('TCC enviado ao professor orientador para análise.')}`);
             } catch (erro) {
                 if (erro.message.includes('termo não permitido')) return renderFormulario(res, 'add', 400, erro.message, req.body);
@@ -206,6 +216,16 @@ export default class TccController {
                     enviadoEm: new Date(),
                     avaliadoEm: null,
                 });
+                const orientadorId = obterId(tcc.orientadorUsuario || tcc.orientadorId);
+                if (orientadorId) {
+                    await criarNotificacao({
+                        destinatario: orientadorId,
+                        remetente: req.session.usuario.id,
+                        tipo: 'tcc_recebido',
+                        mensagem: `${req.session.usuario.nome} reenviou o TCC com as correções solicitadas.`,
+                        link: `/tcc/detalhes/${req.params.id}`,
+                    });
+                }
                 return res.redirect(`/tcc/detalhes/${req.params.id}?mensagem=${encodeURIComponent('Correções enviadas novamente ao orientador.')}`);
             } catch (erro) {
                 if (erro.message.includes('termo não permitido')) return renderFormulario(res, 'edt', 400, erro.message, req.body);
@@ -252,6 +272,16 @@ export default class TccController {
                 validarConteudo(texto);
                 if (!comentarioValido(texto)) return res.redirect(`/tcc/detalhes/${req.params.id}?mensagem=O comentário deve ter entre 1 e 500 caracteres.`);
                 await cadastrarComentario({ texto, autor: req.session.usuario.id, alvoTipo: 'tcc', alvoId: req.params.id });
+                const autorId = obterId(tcc.autor || tcc.autorId);
+                if (autorId && autorId !== obterId(req.session.usuario)) {
+                    await criarNotificacao({
+                        destinatario: autorId,
+                        remetente: req.session.usuario.id,
+                        tipo: 'comentario',
+                        mensagem: `${req.session.usuario.nome} comentou no seu TCC.`,
+                        link: `/tcc/detalhes/${req.params.id}`,
+                    });
+                }
                 return res.redirect(`/tcc/detalhes/${req.params.id}?mensagem=Comentário publicado.`);
             } catch (erro) {
                 if (erro.message.includes('termo não permitido')) return res.redirect(`/tcc/detalhes/${req.params.id}?mensagem=${encodeURIComponent(erro.message)}`);
@@ -278,6 +308,18 @@ export default class TccController {
                     return res.redirect(`/tcc/detalhes/${req.params.id}?mensagem=Explique as correções necessárias.`);
                 }
                 await avaliarTcc(req.params.id, { status, feedbackOrientador: feedback });
+                const autorId = obterId(tcc.autor || tcc.autorId);
+                if (autorId) {
+                    await criarNotificacao({
+                        destinatario: autorId,
+                        remetente: req.session.usuario.id,
+                        tipo: status === 'publicado' ? 'tcc_aprovado' : 'correcao_solicitada',
+                        mensagem: status === 'publicado'
+                            ? 'Seu TCC foi aprovado e já está disponível no acervo público.'
+                            : 'O professor orientador solicitou correções no seu TCC.',
+                        link: `/tcc/detalhes/${req.params.id}`,
+                    });
+                }
                 const texto = status === 'publicado' ? 'TCC aprovado e publicado no acervo.' : 'Correções solicitadas ao aluno.';
                 return res.redirect(`/tcc/detalhes/${req.params.id}?mensagem=${encodeURIComponent(texto)}`);
             } catch (erro) {

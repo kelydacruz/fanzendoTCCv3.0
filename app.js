@@ -15,6 +15,9 @@ import tccRoutes from './routes/TccRoutes.js';
 import ideiaRoutes from './routes/IdeiaRoutes.js';
 import adminRoutes from './routes/AdminRoutes.js';
 import perfilRoutes from './routes/PerfilRoutes.js';
+import { carregarTermosProibidos } from './services/filtroConteudo.js';
+import { contarNotificacoesNaoLidas } from './services/repositorio.js';
+import notificacaoRoutes from './routes/NotificacaoRoutes.js';
 
 const app = express();
 const root = dirname(fileURLToPath(import.meta.url));
@@ -71,12 +74,24 @@ app.use(session(configuracaoSessao));
 app.use(async (req, res, next) => {
     const bancoConectado = await conectarBanco();
     req.modoDemo = !bancoConectado;
+    await carregarTermosProibidos();
     res.locals.modoDemo = req.modoDemo;
     next();
 });
 
 app.use(validarUsuarioDaSessao);
 app.use(adicionarUsuarioNasTelas);
+
+app.use(async (req, res, next) => {
+    try {
+        res.locals.notificacoesNaoLidas = req.session.usuario
+            ? await contarNotificacoesNaoLidas(req.session.usuario.id)
+            : 0;
+        return next();
+    } catch (erro) {
+        return next(erro);
+    }
+});
 
 app.use((req, res, next) => {
     res.locals.googleClientId = process.env.GOOGLE_CLIENT_ID || '';
@@ -95,6 +110,7 @@ app.use(tccRoutes);
 app.use(ideiaRoutes);
 app.use(adminRoutes);
 app.use(perfilRoutes);
+app.use(notificacaoRoutes);
 app.use(routes);
 
 app.use((req, res) => {

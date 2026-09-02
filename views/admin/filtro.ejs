@@ -1,0 +1,17 @@
+<%- include('../partials/header') %>
+
+<section class="topo-pagina"><div class="container"><span class="destaque">Administração</span><h1>Palavras proibidas</h1><p>O filtro protege títulos, resumos, ideias e comentários publicados na plataforma.</p></div></section>
+
+<section class="secao container container-form">
+    <%- include('_nav') %>
+    <form class="formulario bloco" action="/admin/filtro" method="post">
+        <h2>Termos bloqueados</h2>
+        <% if (erro) { %><div class="erro-form" role="alert"><%= erro %></div><% } %>
+        <label for="termos">Uma palavra ou expressão por linha</label>
+        <textarea id="termos" name="termos" rows="12" maxlength="6000" required><%= termos.join('\n') %></textarea>
+        <small class="ajuda-campo">O sistema ignora diferenças de maiúsculas, minúsculas e acentos. Use até 100 termos.</small>
+        <button class="btn btn-primario" type="submit">Salvar lista de moderação</button>
+    </form>
+</section>
+
+<%- include('../partials/footer') %>

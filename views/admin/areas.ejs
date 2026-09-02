@@ -1,0 +1,27 @@
+<%- include('../partials/header') %>
+
+<section class="topo-pagina"><div class="container"><span class="destaque">Administração</span><h1>Áreas de atuação</h1><p>Essas opções aparecem no cadastro e no perfil dos professores.</p></div></section>
+
+<section class="secao container">
+    <%- include('_nav') %>
+    <div class="admin-duas-colunas">
+        <form class="formulario bloco" action="/admin/areas" method="post">
+            <h2>Nova área</h2>
+            <% if (erro) { %><div class="erro-form" role="alert"><%= erro %></div><% } %>
+            <label for="nome">Nome da área *</label>
+            <input id="nome" name="nome" maxlength="100" required placeholder="Desenvolvimento de Sistemas">
+            <button class="btn btn-primario" type="submit">Cadastrar área</button>
+        </form>
+
+        <div class="lista-admin">
+            <% areas.forEach((area) => { %>
+                <article class="bloco item-admin">
+                    <div><span class="etiqueta"><%= area.ativo ? 'Ativa' : 'Inativa' %></span><h2><%= area.nome %></h2></div>
+                    <form action="/admin/areas/<%= idTexto(area) %>/status" method="post"><input type="hidden" name="ativo" value="<%= area.ativo ? 'false' : 'true' %>"><button class="btn btn-secundario btn-pequeno" type="submit"><%= area.ativo ? 'Desativar' : 'Reativar' %></button></form>
+                </article>
+            <% }) %>
+        </div>
+    </div>
+</section>
+
+<%- include('../partials/footer') %>

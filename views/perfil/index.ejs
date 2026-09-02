@@ -32,12 +32,22 @@
 
         <% if (dados.perfil === 'aluno') { %>
             <label for="curso">Curso *</label>
-            <input id="curso" name="curso" value="<%= dados.curso || '' %>" maxlength="100" required>
+            <select id="curso" name="curso" required>
+                <option value="">Selecione seu curso</option>
+                <% (cursos || []).forEach((curso) => { %>
+                    <option value="<%= curso.nome %>" <%= dados.curso === curso.nome ? 'selected' : '' %>><%= curso.nome %></option>
+                <% }) %>
+            </select>
         <% } %>
 
         <% if (dados.perfil === 'professor') { %>
             <label for="areaAtuacao">Área de atuação *</label>
-            <input id="areaAtuacao" name="areaAtuacao" value="<%= dados.areaAtuacao || '' %>" maxlength="100" required>
+            <select id="areaAtuacao" name="areaAtuacao" required>
+                <option value="">Selecione sua área</option>
+                <% (areas || []).forEach((area) => { %>
+                    <option value="<%= area.nome %>" <%= dados.areaAtuacao === area.nome ? 'selected' : '' %>><%= area.nome %></option>
+                <% }) %>
+            </select>
         <% } %>
 
         <div class="botoes-linha">

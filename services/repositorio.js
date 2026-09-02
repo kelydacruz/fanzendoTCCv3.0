@@ -5,12 +5,16 @@ import Ideia from '../models/ideia.js';
 import Comentario from '../models/comentario.js';
 import Curso from '../models/curso.js';
 import Turma from '../models/turma.js';
+import AreaAtuacao from '../models/areaAtuacao.js';
+import Notificacao from '../models/notificacao.js';
 import {
     usuarios,
     tccs,
     ideias,
     comentarios,
     cursos,
+    areasAtuacao,
+    notificacoes,
     turmas,
     novoId,
 } from '../data/mock.js';
@@ -511,6 +515,76 @@ export async function cadastrarComentario({ texto, autor, alvoTipo, alvoId }) {
     return comentario;
 }
 
+export async function criarNotificacao({ destinatario, remetente = null, tipo, mensagem, link }) {
+    if (!destinatario || !mensagem || !link) return null;
+    if (usandoMongo()) {
+        if (!idValido(destinatario)) return null;
+        return Notificacao.create({ destinatario, remetente, tipo, mensagem, link });
+    }
+    const notificacao = {
+        id: novoId(),
+        destinatario: String(destinatario),
+        remetente: remetente ? autorDemo(remetente) : null,
+        tipo,
+        mensagem,
+        link,
+        lida: false,
+        createdAt: new Date(),
+    };
+    notificacoes.unshift(notificacao);
+    return notificacao;
+}
+
+export async function listarNotificacoes(usuarioId, { somenteNaoLidas = false } = {}) {
+    if (usandoMongo()) {
+        if (!idValido(usuarioId)) return [];
+        const filtro = { destinatario: usuarioId };
+        if (somenteNaoLidas) filtro.lida = false;
+        return Notificacao.find(filtro)
+            .populate('remetente', 'nome perfil')
+            .sort({ createdAt: -1 })
+            .lean();
+    }
+    return notificacoes
+        .filter((item) => item.destinatario === String(usuarioId) && (!somenteNaoLidas || !item.lida))
+        .map((item) => ({ ...item }));
+}
+
+export async function contarNotificacoesNaoLidas(usuarioId) {
+    if (!usuarioId) return 0;
+    if (usandoMongo()) {
+        if (!idValido(usuarioId)) return 0;
+        return Notificacao.countDocuments({ destinatario: usuarioId, lida: false });
+    }
+    return notificacoes.filter((item) => item.destinatario === String(usuarioId) && !item.lida).length;
+}
+
+export async function marcarNotificacaoLida(id, usuarioId) {
+    if (usandoMongo()) {
+        if (!idValido(id) || !idValido(usuarioId)) return null;
+        return Notificacao.findOneAndUpdate(
+            { _id: id, destinatario: usuarioId },
+            { lida: true },
+            { new: true },
+        );
+    }
+    const notificacao = notificacoes.find((item) => item.id === String(id) && item.destinatario === String(usuarioId));
+    if (!notificacao) return null;
+    notificacao.lida = true;
+    return notificacao;
+}
+
+export async function marcarTodasNotificacoesLidas(usuarioId) {
+    if (usandoMongo()) {
+        if (!idValido(usuarioId)) return;
+        await Notificacao.updateMany({ destinatario: usuarioId, lida: false }, { lida: true });
+        return;
+    }
+    notificacoes.forEach((item) => {
+        if (item.destinatario === String(usuarioId)) item.lida = true;
+    });
+}
+
 export async function resumoDoPainel(usuarioId) {
     if (usandoMongo()) {
         const [totalTccs, totalIdeias, totalComentarios] = await Promise.all([
@@ -541,6 +615,34 @@ export async function listarCursos({ somenteAtivos = false } = {}) {
     return cursos
         .filter((curso) => !somenteAtivos || curso.ativo)
         .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+}
+
+export async function listarAreasAtuacao({ somenteAtivas = false } = {}) {
+    if (usandoMongo()) {
+        const filtro = somenteAtivas ? { ativo: true } : {};
+        return AreaAtuacao.find(filtro).sort({ nome: 1 }).lean();
+    }
+    return areasAtuacao
+        .filter((area) => !somenteAtivas || area.ativo)
+        .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+}
+
+export async function cadastrarAreaAtuacao(dados) {
+    if (usandoMongo()) return AreaAtuacao.create(dados);
+    const area = { id: novoId(), ativo: true, ...dados };
+    areasAtuacao.push(area);
+    return area;
+}
+
+export async function atualizarAreaAtuacao(id, dados) {
+    if (usandoMongo()) {
+        if (!idValido(id)) return null;
+        return AreaAtuacao.findByIdAndUpdate(id, dados, { new: true, runValidators: true });
+    }
+    const indice = areasAtuacao.findIndex((item) => item.id === String(id));
+    if (indice < 0) return null;
+    areasAtuacao[indice] = { ...areasAtuacao[indice], ...dados };
+    return areasAtuacao[indice];
 }
 
 export async function cadastrarCurso(dados) {
@@ -595,7 +697,7 @@ export async function atualizarTurma(id, dados) {
 
 export async function resumoAdministrativo() {
     if (usandoMongo()) {
-        const [totalUsuarios, totalAlunos, totalProfessores, tccsPendentes, totalCursos, totalTurmas, totalIdeias] = await Promise.all([
+        const [totalUsuarios, totalAlunos, totalProfessores, tccsPendentes, totalCursos, totalTurmas, totalIdeias, totalAreas] = await Promise.all([
             Usuario.countDocuments(),
             Usuario.countDocuments({ perfil: 'aluno' }),
             Usuario.countDocuments({ perfil: 'professor' }),
@@ -603,8 +705,9 @@ export async function resumoAdministrativo() {
             Curso.countDocuments(),
             Turma.countDocuments(),
             Ideia.countDocuments(),
+            AreaAtuacao.countDocuments(),
         ]);
-        return { totalUsuarios, totalAlunos, totalProfessores, tccsPendentes, totalCursos, totalTurmas, totalIdeias };
+        return { totalUsuarios, totalAlunos, totalProfessores, tccsPendentes, totalCursos, totalTurmas, totalIdeias, totalAreas };
     }
     return {
         totalUsuarios: usuarios.length,
@@ -613,6 +716,7 @@ export async function resumoAdministrativo() {
         tccsPendentes: tccs.filter((tcc) => ['em_analise', 'correcao_solicitada'].includes(tcc.status)).length,
         totalCursos: cursos.length,
         totalTurmas: turmas.length,
+        totalAreas: areasAtuacao.length,
         totalIdeias: ideias.length,
     };
 }

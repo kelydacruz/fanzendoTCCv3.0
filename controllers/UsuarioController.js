@@ -10,6 +10,8 @@ import {
     buscarUsuarioComCredenciaisPorId,
     cadastrarUsuario,
     confirmarAcessoUsuario,
+    listarAreasAtuacao,
+    listarCursos,
     registrarLoginUsuario,
     vincularContaGoogle,
 } from '../services/repositorio.js';
@@ -106,6 +108,15 @@ async function iniciarVerificacao(req, res, usuario, finalidade, mensagem, acao 
     return res.redirect('/confirmar-codigo');
 }
 
+function exigirCodigoAdministrativo() {
+    return process.env.ADMIN_EXIGIR_CODIGO === 'true';
+}
+
+function loginPrecisaConfirmacao(req, usuario) {
+    if (req.modoDemo) return false;
+    return !usuario.emailVerificado || (usuario.perfil === 'admin' && exigirCodigoAdministrativo());
+}
+
 function dadosCadastro(req, emailForcado = '', perfilForcado = '') {
     const email = normalizarTexto(emailForcado || req.body.email);
     return {
@@ -117,7 +128,19 @@ function dadosCadastro(req, emailForcado = '', perfilForcado = '') {
     };
 }
 
-function validarCadastro(dados) {
+async function opcoesCadastro() {
+    const [cursos, areas] = await Promise.all([
+        listarCursos({ somenteAtivos: true }),
+        listarAreasAtuacao({ somenteAtivas: true }),
+    ]);
+    return { cursos, areas };
+}
+
+function opcaoValida(valor, opcoes) {
+    return opcoes.some((opcao) => normalizarTexto(opcao.nome) === normalizarTexto(valor));
+}
+
+function validarCadastro(dados, opcoes = null) {
     if (!textoComTamanho(dados.nome, 3, 100) || !emailValido(dados.email)) {
         return 'Informe nome e e-mail válidos.';
     }
@@ -130,10 +153,30 @@ function validarCadastro(dados) {
     if (dados.perfil === 'aluno' && !textoComTamanho(dados.curso, 2, 100)) {
         return 'Informe o curso do aluno.';
     }
+    if (dados.perfil === 'aluno' && opcoes && !opcaoValida(dados.curso, opcoes.cursos)) {
+        return 'Selecione um curso cadastrado pela administração.';
+    }
     if (dados.perfil === 'professor' && !textoComTamanho(dados.areaAtuacao, 2, 100)) {
         return 'Informe a área de atuação do professor.';
     }
+    if (dados.perfil === 'professor' && opcoes && !opcaoValida(dados.areaAtuacao, opcoes.areas)) {
+        return 'Selecione uma área de atuação cadastrada pela administração.';
+    }
     return '';
+}
+
+async function renderCadastro(res, status, erro, dados) {
+    const opcoes = await opcoesCadastro();
+    return res.status(status).render('usuario/cadastro', {
+        title: 'Criar conta', erro, dados, ...opcoes,
+    });
+}
+
+async function renderCadastroGoogle(res, status, erro, dados) {
+    const opcoes = await opcoesCadastro();
+    return res.status(status).render('usuario/cadastro-google', {
+        title: 'Completar cadastro', erro, dados, ...opcoes,
+    });
 }
 
 export default class UsuarioController {
@@ -151,12 +194,12 @@ export default class UsuarioController {
                 if (!senhaCorreta) return renderLogin(req, res, 401, 'E-mail ou senha incorretos.', email);
                 if (!usuarioAtivo(usuario)) return renderLogin(req, res, 403, 'Esta conta está bloqueada. Procure a administração.', email);
 
-                if (usuario.perfil === 'admin' && !req.modoDemo) {
-                    return await iniciarVerificacao(req, res, usuario, 'admin_login', 'Acesso administrativo confirmado.');
-                }
-
-                if (!usuario.emailVerificado && !req.modoDemo) {
-                    return await iniciarVerificacao(req, res, usuario, 'confirmar_email', 'E-mail confirmado e login realizado.');
+                if (loginPrecisaConfirmacao(req, usuario)) {
+                    const finalidade = usuario.perfil === 'admin' ? 'admin_login' : 'confirmar_email';
+                    const mensagem = usuario.perfil === 'admin'
+                        ? 'Acesso administrativo confirmado.'
+                        : 'E-mail confirmado e login realizado.';
+                    return await iniciarVerificacao(req, res, usuario, finalidade, mensagem);
                 }
 
                 const atualizado = await registrarLoginUsuario(usuario.id || usuario._id);
@@ -198,7 +241,7 @@ export default class UsuarioController {
                     if (!usuario.googleId) usuario = await vincularContaGoogle(usuario._id, dadosGoogle.googleId);
                     if (usuario.perfil !== perfil) usuario = await atualizarPerfilUsuario(usuario._id, perfil);
                     usuario = await confirmarAcessoUsuario(usuario._id);
-                    if (perfil === 'admin') {
+                    if (perfil === 'admin' && exigirCodigoAdministrativo()) {
                         return iniciarVerificacao(req, res, usuario, 'admin_login', 'Acesso administrativo confirmado.');
                     }
                     return iniciarSessao(req, res, usuario, 'Acesso com Google confirmado.');
@@ -213,7 +256,10 @@ export default class UsuarioController {
                         emailVerificado: true,
                         ativo: true,
                     });
-                    return iniciarVerificacao(req, res, usuario, 'admin_login', 'Conta administrativa criada com segurança.');
+                    if (exigirCodigoAdministrativo()) {
+                        return iniciarVerificacao(req, res, usuario, 'admin_login', 'Acesso administrativo confirmado.');
+                    }
+                    return iniciarSessao(req, res, usuario, 'Conta administrativa criada com segurança.');
                 }
 
                 await regenerarSessao(req);
@@ -226,21 +272,26 @@ export default class UsuarioController {
             }
         };
 
-        this.openCadastro = (req, res) => {
+        this.openCadastro = async (req, res, next) => {
             if (req.session.usuario) return res.redirect('/painel');
-            return res.render('usuario/cadastro', { title: 'Criar conta', erro: '', dados: {} });
+            try {
+                return await renderCadastro(res, 200, '', {});
+            } catch (erro) {
+                return next(erro);
+            }
         };
 
         this.cadastro = async (req, res, next) => {
             const dados = dadosCadastro(req);
             try {
-                const erroDados = validarCadastro(dados);
-                if (erroDados) return res.status(400).render('usuario/cadastro', { title: 'Criar conta', erro: erroDados, dados });
+                const opcoes = await opcoesCadastro();
+                const erroDados = validarCadastro(dados, opcoes);
+                if (erroDados) return renderCadastro(res, 400, erroDados, dados);
                 if (!textoComTamanho(req.body.senha, 8, 72)) {
-                    return res.status(400).render('usuario/cadastro', { title: 'Criar conta', erro: 'A senha deve ter entre 8 e 72 caracteres.', dados });
+                    return renderCadastro(res, 400, 'A senha deve ter entre 8 e 72 caracteres.', dados);
                 }
                 if (await buscarUsuarioPorEmail(dados.email)) {
-                    return res.status(409).render('usuario/cadastro', { title: 'Criar conta', erro: 'Este e-mail já possui uma conta. Entre para continuar.', dados });
+                    return renderCadastro(res, 409, 'Este e-mail já possui uma conta. Entre para continuar.', dados);
                 }
 
                 const usuario = await cadastrarUsuario({
@@ -252,15 +303,19 @@ export default class UsuarioController {
                 return await iniciarVerificacao(req, res, usuario, 'cadastro', 'Conta criada e e-mail confirmado.');
             } catch (erro) {
                 if (erro.code === 'EMAIL_NAO_CONFIGURADO') return renderLogin(req, res, 503, 'A conta foi criada, mas o envio de e-mail ainda não está configurado.', dados.email);
-                if (erro.code === 11000) return res.status(409).render('usuario/cadastro', { title: 'Criar conta', erro: 'Já existe uma conta com este e-mail.', dados });
+                if (erro.code === 11000) return renderCadastro(res, 409, 'Já existe uma conta com este e-mail.', dados);
                 return next(erro);
             }
         };
 
-        this.openCadastroGoogle = (req, res) => {
+        this.openCadastroGoogle = async (req, res, next) => {
             if (req.session.usuario) return res.redirect('/painel');
             if (!req.session.cadastroGoogle) return res.redirect('/entrar');
-            return res.render('usuario/cadastro-google', { title: 'Completar cadastro', erro: '', dados: req.session.cadastroGoogle });
+            try {
+                return await renderCadastroGoogle(res, 200, '', req.session.cadastroGoogle);
+            } catch (erro) {
+                return next(erro);
+            }
         };
 
         this.cadastroGoogle = async (req, res, next) => {
@@ -268,8 +323,9 @@ export default class UsuarioController {
             if (!contaGoogle) return res.redirect('/entrar');
             const dados = dadosCadastro(req, contaGoogle.email, contaGoogle.perfil);
             try {
-                const erroDados = validarCadastro(dados);
-                if (erroDados) return res.status(400).render('usuario/cadastro-google', { title: 'Completar cadastro', erro: erroDados, dados });
+                const opcoes = await opcoesCadastro();
+                const erroDados = validarCadastro(dados, opcoes);
+                if (erroDados) return renderCadastroGoogle(res, 400, erroDados, dados);
 
                 let usuario = await buscarUsuarioPorEmail(contaGoogle.email);
                 if (usuario?.googleId && usuario.googleId !== contaGoogle.googleId) return renderLogin(req, res, 401, 'Não foi possível vincular esta conta Google.');

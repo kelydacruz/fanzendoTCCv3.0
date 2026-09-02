@@ -1,0 +1,38 @@
+<%- include('../partials/header') %>
+
+<section class="topo-pagina">
+    <div class="container container-form">
+        <span class="destaque">Acompanhe seu trabalho</span>
+        <h1>Notificações</h1>
+        <p>Veja atualizações sobre seus TCCs, orientações e comentários.</p>
+    </div>
+</section>
+
+<section class="secao container container-form">
+    <div class="cabecalho-secao">
+        <h2>Mais recentes</h2>
+        <% if (notificacoes.some((item) => !item.lida)) { %>
+            <form action="/notificacoes/todas-lidas" method="post"><button class="btn btn-texto" type="submit">Marcar todas como lidas</button></form>
+        <% } %>
+    </div>
+
+    <div class="lista-notificacoes">
+        <% notificacoes.forEach((notificacao) => { %>
+            <article class="notificacao-item bloco <%= notificacao.lida ? '' : 'nao-lida' %>">
+                <span class="notificacao-ponto" aria-hidden="true"></span>
+                <div>
+                    <p><%= notificacao.mensagem %></p>
+                    <small><%= formatarData(notificacao.createdAt) %></small>
+                </div>
+                <form action="/notificacoes/<%= idTexto(notificacao) %>/lida" method="post">
+                    <button class="btn btn-secundario btn-pequeno" type="submit"><%= notificacao.lida ? 'Abrir' : 'Ver' %></button>
+                </form>
+            </article>
+        <% }) %>
+        <% if (!notificacoes.length) { %>
+            <div class="estado-vazio bloco"><h2>Nenhuma notificação por enquanto.</h2><p>Quando houver uma atualização, ela aparecerá aqui.</p></div>
+        <% } %>
+    </div>
+</section>
+
+<%- include('../partials/footer') %>

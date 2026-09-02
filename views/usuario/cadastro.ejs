@@ -21,12 +21,22 @@
 
             <div data-campo-aluno>
                 <label for="curso">Curso <small>(para aluno)</small></label>
-                <input id="curso" name="curso" value="<%= dados.curso || '' %>" maxlength="100">
+                <select id="curso" name="curso">
+                    <option value="">Selecione seu curso</option>
+                    <% (cursos || []).forEach((curso) => { %>
+                        <option value="<%= curso.nome %>" <%= dados.curso === curso.nome ? 'selected' : '' %>><%= curso.nome %></option>
+                    <% }) %>
+                </select>
             </div>
 
             <div data-campo-professor>
                 <label for="areaAtuacao">Área de atuação <small>(para professor)</small></label>
-                <input id="areaAtuacao" name="areaAtuacao" value="<%= dados.areaAtuacao || '' %>" maxlength="100">
+                <select id="areaAtuacao" name="areaAtuacao">
+                    <option value="">Selecione sua área</option>
+                    <% (areas || []).forEach((area) => { %>
+                        <option value="<%= area.nome %>" <%= dados.areaAtuacao === area.nome ? 'selected' : '' %>><%= area.nome %></option>
+                    <% }) %>
+                </select>
             </div>
 
             <label for="senha">Senha *</label>

@@ -46,6 +46,14 @@ export const cursos = [
     { id: 'curso-administracao', nome: 'Técnico em Administração', sigla: 'ADM', area: 'Gestão', ativo: true },
 ];
 
+export const areasAtuacao = [
+    { id: 'area-desenvolvimento', nome: 'Desenvolvimento de Sistemas', ativo: true },
+    { id: 'area-banco-dados', nome: 'Banco de dados', ativo: true },
+    { id: 'area-redes', nome: 'Redes de computadores', ativo: true },
+    { id: 'area-suporte', nome: 'Suporte e infraestrutura', ativo: true },
+    { id: 'area-gestao', nome: 'Gestão e projetos', ativo: true },
+];
+
 export const turmas = [
     { id: 'turma-info-2024', nome: '3º ano', ano: 2024, cursoId: 'curso-informatica', ativo: true },
     { id: 'turma-info-2025', nome: '3º ano', ano: 2025, cursoId: 'curso-informatica', ativo: true },
@@ -171,6 +179,8 @@ export const comentarios = [
         createdAt: diasAtras(1),
     },
 ];
+
+export const notificacoes = [];
 
 export function novoId() {
     return randomUUID();

@@ -1,0 +1,34 @@
+<%- include('partials/header') %>
+
+<section class="hero-publico">
+    <div class="container hero-publico-grid">
+        <div>
+            <span class="destaque">Acervo acadêmico</span>
+            <h1>Encontre referências para transformar sua ideia em projeto.</h1>
+            <p>Consulte TCCs publicados, conheça soluções desenvolvidas por estudantes e acompanhe o conhecimento produzido na escola.</p>
+            <div class="botoes-linha">
+                <a class="btn btn-primario" href="/tcc/lst">Consultar TCCs</a>
+                <a class="btn btn-claro" href="/entrar">Entrar na plataforma</a>
+            </div>
+        </div>
+        <div class="hero-publico-card">
+            <span class="hero-publico-icone" aria-hidden="true">AT</span>
+            <strong>Um espaço para pesquisar, aprender e compartilhar.</strong>
+            <span><%= totalTccs %> TCCs publicados no acervo</span>
+        </div>
+    </div>
+</section>
+
+<section class="secao container">
+    <div class="cabecalho-secao">
+        <div><span class="destaque">Comece por aqui</span><h2>Trabalhos em destaque</h2></div>
+        <a class="link-seta" href="/tcc/lst">Ver acervo completo →</a>
+    </div>
+    <div class="grade grade-3">
+        <% tccs.forEach((tcc) => { %>
+            <%- include('partials/tcc-card', { tcc }) %>
+        <% }) %>
+    </div>
+</section>
+
+<%- include('partials/footer') %>

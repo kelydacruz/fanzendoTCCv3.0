@@ -11,7 +11,7 @@ const VerificacaoLoginSchema = new mongoose.Schema({
     codigoHash: { type: String, required: true, select: false },
     finalidade: {
         type: String,
-        enum: ['login', 'cadastro', 'google', 'admin_login', 'definir_senha'],
+        enum: ['login', 'cadastro', 'google', 'admin_login', 'definir_senha', 'confirmar_email'],
         required: true,
     },
     expiraEm: { type: Date, required: true },

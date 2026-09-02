@@ -6,6 +6,7 @@ import {
     excluirIdeia,
     listarComentarios,
     cadastrarComentario,
+    criarNotificacao,
 } from '../services/repositorio.js';
 import { validarConteudo } from '../services/filtroConteudo.js';
 import { usuarioEhDono } from '../services/permissoes.js';
@@ -162,6 +163,16 @@ export default class IdeiaController {
                     alvoTipo: 'ideia',
                     alvoId: req.params.id,
                 });
+                const autorId = ideia.autor?.id || ideia.autor?._id || ideia.autorId;
+                if (autorId && String(autorId) !== String(req.session.usuario.id)) {
+                    await criarNotificacao({
+                        destinatario: autorId,
+                        remetente: req.session.usuario.id,
+                        tipo: 'comentario',
+                        mensagem: `${req.session.usuario.nome} comentou na sua ideia.`,
+                        link: `/ideia/detalhes/${req.params.id}`,
+                    });
+                }
                 return res.redirect(`/ideia/detalhes/${req.params.id}?mensagem=Comentário publicado.`);
             } catch (erro) {
                 if (erro.message.includes('termo não permitido')) {

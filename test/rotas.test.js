@@ -39,27 +39,36 @@ async function enviarFormulario(caminho, dados, cookie = '') {
     });
 }
 
+const cookiesDeTeste = new Map();
+
 async function entrar(email, senha) {
+    const chave = `${email}:${senha}`;
+    if (cookiesDeTeste.has(chave)) return cookiesDeTeste.get(chave);
     const resposta = await enviarFormulario('/entrar', { email, senha });
     assert.equal(resposta.status, 302);
     assert.match(resposta.headers.get('location'), /^\/painel/);
-    return resposta.headers.get('set-cookie').split(';')[0];
+    const cookie = resposta.headers.get('set-cookie').split(';')[0];
+    cookiesDeTeste.set(chave, cookie);
+    return cookie;
 }
 
 async function entrarAdmin() {
+    if (cookiesDeTeste.has('admin')) return cookiesDeTeste.get('admin');
     const resposta = await enviarFormulario('/entrar', {
         email: 'admin@exemplo.com',
         senha: '123456',
     });
     assert.equal(resposta.status, 302);
     assert.match(resposta.headers.get('location'), /^\/admin/);
-    return resposta.headers.get('set-cookie').split(';')[0];
+    const cookie = resposta.headers.get('set-cookie').split(';')[0];
+    cookiesDeTeste.set('admin', cookie);
+    return cookie;
 }
 
-test('mantém o acervo de TCCs como única área de consulta pública', async () => {
+test('oferece início público e mantém o acervo como consulta sem login', async () => {
     const inicio = await requisicao('/');
-    assert.equal(inicio.status, 302);
-    assert.equal(inicio.headers.get('location'), '/tcc/lst');
+    assert.equal(inicio.status, 200);
+    assert.match(await inicio.text(), /Encontre referências/i);
 
     const paginas = [
         ['/tcc/lst', 'TCCs publicados'],
@@ -150,6 +159,10 @@ test('protege páginas privadas e respeita o perfil do usuário', async () => {
     const codigoSemLogin = await requisicao('/confirmar-codigo');
     assert.equal(codigoSemLogin.status, 302);
     assert.equal(codigoSemLogin.headers.get('location'), '/entrar');
+
+    const notificacoesSemLogin = await requisicao('/notificacoes');
+    assert.equal(notificacoesSemLogin.status, 302);
+    assert.match(notificacoesSemLogin.headers.get('location'), /^\/entrar/);
 
     const cookieProfessor = await entrar('professora@exemplo.com', '123456');
     const publicarTcc = await requisicao('/tcc/add', { headers: { cookie: cookieProfessor } });
@@ -247,7 +260,7 @@ test('protege e renderiza os módulos da área administrativa', async () => {
     assert.match(adminNegado.headers.get('location'), /^\/painel/);
 
     const cookieAdmin = await entrarAdmin();
-    for (const caminho of ['/admin', '/admin/usuarios', '/admin/cursos', '/admin/turmas', '/admin/tccs', '/admin/ideias']) {
+    for (const caminho of ['/admin', '/admin/usuarios', '/admin/cursos', '/admin/areas', '/admin/turmas', '/admin/tccs', '/admin/ideias', '/admin/filtro']) {
         const resposta = await requisicao(caminho, { headers: { cookie: cookieAdmin } });
         assert.equal(resposta.status, 200, caminho);
     }
@@ -265,6 +278,13 @@ test('exibe e atualiza o perfil do usuário autenticado', async () => {
     }, cookieAluno);
     assert.equal(atualizacao.status, 302);
     assert.match(atualizacao.headers.get('location'), /^\/perfil/);
+});
+
+test('renderiza notificações para o usuário autenticado', async () => {
+    const cookieAluno = await entrar('aluna@exemplo.com', '123456');
+    const resposta = await requisicao('/notificacoes', { headers: { cookie: cookieAluno } });
+    assert.equal(resposta.status, 200);
+    assert.match(await resposta.text(), /Notificações/);
 });
 
 test('professor pede correções e aprova a publicação no acervo', async () => {
