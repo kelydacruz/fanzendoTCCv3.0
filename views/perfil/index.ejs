@@ -1,0 +1,50 @@
+<%- include('../partials/header') %>
+
+<section class="topo-pagina">
+    <div class="container container-form">
+        <a class="voltar" href="<%= usuario.perfil === 'admin' ? '/admin' : '/painel' %>">← Voltar</a>
+        <span class="destaque">Minha conta</span>
+        <h1>Meu perfil</h1>
+        <p>Atualize seus dados acadêmicos. O e-mail e o perfil são definidos pela conta institucional.</p>
+    </div>
+</section>
+
+<section class="secao container container-form">
+    <div class="perfil-resumo bloco">
+        <span class="perfil-avatar" aria-hidden="true"><%= dados.nome.charAt(0).toUpperCase() %></span>
+        <div>
+            <span class="etiqueta"><%= descricaoPerfil %></span>
+            <h2><%= dados.nome %></h2>
+            <p><%= dados.email %></p>
+        </div>
+    </div>
+
+    <form class="formulario bloco" action="/perfil" method="post">
+        <h2>Dados do perfil</h2>
+        <% if (erro) { %><div class="erro-form" role="alert"><%= erro %></div><% } %>
+
+        <label for="nome">Nome completo *</label>
+        <input id="nome" name="nome" value="<%= dados.nome || '' %>" autocomplete="name" maxlength="100" required>
+
+        <label for="email">E-mail institucional</label>
+        <input id="email" type="email" value="<%= dados.email || '' %>" disabled>
+        <small class="ajuda-campo">O e-mail não pode ser alterado por aqui porque define sua permissão no sistema.</small>
+
+        <% if (dados.perfil === 'aluno') { %>
+            <label for="curso">Curso *</label>
+            <input id="curso" name="curso" value="<%= dados.curso || '' %>" maxlength="100" required>
+        <% } %>
+
+        <% if (dados.perfil === 'professor') { %>
+            <label for="areaAtuacao">Área de atuação *</label>
+            <input id="areaAtuacao" name="areaAtuacao" value="<%= dados.areaAtuacao || '' %>" maxlength="100" required>
+        <% } %>
+
+        <div class="botoes-linha">
+            <button class="btn btn-primario" type="submit">Salvar alterações</button>
+            <a class="btn btn-secundario" href="/conta/seguranca">Segurança da conta</a>
+        </div>
+    </form>
+</section>
+
+<%- include('../partials/footer') %>

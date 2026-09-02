@@ -162,6 +162,26 @@ export async function atualizarPerfilUsuario(usuarioId, perfil) {
     return usuario;
 }
 
+export async function atualizarDadosPerfilUsuario(usuarioId, dados) {
+    const atualizacao = {
+        nome: String(dados.nome || '').trim(),
+        curso: String(dados.curso || '').trim(),
+        areaAtuacao: String(dados.areaAtuacao || '').trim(),
+    };
+    if (usandoMongo()) {
+        if (!idValido(usuarioId)) return null;
+        return Usuario.findByIdAndUpdate(
+            usuarioId,
+            atualizacao,
+            { new: true, runValidators: true },
+        );
+    }
+    const usuario = usuarios.find((item) => item.id === String(usuarioId));
+    if (!usuario) return null;
+    Object.assign(usuario, atualizacao);
+    return usuario;
+}
+
 export async function listarProfessores() {
     if (usandoMongo()) {
         return Usuario.find({ perfil: 'professor', ativo: { $ne: false }, emailVerificado: true })

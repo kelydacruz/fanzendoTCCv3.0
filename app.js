@@ -14,6 +14,7 @@ import usuarioRoutes from './routes/UsuarioRoutes.js';
 import tccRoutes from './routes/TccRoutes.js';
 import ideiaRoutes from './routes/IdeiaRoutes.js';
 import adminRoutes from './routes/AdminRoutes.js';
+import perfilRoutes from './routes/PerfilRoutes.js';
 
 const app = express();
 const root = dirname(fileURLToPath(import.meta.url));
@@ -93,6 +94,7 @@ app.use(usuarioRoutes);
 app.use(tccRoutes);
 app.use(ideiaRoutes);
 app.use(adminRoutes);
+app.use(perfilRoutes);
 app.use(routes);
 
 app.use((req, res) => {

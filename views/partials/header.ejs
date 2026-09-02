@@ -13,7 +13,7 @@
 
     <header class="cabecalho">
         <div class="container navegacao">
-            <a class="logo" href="/" aria-label="AcervoTCC - página inicial">
+            <a class="logo" href="<%= usuario ? '/' : '/tcc/lst' %>" aria-label="AcervoTCC - página inicial">
                 <span class="logo-simbolo" aria-hidden="true">AT</span>
                 <span class="logo-texto">
                     <span>Acervo<strong>TCC</strong></span>
@@ -27,22 +27,24 @@
             </button>
 
             <nav class="menu" id="menu-principal" aria-label="Navegação principal">
-                <a class="<%= caminhoAtual === '/' ? 'ativo' : '' %>" href="/">Início</a>
                 <a class="<%= caminhoAtual.startsWith('/tcc') ? 'ativo' : '' %>" href="/tcc/lst">TCCs</a>
-                <a class="<%= caminhoAtual.startsWith('/ideia') ? 'ativo' : '' %>" href="/ideia/lst">Ideias</a>
-                <a class="<%= caminhoAtual === '/aprender' ? 'ativo' : '' %>" href="/aprender">Aprender</a>
-                <a class="<%= caminhoAtual === '/sobre' ? 'ativo' : '' %>" href="/sobre">Sobre</a>
-                <% if (usuario?.perfil === 'professor') { %>
-                    <a class="<%= caminhoAtual.startsWith('/orientacoes') ? 'ativo' : '' %>" href="/orientacoes">Orientações</a>
-                <% } %>
-                <% if (usuario?.perfil === 'admin') { %>
-                    <a class="<%= caminhoAtual.startsWith('/admin') ? 'ativo' : '' %>" href="/admin">Administração</a>
+                <% if (usuario) { %>
+                    <a class="<%= caminhoAtual === '/' ? 'ativo' : '' %>" href="/">Início</a>
+                    <a class="<%= caminhoAtual.startsWith('/ideia') ? 'ativo' : '' %>" href="/ideia/lst">Ideias</a>
+                    <a class="<%= caminhoAtual === '/aprender' ? 'ativo' : '' %>" href="/aprender">Aprender</a>
+                    <a class="<%= caminhoAtual === '/sobre' ? 'ativo' : '' %>" href="/sobre">Sobre</a>
+                    <% if (usuario.perfil === 'professor') { %>
+                        <a class="<%= caminhoAtual.startsWith('/orientacoes') ? 'ativo' : '' %>" href="/orientacoes">Orientações</a>
+                    <% } %>
+                    <% if (usuario.perfil === 'admin') { %>
+                        <a class="<%= caminhoAtual.startsWith('/admin') ? 'ativo' : '' %>" href="/admin">Administração</a>
+                    <% } %>
                 <% } %>
             </nav>
 
             <div class="acoes-usuario">
                 <% if (usuario) { %>
-                    <a class="usuario-link" href="<%= usuario.perfil === 'admin' ? '/admin' : '/painel' %>">
+                    <a class="usuario-link" href="/perfil">
                         <span class="usuario-avatar" aria-hidden="true"><%= usuario.nome.charAt(0).toUpperCase() %></span>
                         <span><%= usuario.nome.split(' ')[0] %></span>
                     </a>

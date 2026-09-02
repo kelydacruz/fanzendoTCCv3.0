@@ -4,6 +4,7 @@ import { modulos } from '../data/modulos.js';
 export default class GeralController {
     constructor() {
         this.home = async (req, res, next) => {
+            if (!req.session.usuario) return res.redirect('/tcc/lst');
             try {
                 const [tccs, ideias] = await Promise.all([
                     listarTccs(),

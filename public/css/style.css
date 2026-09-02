@@ -2259,6 +2259,37 @@ input[type="file"] {
     font-size: 0.8rem;
 }
 
+.perfil-resumo {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    margin-bottom: 20px;
+    border-left: 4px solid var(--azul);
+}
+
+.perfil-resumo h2 {
+    margin: 6px 0 2px;
+}
+
+.perfil-resumo p {
+    margin: 0;
+    color: var(--texto-suave);
+}
+
+.perfil-avatar {
+    display: grid;
+    width: 64px;
+    height: 64px;
+    place-items: center;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    color: #fff;
+    background: linear-gradient(135deg, #0e4fb5, #5f94ec);
+    font-size: 1.55rem;
+    font-weight: 800;
+    box-shadow: 0 8px 18px rgba(14, 79, 181, 0.22);
+}
+
 @media (max-width: 900px) {
     .metricas-admin,
     .admin-duas-colunas {
@@ -2288,5 +2319,9 @@ input[type="file"] {
     .item-seguranca {
         align-items: flex-start;
         flex-direction: column;
+    }
+
+    .perfil-resumo {
+        align-items: flex-start;
     }
 }

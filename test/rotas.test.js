@@ -56,21 +56,26 @@ async function entrarAdmin() {
     return resposta.headers.get('set-cookie').split(';')[0];
 }
 
-test('renderiza páginas públicas e arquivos estáticos', async () => {
+test('mantém o acervo de TCCs como única área de consulta pública', async () => {
+    const inicio = await requisicao('/');
+    assert.equal(inicio.status, 302);
+    assert.equal(inicio.headers.get('location'), '/tcc/lst');
+
     const paginas = [
-        ['/', 'Encontre referências'],
         ['/tcc/lst', 'TCCs publicados'],
         ['/tcc/detalhes/horta-inteligente', 'Horta inteligente'],
-        ['/ideia/lst', 'Banco de ideias'],
-        ['/ideia/detalhes/ideia-enchentes', 'Aplicativo de alerta'],
-        ['/aprender', 'Aprenda a fazer seu TCC'],
-        ['/sobre', 'Por que criar o AcervoTCC?'],
     ];
 
     for (const [caminho, trecho] of paginas) {
         const resposta = await requisicao(caminho);
         assert.equal(resposta.status, 200, caminho);
         assert.match(await resposta.text(), new RegExp(trecho, 'i'), caminho);
+    }
+
+    for (const caminho of ['/ideia/lst', '/ideia/detalhes/ideia-enchentes', '/aprender', '/sobre']) {
+        const resposta = await requisicao(caminho);
+        assert.equal(resposta.status, 302, caminho);
+        assert.match(resposta.headers.get('location'), /^\/entrar/);
     }
 
     const css = await requisicao('/public/css/style.css');
@@ -82,7 +87,7 @@ test('renderiza páginas públicas e arquivos estáticos', async () => {
 });
 
 test('envia cabeçalhos de segurança e usa cookie próprio para a sessão', async () => {
-    const pagina = await requisicao('/');
+    const pagina = await requisicao('/tcc/lst');
     assert.equal(pagina.headers.get('x-powered-by'), null);
     assert.equal(pagina.headers.get('x-content-type-options'), 'nosniff');
     assert.match(pagina.headers.get('content-security-policy') || '', /default-src/);
@@ -131,7 +136,8 @@ test('filtra e ordena o catálogo de TCCs', async () => {
     assert.equal(ordenada.status, 200);
     assert.match(await ordenada.text(), /Mais visualizados/);
 
-    const ideiasIniciantes = await requisicao('/ideia/lst?dificuldade=Iniciante');
+    const cookieAluno = await entrar('aluna@exemplo.com', '123456');
+    const ideiasIniciantes = await requisicao('/ideia/lst?dificuldade=Iniciante', { headers: { cookie: cookieAluno } });
     assert.equal(ideiasIniciantes.status, 200);
     assert.match(await ideiasIniciantes.text(), /Educa%C3%A7%C3%A3o financeira|Educação financeira/i);
 });
@@ -194,7 +200,7 @@ test('executa o fluxo de criação, comentário, edição e exclusão de ideia',
     const exclusao = await enviarFormulario(`/ideia/del/${id}`, {}, cookieAluno);
     assert.equal(exclusao.status, 302);
 
-    const removida = await requisicao(`/ideia/detalhes/${id}`);
+    const removida = await requisicao(`/ideia/detalhes/${id}`, { headers: { cookie: cookieAluno } });
     assert.equal(removida.status, 404);
 });
 
@@ -245,6 +251,20 @@ test('protege e renderiza os módulos da área administrativa', async () => {
         const resposta = await requisicao(caminho, { headers: { cookie: cookieAdmin } });
         assert.equal(resposta.status, 200, caminho);
     }
+});
+
+test('exibe e atualiza o perfil do usuário autenticado', async () => {
+    const cookieAluno = await entrar('aluna@exemplo.com', '123456');
+    const perfil = await requisicao('/perfil', { headers: { cookie: cookieAluno } });
+    assert.equal(perfil.status, 200);
+    assert.match(await perfil.text(), /Meu perfil/);
+
+    const atualizacao = await enviarFormulario('/perfil', {
+        nome: 'Aluna Exemplo Atualizada',
+        curso: 'Técnico em Informática',
+    }, cookieAluno);
+    assert.equal(atualizacao.status, 302);
+    assert.match(atualizacao.headers.get('location'), /^\/perfil/);
 });
 
 test('professor pede correções e aprova a publicação no acervo', async () => {
