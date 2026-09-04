@@ -4,8 +4,8 @@
     <div class="container formulario-layout">
         <div class="formulario-apresentacao">
             <span class="destaque">Faça parte</span>
-            <h1>Crie sua conta acadêmica.</h1>
-            <p>Seu perfil será identificado automaticamente pelo e-mail institucional. O código é enviado somente para confirmar o cadastro.</p>
+            <h1>Crie sua conta no AcervoTCC.</h1>
+            <p>O domínio do e-mail identifica alunos e professores. Outros e-mails recebem acesso limitado como colaborador externo.</p>
         </div>
 
         <form class="formulario bloco" action="/cadastro" method="post">
@@ -15,9 +15,9 @@
             <label for="nome">Nome completo *</label>
             <input id="nome" name="nome" value="<%= dados.nome || '' %>" autocomplete="name" required maxlength="100">
 
-            <label for="email">E-mail institucional *</label>
+            <label for="email">E-mail *</label>
             <input id="email" type="email" name="email" value="<%= dados.email || '' %>" autocomplete="email" required maxlength="150" data-identificar-perfil data-dominio-aluno="<%= dominioAluno %>" data-dominio-professor="<%= dominioProfessor %>">
-            <small id="perfil-identificado" class="ajuda-campo">Aluno: @<%= dominioAluno %> · Professor: @<%= dominioProfessor %></small>
+            <small id="perfil-identificado" class="ajuda-campo">Aluno: @<%= dominioAluno %> · Professor: @<%= dominioProfessor %> · Outros: colaborador externo</small>
 
             <div data-campo-aluno>
                 <label for="curso">Curso <small>(para aluno)</small></label>

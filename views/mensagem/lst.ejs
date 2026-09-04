@@ -1,0 +1,19 @@
+<%- include('../partials/header') %>
+
+<section class="topo-pagina"><div class="container container-form"><span class="destaque">Contato protegido</span><h1>Mensagens</h1><p>As conversas ficam vinculadas a uma ideia e não revelam o e-mail dos participantes.</p></div></section>
+
+<section class="secao container container-form">
+    <div class="lista-mensagens">
+        <% conversas.forEach((conversa) => { %>
+            <% const outro = idTexto(conversa.aluno) === idTexto(usuario) ? conversa.autorIdeia : conversa.aluno; %>
+            <a class="bloco conversa-card" href="/mensagens/<%= idTexto(conversa) %>">
+                <span class="status status-<%= classeStatus(conversa.status) %>"><%= conversa.status %></span>
+                <h2><%= conversa.ideia?.titulo || 'Ideia removida' %></h2>
+                <p>Conversa com <strong><%= outro?.nome || 'Usuário' %></strong></p>
+            </a>
+        <% }) %>
+        <% if (!conversas.length) { %><div class="estado-vazio bloco"><h2>Nenhuma conversa.</h2><p>O contato pode ser solicitado na página de uma ideia.</p></div><% } %>
+    </div>
+</section>
+
+<%- include('../partials/footer') %>

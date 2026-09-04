@@ -4,7 +4,7 @@
     <div class="container formulario-layout">
         <div class="formulario-apresentacao">
             <span class="destaque">Conta Google confirmada</span>
-            <h1>Complete seu perfil acadêmico.</h1>
+            <h1>Complete seu perfil.</h1>
             <p>Isso acontece somente no primeiro acesso. Depois, você poderá entrar diretamente pelo Google.</p>
         </div>
 
@@ -19,7 +19,7 @@
             <input id="email" type="email" value="<%= dados.email || '' %>" disabled>
 
             <div class="perfil-confirmado">
-                Perfil identificado: <strong><%= dados.perfil === 'aluno' ? 'Aluno' : 'Professor' %></strong>
+                Perfil identificado: <strong><%= dados.perfil === 'aluno' ? 'Aluno' : (dados.perfil === 'professor' ? 'Professor' : 'Colaborador externo') %></strong>
             </div>
 
             <% if (dados.perfil === 'aluno') { %>

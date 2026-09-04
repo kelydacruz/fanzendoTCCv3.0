@@ -6,6 +6,7 @@
         <div class="detalhes-cabecalho">
             <div>
                 <span class="status status-<%= classeStatus(tcc.status || 'publicado') %>"><%= (tcc.status || 'publicado').replaceAll('_', ' ') %></span>
+                <span class="etiqueta"><%= tcc.visibilidade === 'interno' ? 'Acervo interno' : 'Acervo público' %></span>
                 <h1><%= tcc.titulo %></h1>
                 <p><%= (tcc.status || 'publicado') === 'publicado' ? 'Publicado' : 'Enviado' %> por <strong><%= tcc.autor?.nome || 'Autor não informado' %></strong> em <%= formatarData(tcc.createdAt) %>.</p>
             </div>
@@ -63,6 +64,7 @@
                 <div><dt>Autor principal</dt><dd><%= tcc.autor?.nome || 'Não informado' %></dd></div>
                 <div><dt>Coautores</dt><dd><%= (tcc.coautores || []).join(', ') || 'Nenhum' %></dd></div>
                 <div><dt>Tema</dt><dd><%= tcc.tema %></dd></div>
+                <div><dt>Visibilidade</dt><dd><%= tcc.visibilidade === 'interno' ? 'Somente comunidade escolar' : 'Público' %></dd></div>
             </dl>
             <% if ((tcc.palavrasChave || []).length) { %>
                 <div class="tags tags-grandes">
@@ -71,17 +73,25 @@
             <% } %>
         </div>
 
+        <% if (tcc.ideiaOrigem) { %>
+            <div class="bloco aviso-fluxo">
+                <span class="destaque">Origem do projeto</span>
+                <h2>Este TCC foi desenvolvido a partir de uma ideia do portal</h2>
+                <p><a href="/ideia/detalhes/<%= idTexto(tcc.ideiaOrigem) %>"><%= tcc.ideiaOrigem.titulo %></a></p>
+            </div>
+        <% } %>
+
         <div class="bloco comentarios">
             <h2>Comentários <span>(<%= comentarios.length %>)</span></h2>
 
-            <% if (usuario) { %>
+            <% if (comentariosPermitidos) { %>
                 <form class="comentario-form" action="/tcc/comentario/<%= idTexto(tcc) %>" method="post">
                     <label for="texto">Deixe uma dúvida, dica ou explicação</label>
                     <textarea id="texto" name="texto" rows="3" maxlength="500" required></textarea>
                     <button class="btn btn-primario" type="submit">Comentar</button>
                 </form>
             <% } else { %>
-                <p class="chamada-login"><a href="/entrar">Entre na sua conta</a> para participar da conversa.</p>
+                <p class="chamada-login"><a href="/entrar">Entre com um e-mail institucional</a> para participar da conversa.</p>
             <% } %>
 
             <div class="lista-comentarios">

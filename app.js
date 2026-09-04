@@ -18,6 +18,7 @@ import perfilRoutes from './routes/PerfilRoutes.js';
 import { carregarTermosProibidos } from './services/filtroConteudo.js';
 import { contarNotificacoesNaoLidas } from './services/repositorio.js';
 import notificacaoRoutes from './routes/NotificacaoRoutes.js';
+import mensagemRoutes from './routes/MensagemRoutes.js';
 
 const app = express();
 const root = dirname(fileURLToPath(import.meta.url));
@@ -111,6 +112,7 @@ app.use(ideiaRoutes);
 app.use(adminRoutes);
 app.use(perfilRoutes);
 app.use(notificacaoRoutes);
+app.use(mensagemRoutes);
 app.use(routes);
 
 app.use((req, res) => {

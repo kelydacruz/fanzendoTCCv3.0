@@ -1,5 +1,6 @@
 import {
     atualizarDadosPerfilUsuario,
+    buscarIdeiaReservadaPeloAluno,
     buscarUsuarioPorId,
     listarAreasAtuacao,
     listarCursos,
@@ -43,11 +44,15 @@ export default class PerfilController {
                 const usuario = await buscarUsuarioPorId(req.session.usuario.id);
                 if (!usuario) return res.redirect('/entrar');
                 const opcoes = await opcoesPerfil();
+                const ideiaEmDesenvolvimento = usuario.perfil === 'aluno'
+                    ? await buscarIdeiaReservadaPeloAluno(req.session.usuario.id)
+                    : null;
                 return res.render('perfil/index', {
                     title: 'Meu perfil',
                     erro: '',
                     dados: usuario,
                     descricaoPerfil: descricaoPerfil(usuario.perfil),
+                    ideiaEmDesenvolvimento,
                     ...opcoes,
                 });
             } catch (erro) {
@@ -60,6 +65,9 @@ export default class PerfilController {
                 const usuario = await buscarUsuarioPorId(req.session.usuario.id);
                 if (!usuario) return res.redirect('/entrar');
                 const opcoes = await opcoesPerfil();
+                const ideiaEmDesenvolvimento = usuario.perfil === 'aluno'
+                    ? await buscarIdeiaReservadaPeloAluno(req.session.usuario.id)
+                    : null;
                 const dados = {
                     nome: String(req.body.nome || '').trim(),
                     curso: String(req.body.curso || '').trim(),
@@ -70,6 +78,7 @@ export default class PerfilController {
                     return res.status(400).render('perfil/index', {
                         title: 'Meu perfil', erro, dados: { ...usuario, ...dados },
                         descricaoPerfil: descricaoPerfil(usuario.perfil),
+                        ideiaEmDesenvolvimento,
                         ...opcoes,
                     });
                 }

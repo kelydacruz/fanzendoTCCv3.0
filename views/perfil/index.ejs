@@ -19,6 +19,33 @@
         </div>
     </div>
 
+    <% if (dados.perfil === 'aluno') { %>
+        <section class="bloco perfil-ideia">
+            <span class="destaque">Meu projeto</span>
+            <h2>Ideia em desenvolvimento</h2>
+            <% if (ideiaEmDesenvolvimento) { %>
+                <h3><a href="/ideia/detalhes/<%= idTexto(ideiaEmDesenvolvimento) %>"><%= ideiaEmDesenvolvimento.titulo %></a></h3>
+                <p><%= ideiaEmDesenvolvimento.descricao %></p>
+                <div class="botoes-linha">
+                    <a class="btn btn-primario" href="/tcc/add">Usar no meu TCC</a>
+                    <form action="/ideia/<%= idTexto(ideiaEmDesenvolvimento) %>/desistir" method="post" data-confirm="Deseja desistir desta ideia?"><button class="btn btn-secundario" type="submit">Desistir da ideia</button></form>
+                </div>
+            <% } else { %>
+                <p>Você ainda não reservou uma ideia. Demonstre interesse ou escolha uma sugestão no Banco de Ideias.</p>
+                <a class="btn btn-secundario" href="/ideia/lst">Explorar ideias</a>
+            <% } %>
+        </section>
+    <% } %>
+
+    <% if (dados.perfil === 'colaborador') { %>
+        <section class="bloco perfil-ideia">
+            <span class="destaque">Colaboração externa</span>
+            <h2>Suas sugestões</h2>
+            <p>Acompanhe a moderação e as mensagens relacionadas às ideias que você enviou.</p>
+            <div class="botoes-linha"><a class="btn btn-primario" href="/ideia/lst">Minhas ideias</a><a class="btn btn-secundario" href="/mensagens">Mensagens</a></div>
+        </section>
+    <% } %>
+
     <form class="formulario bloco" action="/perfil" method="post">
         <h2>Dados do perfil</h2>
         <% if (erro) { %><div class="erro-form" role="alert"><%= erro %></div><% } %>
@@ -26,9 +53,9 @@
         <label for="nome">Nome completo *</label>
         <input id="nome" name="nome" value="<%= dados.nome || '' %>" autocomplete="name" maxlength="100" required>
 
-        <label for="email">E-mail institucional</label>
+        <label for="email">E-mail da conta</label>
         <input id="email" type="email" value="<%= dados.email || '' %>" disabled>
-        <small class="ajuda-campo">O e-mail não pode ser alterado por aqui porque define sua permissão no sistema.</small>
+        <small class="ajuda-campo">O e-mail não pode ser alterado por aqui porque define a permissão da conta.</small>
 
         <% if (dados.perfil === 'aluno') { %>
             <label for="curso">Curso *</label>

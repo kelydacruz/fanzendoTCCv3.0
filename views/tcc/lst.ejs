@@ -5,7 +5,7 @@
         <div>
             <span class="destaque">Repositório acadêmico</span>
             <h1>TCCs publicados</h1>
-            <p>Consulte trabalhos anteriores por título, tema, resumo ou palavra-chave.</p>
+            <p>Consulte trabalhos anteriores por título, tema, resumo ou palavra-chave.<% if (usuario && ['aluno', 'professor', 'admin'].includes(usuario.perfil)) { %> Você também pode acessar os trabalhos internos da escola.<% } %></p>
         </div>
         <% if (usuario?.perfil === 'aluno') { %>
             <a class="btn btn-primario" href="/tcc/add">Meu TCC</a>

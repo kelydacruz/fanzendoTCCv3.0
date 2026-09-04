@@ -26,13 +26,14 @@ export function perfilPeloEmail(email) {
 
     if (dominio === dominioAluno) return 'aluno';
     if (dominio === dominioProfessor) return 'professor';
-    return null;
+    return 'colaborador';
 }
 
 export function descricaoPerfil(perfil) {
     const nomes = {
         aluno: 'Aluno',
         professor: 'Professor',
+        colaborador: 'Colaborador externo',
         admin: 'Administrador',
     };
     return nomes[perfil] || 'Usuário';

@@ -59,15 +59,32 @@ function atualizarCamposDoPerfil() {
 
     campoCurso.required = aluno;
     campoArea.required = professor;
-    if (grupoAluno) grupoAluno.hidden = professor;
-    if (grupoProfessor) grupoProfessor.hidden = aluno;
+    if (grupoAluno) grupoAluno.hidden = !aluno;
+    if (grupoProfessor) grupoProfessor.hidden = !professor;
 
     if (textoPerfil) {
         if (aluno) textoPerfil.textContent = 'Perfil identificado: Aluno';
         else if (professor) textoPerfil.textContent = 'Perfil identificado: Professor';
-        else textoPerfil.textContent = `Aluno: @${dominioAluno} · Professor: @${dominioProfessor}`;
+        else if (email.includes('@')) textoPerfil.textContent = 'Perfil identificado: Colaborador externo';
+        else textoPerfil.textContent = `Aluno: @${dominioAluno} · Professor: @${dominioProfessor} · Outros e-mails: colaborador externo`;
     }
 }
 
 campoEmailPerfil?.addEventListener('input', atualizarCamposDoPerfil);
 atualizarCamposDoPerfil();
+
+const cursoTcc = document.querySelector('#cursoCadastro');
+const turmaTcc = document.querySelector('#turmaCadastro');
+
+function filtrarTurmasDoCurso() {
+    if (!cursoTcc || !turmaTcc) return;
+    const cursoId = cursoTcc.value;
+    [...turmaTcc.options].forEach((opcao) => {
+        if (!opcao.value) return;
+        opcao.hidden = Boolean(cursoId && opcao.dataset.curso !== cursoId);
+        if (opcao.hidden && opcao.selected) turmaTcc.value = '';
+    });
+}
+
+cursoTcc?.addEventListener('change', filtrarTurmasDoCurso);
+filtrarTurmasDoCurso();

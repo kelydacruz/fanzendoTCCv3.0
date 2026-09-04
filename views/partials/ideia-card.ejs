@@ -1,7 +1,7 @@
 <article class="card card-ideia">
     <div class="card-topo">
         <span class="status status-<%= classeStatus(ideia.status) %>"><%= ideia.status %></span>
-        <span class="data"><%= formatarData(ideia.createdAt) %></span>
+        <span class="etiqueta origem-<%= ideia.origem || 'interna' %>"><%= (ideia.origem || 'interna') === 'externa' ? 'Externa' : 'Interna' %></span>
     </div>
     <div class="meta-card">
         <span class="tema"><%= ideia.tema %></span>
@@ -10,7 +10,7 @@
     <h3><a href="/ideia/detalhes/<%= idTexto(ideia) %>"><%= ideia.titulo %></a></h3>
     <p><%= ideia.descricao %></p>
     <div class="card-rodape">
-        <span><%= ideia.curso %></span>
-        <a href="/ideia/detalhes/<%= idTexto(ideia) %>">Conversar →</a>
+        <span><%= ideia.curso %> · <%= formatarData(ideia.createdAt) %></span>
+        <a href="/ideia/detalhes/<%= idTexto(ideia) %>">Ver ideia →</a>
     </div>
 </article>

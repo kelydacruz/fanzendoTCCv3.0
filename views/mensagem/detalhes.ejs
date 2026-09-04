@@ -1,0 +1,39 @@
+<%- include('../partials/header') %>
+
+<section class="topo-pagina"><div class="container container-form"><a class="voltar" href="/mensagens">← Voltar</a><span class="destaque">Conversa vinculada</span><h1><%= conversa.ideia?.titulo || 'Ideia' %></h1><p>Contato com <strong><%= outroUsuario?.nome || 'Usuário' %></strong>.</p></div></section>
+
+<section class="secao container container-form">
+    <% if (conversa.status === 'pendente') { %>
+        <div class="bloco aviso-fluxo">
+            <h2>Solicitação aguardando resposta</h2>
+            <p>As mensagens serão liberadas apenas após a aceitação do autor da ideia.</p>
+            <% if (podeResponderSolicitacao) { %>
+                <form class="botoes-linha" action="/mensagens/<%= idTexto(conversa) %>/responder" method="post">
+                    <button class="btn btn-primario" name="acao" value="aceitar" type="submit">Aceitar contato</button>
+                    <button class="btn btn-secundario" name="acao" value="recusar" type="submit">Recusar</button>
+                </form>
+            <% } %>
+        </div>
+    <% } else if (conversa.status === 'recusada') { %>
+        <div class="bloco aviso-fluxo"><h2>Solicitação recusada</h2><p>Esta conversa não está disponível para mensagens.</p></div>
+    <% } else { %>
+        <div class="bloco conversa-mensagens">
+            <% mensagens.forEach((mensagem) => { %>
+                <article class="mensagem-chat <%= idTexto(mensagem.autor) === idTexto(usuario) ? 'minha' : '' %>">
+                    <strong><%= mensagem.autor?.nome || 'Usuário' %></strong>
+                    <p><%= mensagem.texto %></p>
+                    <small><%= formatarData(mensagem.createdAt) %></small>
+                </article>
+            <% }) %>
+            <% if (!mensagens.length) { %><p>O contato foi aceito. Envie a primeira mensagem sobre esta ideia.</p><% } %>
+        </div>
+        <form class="formulario bloco" action="/mensagens/<%= idTexto(conversa) %>/enviar" method="post">
+            <label for="texto">Mensagem</label>
+            <textarea id="texto" name="texto" rows="4" maxlength="1000" required></textarea>
+            <small class="ajuda-campo">Use esta conversa somente para assuntos relacionados à ideia.</small>
+            <button class="btn btn-primario" type="submit">Enviar mensagem</button>
+        </form>
+    <% } %>
+</section>
+
+<%- include('../partials/footer') %>

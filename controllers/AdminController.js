@@ -1,8 +1,10 @@
 import {
+    alterarModeracaoIdeia,
     alterarStatusUsuario,
     atualizarCurso,
     atualizarTurma,
     avaliarTcc,
+    buscarIdeiaPorId,
     buscarTccPorId,
     cadastrarCurso,
     cadastrarTurma,
@@ -16,6 +18,8 @@ import {
     listarTodosTccs,
     listarTurmas,
     listarUsuarios,
+    marcarIdeiaUsada,
+    liberarIdeia,
     resumoAdministrativo,
 } from '../services/repositorio.js';
 import { textoComTamanho } from '../services/validacao.js';
@@ -203,13 +207,16 @@ export default class AdminController {
                     feedbackOrientador: req.body.feedbackOrientador,
                 });
                 const autorId = tcc.autor?.id || tcc.autor?._id || tcc.autorId;
+                const ideiaId = String(tcc.ideiaOrigem?.id || tcc.ideiaOrigem?._id || tcc.ideiaOrigemId || '');
+                if (ideiaId && req.body.status === 'publicado') await marcarIdeiaUsada(ideiaId, req.params.id);
+                if (ideiaId && req.body.status === 'rejeitado' && autorId) await liberarIdeia(ideiaId, autorId);
                 if (autorId && ['publicado', 'correcao_solicitada', 'rejeitado'].includes(req.body.status)) {
                     await criarNotificacao({
                         destinatario: autorId,
                         remetente: req.session.usuario.id,
                         tipo: req.body.status === 'publicado' ? 'tcc_aprovado' : 'correcao_solicitada',
                         mensagem: req.body.status === 'publicado'
-                            ? 'A administração aprovou seu TCC para o acervo público.'
+                            ? `A administração aprovou seu TCC para o acervo ${tcc.visibilidade === 'interno' ? 'interno' : 'público'}.`
                             : 'A administração atualizou a situação do seu TCC. Consulte os detalhes.',
                         link: `/tcc/detalhes/${req.params.id}`,
                     });
@@ -222,7 +229,7 @@ export default class AdminController {
 
         this.ideias = async (req, res, next) => {
             try {
-                const ideias = await listarIdeias({ q: req.query.q || '' });
+                const ideias = await listarIdeias({ q: req.query.q || '', incluirOcultas: true });
                 return res.render(`${caminhoBase}ideias`, {
                     title: 'Moderação de ideias', ideias, busca: req.query.q || '',
                 });
@@ -235,6 +242,30 @@ export default class AdminController {
             try {
                 await excluirIdeia(req.params.id);
                 return mensagem(res, '/admin/ideias', 'Ideia removida com sucesso.');
+            } catch (erro) {
+                return next(erro);
+            }
+        };
+
+        this.moderarIdeia = async (req, res, next) => {
+            try {
+                const moderacao = req.body.acao === 'aprovar' ? 'aprovada' : 'rejeitada';
+                const ideia = await buscarIdeiaPorId(req.params.id);
+                if (!ideia) return mensagem(res, '/admin/ideias', 'Ideia não encontrada.');
+                await alterarModeracaoIdeia(req.params.id, moderacao);
+                const autorId = ideia.autor?.id || ideia.autor?._id || ideia.autorId;
+                if (autorId) {
+                    await criarNotificacao({
+                        destinatario: autorId,
+                        remetente: req.session.usuario.id,
+                        tipo: 'sistema',
+                        mensagem: moderacao === 'aprovada'
+                            ? `Sua ideia “${ideia.titulo}” foi aprovada e já aparece para os alunos.`
+                            : `Sua ideia “${ideia.titulo}” não foi aprovada para o Banco de Ideias.`,
+                        link: `/ideia/detalhes/${req.params.id}`,
+                    });
+                }
+                return mensagem(res, '/admin/ideias', moderacao === 'aprovada' ? 'Ideia aprovada.' : 'Ideia recusada.');
             } catch (erro) {
                 return next(erro);
             }

@@ -21,6 +21,7 @@ router.post('/admin/turmas/:id/status', controle.alterarTurma);
 router.get('/admin/tccs', controle.tccs);
 router.post('/admin/tccs/:id/status', controle.alterarTcc);
 router.get('/admin/ideias', controle.ideias);
+router.post('/admin/ideias/:id/moderar', controle.moderarIdeia);
 router.post('/admin/ideias/:id/excluir', controle.excluirIdeia);
 router.get('/admin/filtro', controle.filtro);
 router.post('/admin/filtro', controle.atualizarFiltro);

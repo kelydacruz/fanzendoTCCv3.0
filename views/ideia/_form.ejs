@@ -11,22 +11,18 @@
 
     <div class="campo">
         <label for="curso">Curso relacionado *</label>
-        <input id="curso" name="curso" value="<%= dados.curso || '' %>" required maxlength="100">
+        <select id="curso" name="curso" required>
+            <option value="">Selecione o curso</option>
+            <% (cursos || []).forEach((curso) => { %>
+                <option value="<%= curso.nome %>" <%= dados.curso === curso.nome ? 'selected' : '' %>><%= curso.nome %></option>
+            <% }) %>
+        </select>
     </div>
 
     <div class="campo campo-completo">
         <label for="descricao">Descrição *</label>
         <textarea id="descricao" name="descricao" rows="7" required maxlength="2000"><%= dados.descricao || '' %></textarea>
         <small class="ajuda-campo">Explique o problema, o público e uma possível direção para o projeto.</small>
-    </div>
-
-    <div class="campo">
-        <label for="status">Status</label>
-        <select id="status" name="status">
-            <% ['Disponível', 'Em desenvolvimento', 'Concluída'].forEach((status) => { %>
-                <option value="<%= status %>" <%= dados.status === status ? 'selected' : '' %>><%= status %></option>
-            <% }) %>
-        </select>
     </div>
 
     <div class="campo">

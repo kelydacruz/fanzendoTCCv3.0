@@ -65,6 +65,19 @@ async function entrarAdmin() {
     return cookie;
 }
 
+async function cadastrarAlunoParaTeste() {
+    const resposta = await enviarFormulario('/cadastro', {
+        nome: 'Aluno do Fluxo',
+        email: 'fluxo@academico.ifsul.edu.br',
+        curso: 'Técnico em Informática',
+        areaAtuacao: '',
+        senha: 'senha-segura-123',
+    });
+    assert.equal(resposta.status, 302);
+    assert.match(resposta.headers.get('location'), /^\/painel/);
+    return resposta.headers.get('set-cookie').split(';')[0];
+}
+
 test('oferece início público e mantém o acervo como consulta sem login', async () => {
     const inicio = await requisicao('/');
     assert.equal(inicio.status, 200);
@@ -310,4 +323,52 @@ test('professor pede correções e aprova a publicação no acervo', async () =>
 
     const publicado = await requisicao('/tcc/detalhes/horta-inteligente');
     assert.equal(publicado.status, 200);
+});
+
+test('mostra cursos e turmas do administrador e aponta cada campo inválido do TCC', async () => {
+    const cookieAluno = await cadastrarAlunoParaTeste();
+    const formulario = await requisicao('/tcc/add', { headers: { cookie: cookieAluno } });
+    assert.equal(formulario.status, 200);
+    const htmlFormulario = await formulario.text();
+    assert.match(htmlFormulario, /Técnico em Informática/);
+    assert.match(htmlFormulario, /3º ano — 2025/);
+
+    const incompleto = await enviarFormulario('/tcc/add', {
+        titulo: '',
+        tema: '',
+        resumo: '',
+        cursoCadastro: '',
+        area: '',
+        turmaCadastro: '',
+        orientadorUsuario: '',
+        visibilidade: '',
+    }, cookieAluno);
+    assert.equal(incompleto.status, 400);
+    const htmlIncompleto = await incompleto.text();
+    assert.match(htmlIncompleto, /Informe um título entre 3 e 180 caracteres/);
+    assert.match(htmlIncompleto, /Selecione um curso cadastrado pela administração/);
+    assert.match(htmlIncompleto, /Selecione uma turma cadastrada pela administração/);
+    assert.match(htmlIncompleto, /Selecione um professor orientador ativo e confirmado/);
+
+    const criacao = await enviarFormulario('/tcc/add', {
+        titulo: 'Portal acessível para serviços escolares',
+        tema: 'Acessibilidade digital',
+        resumo: 'Aplicação web criada para organizar serviços escolares e facilitar o acesso de estudantes a informações acadêmicas importantes.',
+        cursoCadastro: 'curso-informatica',
+        area: 'Desenvolvimento web',
+        turmaCadastro: 'turma-info-2025',
+        orientadorUsuario: 'usuario-professora',
+        visibilidade: 'interno',
+        coautores: '',
+        palavrasChave: 'acessibilidade, escola, web',
+    }, cookieAluno);
+    assert.equal(criacao.status, 302);
+    const caminhoTcc = criacao.headers.get('location').split('?')[0];
+    assert.match(caminhoTcc, /^\/tcc\/detalhes\//);
+
+    const visitante = await requisicao(caminhoTcc);
+    assert.equal(visitante.status, 404);
+
+    const alunoAutenticado = await requisicao(caminhoTcc, { headers: { cookie: cookieAluno } });
+    assert.equal(alunoAutenticado.status, 200);
 });

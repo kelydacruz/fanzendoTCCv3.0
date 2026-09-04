@@ -1,6 +1,6 @@
 import express from 'express';
 import IdeiaController from '../controllers/IdeiaController.js';
-import { somenteAutenticado } from '../middleware/autenticacao.js';
+import { somenteAutenticado, somenteAluno } from '../middleware/autenticacao.js';
 
 const router = express.Router();
 const controle = new IdeiaController();
@@ -13,6 +13,9 @@ router.get('/ideia/edt/:id', somenteAutenticado, controle.openEdt);
 router.post('/ideia/edt/:id', somenteAutenticado, controle.edt);
 router.post('/ideia/del/:id', somenteAutenticado, controle.del);
 router.post('/ideia/comentario/:id', somenteAutenticado, controle.comment);
+router.post('/ideia/:id/interesse', somenteAluno, controle.interesse);
+router.post('/ideia/:id/desenvolver', somenteAluno, controle.desenvolver);
+router.post('/ideia/:id/desistir', somenteAluno, controle.desistir);
 
 router.get('/ideias', somenteAutenticado, (req, res) => res.redirect(`/ideia/lst${req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : ''}`));
 

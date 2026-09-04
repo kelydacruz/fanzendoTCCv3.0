@@ -226,7 +226,7 @@ export default class UsuarioController {
 
                 const perfil = perfilPeloEmail(dadosGoogle.email);
                 if (!perfil) {
-                    return renderLogin(req, res, 403, 'Use uma conta institucional do IFSul autorizada para acessar o sistema.', dadosGoogle.email);
+                    return renderLogin(req, res, 403, 'Não foi possível identificar o tipo desta conta.', dadosGoogle.email);
                 }
 
                 let usuario = await buscarUsuarioPorGoogleId(dadosGoogle.googleId);

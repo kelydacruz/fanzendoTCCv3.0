@@ -1,7 +1,7 @@
 <article class="card card-tcc">
     <div class="card-topo">
         <span class="etiqueta"><%= tcc.tema %></span>
-        <span class="ano"><%= tcc.ano %></span>
+        <span class="ano"><%= tcc.ano %> · <%= tcc.visibilidade === 'interno' ? 'Interno' : 'Público' %></span>
     </div>
     <span class="tema"><%= tcc.area %> · <%= tcc.curso %></span>
     <h3><a href="/tcc/detalhes/<%= idTexto(tcc) %>"><%= tcc.titulo %></a></h3>

@@ -6,6 +6,7 @@
         <div class="detalhes-cabecalho">
             <div>
                 <span class="status status-<%= classeStatus(ideia.status) %>"><%= ideia.status %></span>
+                <span class="etiqueta origem-<%= ideia.origem || 'interna' %>"><%= (ideia.origem || 'interna') === 'externa' ? 'Ideia externa' : 'Ideia interna' %></span>
                 <h1><%= ideia.titulo %></h1>
                 <p>Compartilhada por <strong><%= ideia.autor?.nome || 'Autor não informado' %></strong> em <%= formatarData(ideia.createdAt) %>.</p>
             </div>
@@ -23,6 +24,9 @@
 
 <section class="secao container container-texto">
     <article class="bloco ideia-detalhe">
+        <% if ((ideia.moderacao || 'aprovada') !== 'aprovada') { %>
+            <div class="aviso-fluxo"><strong>Moderação:</strong> esta ideia está <%= ideia.moderacao %> e ainda não aparece no Banco de Ideias.</div>
+        <% } %>
         <span class="destaque"><%= ideia.tema %></span>
         <h2>Descrição da ideia</h2>
         <p class="resumo"><%= ideia.descricao %></p>
@@ -30,10 +34,34 @@
             <div><dt>Curso relacionado</dt><dd><%= ideia.curso %></dd></div>
             <div><dt>Status</dt><dd><%= ideia.status %></dd></div>
             <div><dt>Dificuldade</dt><dd><%= ideia.dificuldade %></dd></div>
+            <div><dt>Origem</dt><dd><%= (ideia.origem || 'interna') === 'externa' ? 'Colaborador externo' : 'Comunidade escolar' %></dd></div>
         </dl>
+
+        <% if (ideia.tccRelacionado) { %>
+            <div class="aviso-fluxo"><strong>Ideia utilizada:</strong> esta sugestão originou o TCC <a href="/tcc/detalhes/<%= idTexto(ideia.tccRelacionado) %>"><%= ideia.tccRelacionado.titulo %></a>.</div>
+        <% } %>
+
+        <% if (podeDemonstrarInteresse || podeReservar || podeDesistir || podeSolicitarContato) { %>
+            <div class="botoes-linha acoes-ideia">
+                <% if (podeDemonstrarInteresse) { %>
+                    <form action="/ideia/<%= idTexto(ideia) %>/interesse" method="post"><button class="btn btn-secundario" type="submit">Tenho interesse</button></form>
+                <% } else if (interessado && ideia.status === 'Disponível') { %>
+                    <span class="etiqueta">Interesse registrado</span>
+                <% } %>
+                <% if (podeReservar) { %>
+                    <form action="/ideia/<%= idTexto(ideia) %>/desenvolver" method="post" data-confirm="Deseja reservar esta ideia para desenvolver seu TCC?"><button class="btn btn-primario" type="submit">Usar no meu TCC</button></form>
+                <% } %>
+                <% if (podeDesistir) { %>
+                    <form action="/ideia/<%= idTexto(ideia) %>/desistir" method="post" data-confirm="Deseja desistir desta ideia e torná-la disponível novamente?"><button class="btn btn-secundario" type="submit">Desistir da ideia</button></form>
+                <% } %>
+                <% if (podeSolicitarContato) { %>
+                    <form action="/mensagens/ideia/<%= idTexto(ideia) %>/solicitar" method="post"><button class="btn btn-texto" type="submit">Solicitar contato com o autor</button></form>
+                <% } %>
+            </div>
+        <% } %>
     </article>
 
-    <section class="bloco comentarios">
+    <% if (comentariosPermitidos) { %><section class="bloco comentarios">
         <h2>Conversa sobre a ideia <span>(<%= comentarios.length %>)</span></h2>
 
         <% if (usuario) { %>
@@ -55,7 +83,7 @@
             <% }) %>
             <% if (!comentarios.length) { %><p>Ainda não há comentários. Seja a primeira pessoa a contribuir.</p><% } %>
         </div>
-    </section>
+    </section><% } %>
 </section>
 
 <%- include('../partials/footer') %>

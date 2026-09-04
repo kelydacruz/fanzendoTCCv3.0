@@ -2,26 +2,44 @@
     <div class="campo campo-completo">
         <label for="titulo">Título *</label>
         <input id="titulo" name="titulo" value="<%= dados.titulo || '' %>" required maxlength="180">
+        <% if (erros?.titulo) { %><small class="erro-campo"><%= erros.titulo %></small><% } %>
     </div>
 
     <div class="campo">
         <label for="tema">Tema *</label>
         <input id="tema" name="tema" value="<%= dados.tema || '' %>" required maxlength="100">
+        <% if (erros?.tema) { %><small class="erro-campo"><%= erros.tema %></small><% } %>
     </div>
 
     <div class="campo">
-        <label for="curso">Curso *</label>
-        <input id="curso" name="curso" value="<%= dados.curso || '' %>" required maxlength="100">
+        <label for="cursoCadastro">Curso *</label>
+        <% const cursoSelecionado = idTexto(dados.cursoCadastro || dados.cursoCadastroId); %>
+        <select id="cursoCadastro" name="cursoCadastro" required>
+            <option value="">Selecione o curso</option>
+            <% cursos.forEach((curso) => { %>
+                <option value="<%= idTexto(curso) %>" <%= cursoSelecionado === idTexto(curso) || (!cursoSelecionado && dados.curso === curso.nome) ? 'selected' : '' %>><%= curso.nome %> (<%= curso.sigla %>)</option>
+            <% }) %>
+        </select>
+        <% if (erros?.cursoCadastro) { %><small class="erro-campo"><%= erros.cursoCadastro %></small><% } %>
     </div>
 
     <div class="campo">
         <label for="area">Área do conhecimento *</label>
         <input id="area" name="area" value="<%= dados.area || '' %>" required maxlength="100" placeholder="Ex.: Desenvolvimento web">
+        <% if (erros?.area) { %><small class="erro-campo"><%= erros.area %></small><% } %>
     </div>
 
     <div class="campo">
-        <label for="turma">Turma *</label>
-        <input id="turma" name="turma" value="<%= dados.turma || '' %>" required maxlength="50" placeholder="Ex.: 3º ano">
+        <label for="turmaCadastro">Turma *</label>
+        <% const turmaSelecionada = idTexto(dados.turmaCadastro || dados.turmaCadastroId); %>
+        <select id="turmaCadastro" name="turmaCadastro" required>
+            <option value="">Selecione a turma</option>
+            <% turmas.forEach((turma) => { %>
+                <% const turmaDoCurso = idTexto(turma.curso || turma.cursoId); %>
+                <option value="<%= idTexto(turma) %>" data-curso="<%= turmaDoCurso %>" <%= turmaSelecionada === idTexto(turma) || (!turmaSelecionada && String(dados.turma || '').startsWith(turma.nome) && String(dados.ano) === String(turma.ano)) ? 'selected' : '' %>><%= turma.nome %> — <%= turma.ano %> · <%= turma.curso?.sigla || turma.curso?.nome || '' %></option>
+            <% }) %>
+        </select>
+        <% if (erros?.turmaCadastro) { %><small class="erro-campo"><%= erros.turmaCadastro %></small><% } %>
     </div>
 
     <div class="campo">
@@ -34,28 +52,48 @@
             <% }) %>
         </select>
         <% if (!professores.length) { %><small class="ajuda-campo">Nenhum professor confirmado está disponível. Peça à administração para conferir os cadastros.</small><% } %>
+        <% if (erros?.orientadorUsuario) { %><small class="erro-campo"><%= erros.orientadorUsuario %></small><% } %>
     </div>
 
     <div class="campo">
-        <label for="ano">Ano de conclusão *</label>
-        <input id="ano" type="number" name="ano" value="<%= dados.ano || new Date().getFullYear() %>" min="1980" max="<%= new Date().getFullYear() %>" required>
+        <label for="visibilidade">Quem poderá consultar depois da aprovação? *</label>
+        <select id="visibilidade" name="visibilidade" required>
+            <option value="interno" <%= (dados.visibilidade || 'interno') === 'interno' ? 'selected' : '' %>>Interno — somente e-mails institucionais</option>
+            <option value="publico" <%= dados.visibilidade === 'publico' ? 'selected' : '' %>>Público — qualquer visitante</option>
+        </select>
+        <% if (erros?.visibilidade) { %><small class="erro-campo"><%= erros.visibilidade %></small><% } %>
     </div>
 
     <div class="campo campo-completo">
         <label for="resumo">Resumo *</label>
         <textarea id="resumo" name="resumo" rows="7" required maxlength="3000"><%= dados.resumo || '' %></textarea>
         <small class="ajuda-campo">Explique o problema, o objetivo e a solução apresentada.</small>
+        <% if (erros?.resumo) { %><small class="erro-campo"><%= erros.resumo %></small><% } %>
     </div>
 
     <div class="campo">
         <label for="coautores">Coautores</label>
         <input id="coautores" name="coautores" value="<%= Array.isArray(dados.coautores) ? dados.coautores.join(', ') : (dados.coautores || '') %>" placeholder="Separe os nomes por vírgula">
+        <% if (erros?.coautores) { %><small class="erro-campo"><%= erros.coautores %></small><% } %>
     </div>
 
     <div class="campo">
         <label for="palavrasChave">Palavras-chave</label>
         <input id="palavrasChave" name="palavrasChave" value="<%= Array.isArray(dados.palavrasChave) ? dados.palavrasChave.join(', ') : (dados.palavrasChave || '') %>" placeholder="Ex.: web, educação, acessibilidade">
+        <% if (erros?.palavrasChave) { %><small class="erro-campo"><%= erros.palavrasChave %></small><% } %>
     </div>
+
+    <% if (ideiaEmDesenvolvimento) { %>
+        <div class="campo campo-completo ideia-vinculada-form">
+            <label for="ideiaOrigem">Ideia que originou o TCC</label>
+            <% const ideiaSelecionada = idTexto(dados.ideiaOrigem || dados.ideiaOrigemId); %>
+            <select id="ideiaOrigem" name="ideiaOrigem">
+                <option value="">Este TCC não utiliza a ideia reservada</option>
+                <option value="<%= idTexto(ideiaEmDesenvolvimento) %>" <%= ideiaSelecionada === idTexto(ideiaEmDesenvolvimento) ? 'selected' : '' %>><%= ideiaEmDesenvolvimento.titulo %></option>
+            </select>
+            <small class="ajuda-campo">Quando o professor aprovar o TCC, a ideia será marcada automaticamente como usada.</small>
+        </div>
+    <% } %>
 
     <div class="campo campo-completo">
         <label for="pdf">Arquivo PDF <%= editando ? '(opcional para substituir)' : '(opcional)' %></label>

@@ -13,7 +13,7 @@
 
     <header class="cabecalho">
         <div class="container navegacao">
-            <a class="logo" href="<%= usuario ? '/' : '/tcc/lst' %>" aria-label="AcervoTCC - página inicial">
+            <a class="logo" href="/" aria-label="AcervoTCC - página inicial">
                 <span class="logo-simbolo" aria-hidden="true">AT</span>
                 <span class="logo-texto">
                     <span>Acervo<strong>TCC</strong></span>
@@ -30,7 +30,8 @@
                 <a class="<%= caminhoAtual === '/' ? 'ativo' : '' %>" href="/">Início</a>
                 <a class="<%= caminhoAtual.startsWith('/tcc') ? 'ativo' : '' %>" href="/tcc/lst">TCCs</a>
                 <% if (usuario) { %>
-                    <a class="<%= caminhoAtual.startsWith('/ideia') ? 'ativo' : '' %>" href="/ideia/lst">Ideias</a>
+                    <a class="<%= caminhoAtual.startsWith('/ideia') ? 'ativo' : '' %>" href="/ideia/lst"><%= usuario.perfil === 'colaborador' ? 'Minhas ideias' : 'Ideias' %></a>
+                    <a class="<%= caminhoAtual.startsWith('/mensagens') ? 'ativo' : '' %>" href="/mensagens">Mensagens</a>
                     <a class="<%= caminhoAtual === '/aprender' ? 'ativo' : '' %>" href="/aprender">Aprender</a>
                     <a class="<%= caminhoAtual === '/sobre' ? 'ativo' : '' %>" href="/sobre">Sobre</a>
                     <% if (usuario.perfil === 'professor') { %>

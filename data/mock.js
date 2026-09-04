@@ -38,6 +38,17 @@ export const usuarios = [
         curso: '',
         areaAtuacao: '',
     },
+    {
+        id: 'usuario-colaborador',
+        nome: 'Comunidade Externa',
+        email: 'colaborador@exemplo.com',
+        senha: bcrypt.hashSync('12345678', 10),
+        perfil: 'colaborador',
+        ativo: true,
+        emailVerificado: true,
+        curso: '',
+        areaAtuacao: '',
+    },
 ];
 
 export const cursos = [
@@ -77,6 +88,7 @@ export const tccs = [
         downloads: 346,
         autorId: 'usuario-aluna',
         status: 'publicado',
+        visibilidade: 'publico',
         feedbackOrientador: '',
         createdAt: diasAtras(12),
         pdf: null,
@@ -98,6 +110,7 @@ export const tccs = [
         downloads: 288,
         autorId: 'usuario-aluna',
         status: 'publicado',
+        visibilidade: 'interno',
         feedbackOrientador: '',
         createdAt: diasAtras(28),
         pdf: null,
@@ -119,6 +132,7 @@ export const tccs = [
         downloads: 219,
         autorId: 'usuario-aluna',
         status: 'publicado',
+        visibilidade: 'publico',
         feedbackOrientador: '',
         createdAt: diasAtras(45),
         pdf: null,
@@ -134,6 +148,9 @@ export const ideias = [
         curso: 'Técnico em Informática',
         dificuldade: 'Avançada',
         status: 'Disponível',
+        origem: 'interna',
+        moderacao: 'aprovada',
+        interessadosIds: [],
         autorId: 'usuario-professora',
         createdAt: diasAtras(3),
     },
@@ -145,6 +162,10 @@ export const ideias = [
         curso: 'Técnico em Informática',
         dificuldade: 'Intermediária',
         status: 'Em desenvolvimento',
+        origem: 'interna',
+        moderacao: 'aprovada',
+        interessadosIds: [],
+        reservadaPorId: 'usuario-aluna',
         autorId: 'usuario-aluna',
         createdAt: diasAtras(7),
     },
@@ -156,8 +177,25 @@ export const ideias = [
         curso: 'Técnico em Administração',
         dificuldade: 'Iniciante',
         status: 'Disponível',
+        origem: 'interna',
+        moderacao: 'aprovada',
+        interessadosIds: [],
         autorId: 'usuario-professora',
         createdAt: diasAtras(15),
+    },
+    {
+        id: 'ideia-empresa',
+        titulo: 'Painel comunitário para doação de equipamentos',
+        tema: 'Tecnologia e comunidade',
+        descricao: 'Criar um sistema para aproximar instituições que possuem equipamentos sem uso de escolas e projetos comunitários.',
+        curso: 'Técnico em Informática',
+        dificuldade: 'Intermediária',
+        status: 'Disponível',
+        origem: 'externa',
+        moderacao: 'aprovada',
+        interessadosIds: [],
+        autorId: 'usuario-colaborador',
+        createdAt: diasAtras(6),
     },
 ];
 
@@ -181,6 +219,10 @@ export const comentarios = [
 ];
 
 export const notificacoes = [];
+
+export const conversasIdeia = [];
+
+export const mensagensIdeia = [];
 
 export function novoId() {
     return randomUUID();

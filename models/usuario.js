@@ -7,7 +7,7 @@ const UsuarioSchema = new mongoose.Schema({
     googleId: { type: String, unique: true, sparse: true, select: false },
     emailVerificado: { type: Boolean, default: false },
     ultimoLogin: { type: Date, default: null },
-    perfil: { type: String, enum: ['aluno', 'professor', 'admin'], required: true },
+    perfil: { type: String, enum: ['aluno', 'professor', 'colaborador', 'admin'], required: true },
     ativo: { type: Boolean, default: true },
     curso: { type: String, trim: true, maxlength: 100, default: '' },
     areaAtuacao: { type: String, trim: true, maxlength: 100, default: '' },

@@ -14,8 +14,8 @@ export default class GeralController {
                     });
                 }
                 const [tccs, ideias] = await Promise.all([
-                    listarTccs(),
-                    listarIdeias(),
+                    listarTccs({ usuario: req.session.usuario }),
+                    listarIdeias({ usuario: req.session.usuario }),
                 ]);
                 const cursos = [...new Set(tccs.map((tcc) => tcc.curso))]
                     .sort()

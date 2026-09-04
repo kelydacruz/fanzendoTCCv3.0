@@ -5,7 +5,11 @@ const NotificacaoSchema = new mongoose.Schema({
     remetente: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario', default: null },
     tipo: {
         type: String,
-        enum: ['tcc_recebido', 'correcao_solicitada', 'tcc_aprovado', 'comentario', 'sistema'],
+        enum: [
+            'tcc_recebido', 'correcao_solicitada', 'tcc_aprovado', 'comentario', 'sistema',
+            'ideia_interesse', 'ideia_reservada', 'ideia_liberada', 'ideia_usada',
+            'contato_solicitado', 'contato_aceito', 'mensagem',
+        ],
         required: true,
     },
     mensagem: { type: String, required: true, trim: true, maxlength: 300 },
