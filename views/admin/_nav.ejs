@@ -1,10 +1,10 @@
 <nav class="admin-nav bloco" aria-label="Menu administrativo">
-    <a href="/admin">Visão geral</a>
-    <a href="/admin/usuarios">Usuários</a>
-    <a href="/admin/cursos">Cursos</a>
-    <a href="/admin/areas">Áreas</a>
-    <a href="/admin/turmas">Turmas</a>
-    <a href="/admin/tccs">TCCs</a>
-    <a href="/admin/ideias">Ideias</a>
-    <a href="/admin/filtro">Palavras proibidas</a>
+    <a class="<%= caminhoAtual === '/admin' ? 'ativo' : '' %>" href="/admin">Visão geral</a>
+    <a class="<%= caminhoAtual.startsWith('/admin/usuarios') ? 'ativo' : '' %>" href="/admin/usuarios">Usuários</a>
+    <a class="<%= caminhoAtual.startsWith('/admin/cursos') ? 'ativo' : '' %>" href="/admin/cursos">Cursos</a>
+    <a class="<%= caminhoAtual.startsWith('/admin/areas') ? 'ativo' : '' %>" href="/admin/areas">Áreas</a>
+    <a class="<%= caminhoAtual.startsWith('/admin/turmas') ? 'ativo' : '' %>" href="/admin/turmas">Turmas</a>
+    <a class="<%= caminhoAtual.startsWith('/admin/tccs') ? 'ativo' : '' %>" href="/admin/tccs">TCCs</a>
+    <a class="<%= caminhoAtual.startsWith('/admin/ideias') ? 'ativo' : '' %>" href="/admin/ideias">Ideias</a>
+    <a class="<%= caminhoAtual.startsWith('/admin/filtro') ? 'ativo' : '' %>" href="/admin/filtro">Palavras proibidas</a>
 </nav>
