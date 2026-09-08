@@ -4,7 +4,7 @@
     <div class="container hero-publico-grid">
         <div>
             <span class="destaque">Acervo acadêmico</span>
-            <h1>Encontre referências para transformar sua ideia em projeto.</h1>
+            <h1>Encontre referências.<br>Desenvolva <em>novas ideias.</em></h1>
             <p>Consulte TCCs publicados, conheça soluções desenvolvidas por estudantes e acompanhe o conhecimento produzido na escola.</p>
             <div class="botoes-linha">
                 <a class="btn btn-primario" href="/tcc/lst">Consultar TCCs</a>
@@ -12,6 +12,7 @@
             </div>
         </div>
         <div class="hero-publico-card">
+            <span class="destaque">Conhecimento que continua</span>
             <span class="hero-publico-icone" aria-hidden="true">AT</span>
             <strong>Um espaço para pesquisar, aprender e compartilhar.</strong>
             <span><%= totalTccs %> TCCs publicados no acervo</span>
@@ -30,5 +31,7 @@
         <% }) %>
     </div>
 </section>
+
+<section class="secao container"><%- include('partials/tecnologias', { grafico }) %></section>
 
 <%- include('partials/footer') %>

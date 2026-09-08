@@ -19,5 +19,5 @@ export function separarLista(valor = '') {
 }
 
 export function classeStatus(valor = '') {
-    return normalizarTexto(valor).replaceAll(' ', '-');
+    return normalizarTexto(valor).replace(/[ _]+/g, '-');
 }

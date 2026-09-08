@@ -12,6 +12,7 @@ const TccSchema = new mongoose.Schema({
     orientador: { type: String, required: true, trim: true, minlength: 3, maxlength: 100 },
     orientadorUsuario: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario', default: null },
     coautores: [{ type: String, trim: true, maxlength: 100 }],
+    tecnologias: [{ type: String, trim: true, maxlength: 40 }],
     palavrasChave: [{ type: String, trim: true, maxlength: 50 }],
     ano: { type: Number, required: true, min: 1980, max: new Date().getFullYear() },
     visualizacoes: { type: Number, min: 0, default: 0 },

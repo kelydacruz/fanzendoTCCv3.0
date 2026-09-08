@@ -8,7 +8,7 @@
     <title><%= title %> | AcervoTCC</title>
     <link rel="stylesheet" href="/public/css/style.css">
 </head>
-<body>
+<body class="<%= caminhoAtual.startsWith('/admin') ? 'pagina-admin' : '' %>">
     <a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
 
     <header class="cabecalho">
@@ -46,9 +46,9 @@
             <div class="acoes-usuario">
                 <% if (usuario) { %>
                     <a class="link-notificacoes <%= caminhoAtual.startsWith('/notificacoes') ? 'ativo' : '' %>" href="/notificacoes" aria-label="Notificações">
-                        Notificações<% if (notificacoesNaoLidas > 0) { %><span class="badge-notificacao"><%= notificacoesNaoLidas %></span><% } %>
+                        <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span class="sr-only">Notificações</span><% if (notificacoesNaoLidas > 0) { %><span class="badge-notificacao"><%= notificacoesNaoLidas %></span><% } %>
                     </a>
-                    <a class="usuario-link" href="/perfil">
+                    <a class="usuario-link" href="/perfil" aria-label="Meu perfil">
                         <span class="usuario-avatar" aria-hidden="true"><%= usuario.nome.charAt(0).toUpperCase() %></span>
                         <span><%= usuario.nome.split(' ')[0] %></span>
                     </a>

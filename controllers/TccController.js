@@ -1,3 +1,4 @@
+import { normalizarTecnologias, resumirTecnologias } from '../services/tecnologias.js';
 import {
     atualizarTcc,
     avaliarTcc,
@@ -95,6 +96,7 @@ function dadosDoFormulario(body, arquivo, contexto) {
         ano: Number(turma?.ano),
         coautores: separarLista(body.coautores),
         palavrasChave: separarLista(body.palavrasChave),
+        tecnologias: normalizarTecnologias(body.tecnologias),
     };
     if (arquivo) dados.pdf = { dados: arquivo.buffer, nome: arquivo.originalname, tipo: arquivo.mimetype };
     return dados;
@@ -102,6 +104,9 @@ function dadosDoFormulario(body, arquivo, contexto) {
 
 function validarDados(dados, contexto) {
     const erros = {};
+    if (dados.tecnologias.length > 15 || dados.tecnologias.some((nome) => nome.length > 40)) {
+        erros.tecnologias = 'Informe até 15 tecnologias, com no máximo 40 caracteres por nome.';
+    }
     if (!textoComTamanho(dados.titulo, 3, 180)) erros.titulo = 'Informe um título entre 3 e 180 caracteres.';
     if (!textoComTamanho(dados.tema, 2, 100)) erros.tema = 'Informe o tema do trabalho.';
     if (!textoComTamanho(dados.resumo, 30, 3000)) erros.resumo = 'O resumo deve ter entre 30 e 3.000 caracteres.';
@@ -156,7 +161,7 @@ export default class TccController {
                     areas: [...new Set(todos.map((tcc) => tcc.area).filter(Boolean))].sort(),
                     orientadores: [...new Set(todos.map((tcc) => tcc.orientador))].sort(),
                 };
-                return res.render(`${caminhoBase}lst`, { title: 'TCCs publicados', tccs, filtros, opcoes });
+                return res.render(`${caminhoBase}lst`, { title: 'TCCs publicados', tccs, filtros, opcoes, grafico: resumirTecnologias(tccs) });
             } catch (erro) {
                 return next(erro);
             }
@@ -213,7 +218,7 @@ export default class TccController {
 
                 const contexto = await contextoDoFormulario(req.body, req.session.usuario.id);
                 const dados = dadosDoFormulario(req.body, req.file, contexto);
-                validarConteudo(dados.titulo, dados.tema, dados.resumo, dados.palavrasChave.join(' '));
+                validarConteudo(dados.titulo, dados.tema, dados.resumo, dados.palavrasChave.join(' '), dados.tecnologias.join(' '));
                 const erros = validarDados(dados, contexto);
                 if (Object.keys(erros).length) {
                     return renderFormulario(res, 'add', 400, primeiraMensagem(erros), req.body, req.session.usuario.id, erros);
@@ -263,7 +268,7 @@ export default class TccController {
 
                 const contexto = await contextoDoFormulario(req.body, req.session.usuario.id);
                 const dados = dadosDoFormulario(req.body, req.file, contexto);
-                validarConteudo(dados.titulo, dados.tema, dados.resumo, dados.palavrasChave.join(' '));
+                validarConteudo(dados.titulo, dados.tema, dados.resumo, dados.palavrasChave.join(' '), dados.tecnologias.join(' '));
                 const erros = validarDados(dados, contexto);
                 if (Object.keys(erros).length) {
                     return renderFormulario(res, 'edt', 400, primeiraMensagem(erros), { ...tcc, ...req.body }, req.session.usuario.id, erros);

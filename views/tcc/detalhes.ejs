@@ -66,6 +66,10 @@
                 <div><dt>Tema</dt><dd><%= tcc.tema %></dd></div>
                 <div><dt>Visibilidade</dt><dd><%= tcc.visibilidade === 'interno' ? 'Somente comunidade escolar' : 'Público' %></dd></div>
             </dl>
+            <% if ((tcc.tecnologias || []).length) { %>
+                <h3>Tecnologias utilizadas</h3>
+                <div class="tags"><% tcc.tecnologias.forEach((nome) => { %><span><%= nome %></span><% }) %></div>
+            <% } %>
             <% if ((tcc.palavrasChave || []).length) { %>
                 <div class="tags tags-grandes">
                     <% tcc.palavrasChave.forEach((palavra) => { %><span><%= palavra %></span><% }) %>

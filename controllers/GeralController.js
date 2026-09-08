@@ -1,3 +1,4 @@
+import { resumirTecnologias } from '../services/tecnologias.js';
 import { listarTccs, listarIdeias, resumoDoPainel } from '../services/repositorio.js';
 import { modulos } from '../data/modulos.js';
 
@@ -11,6 +12,7 @@ export default class GeralController {
                         title: 'Início',
                         tccs: tccs.slice(0, 3),
                         totalTccs: tccs.length,
+                        grafico: resumirTecnologias(tccs),
                     });
                 }
                 const [tccs, ideias] = await Promise.all([
@@ -30,6 +32,7 @@ export default class GeralController {
                     ideias: ideias.slice(0, 3),
                     cursos,
                     totalTccs: tccs.length,
+                    grafico: resumirTecnologias(tccs),
                     totalIdeias: ideias.length,
                     totalVisualizacoes: tccs.reduce((total, tcc) => total + (tcc.visualizacoes || 0), 0),
                 });

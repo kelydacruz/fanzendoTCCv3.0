@@ -83,6 +83,13 @@
         <% if (erros?.palavrasChave) { %><small class="erro-campo"><%= erros.palavrasChave %></small><% } %>
     </div>
 
+    <div class="campo campo-completo">
+        <label for="tecnologias">Tecnologias utilizadas</label>
+        <input id="tecnologias" name="tecnologias" maxlength="650" value="<%= Array.isArray(dados.tecnologias) ? dados.tecnologias.join(', ') : (dados.tecnologias || '') %>" placeholder="Ex.: JavaScript, Node.js, MongoDB" aria-invalid="<%= erros?.tecnologias ? 'true' : 'false' %>" aria-describedby="ajuda-tecnologias<%= erros?.tecnologias ? ' erro-tecnologias' : '' %>">
+        <small id="ajuda-tecnologias" class="ajuda-campo">Separe por vírgula. Informe até 15 linguagens, ferramentas ou plataformas usadas no trabalho.</small>
+        <% if (erros?.tecnologias) { %><small id="erro-tecnologias" class="erro-campo"><%= erros.tecnologias %></small><% } %>
+    </div>
+
     <% if (ideiaEmDesenvolvimento) { %>
         <div class="campo campo-completo ideia-vinculada-form">
             <label for="ideiaOrigem">Ideia que originou o TCC</label>

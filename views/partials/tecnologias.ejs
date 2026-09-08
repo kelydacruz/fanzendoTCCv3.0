@@ -1,0 +1,30 @@
+<section class="bloco panorama" aria-label="Tecnologias mais usadas nos TCCs">
+    <div class="panorama-intro">
+        <span class="destaque">O acervo em números</span>
+        <h2>Tecnologias mais usadas</h2>
+        <p>Conheça as ferramentas que fazem parte dos projetos da escola.</p>
+        <div class="panorama-numero"><strong><%= grafico.informados %></strong><span>de <%= grafico.totalTccs %> TCCs desta consulta<br>informam suas tecnologias</span></div>
+        <small>Somente trabalhos aprovados e disponíveis para o seu acesso. Cada tecnologia conta uma vez por TCC.</small>
+    </div>
+    <div class="panorama-grafico">
+        <% if (grafico.destaques.length) { %>
+            <p class="grafico-legenda">Até 8 tecnologias · quantidade de TCCs</p>
+            <div class="grafico-barras">
+                <% grafico.destaques.forEach((item) => { %>
+                    <div class="grafico-linha">
+                        <span class="grafico-nome"><%= item.nome %></span>
+                        <meter min="0" max="<%= grafico.maximo %>" value="<%= item.total %>" aria-label="<%= item.nome %>: <%= item.total %> TCCs"><%= item.total %></meter>
+                        <strong><%= item.total %></strong>
+                    </div>
+                <% }) %>
+            </div>
+            <details class="grafico-tabela"><summary>Consultar todos os valores</summary>
+                <div class="tabela-responsiva"><table class="tabela-admin"><caption>Tecnologias informadas nos TCCs desta consulta</caption><thead><tr><th scope="col">Tecnologia</th><th scope="col">TCCs</th></tr></thead><tbody>
+                    <% grafico.itens.forEach((item) => { %><tr><th scope="row"><%= item.nome %></th><td><%= item.total %></td></tr><% }) %>
+                </tbody></table></div>
+            </details>
+        <% } else { %>
+            <div class="estado-vazio"><h3>O gráfico começa com o primeiro registro.</h3><p>Os autores podem informar as tecnologias ao enviar ou revisar seus TCCs. Trabalhos antigos sem esse campo não são contados.</p></div>
+        <% } %>
+    </div>
+</section>

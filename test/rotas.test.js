@@ -342,9 +342,11 @@ test('mostra cursos e turmas do administrador e aponta cada campo inválido do T
         turmaCadastro: '',
         orientadorUsuario: '',
         visibilidade: '',
+        tecnologias: 'x'.repeat(41),
     }, cookieAluno);
     assert.equal(incompleto.status, 400);
     const htmlIncompleto = await incompleto.text();
+    assert.match(htmlIncompleto, /Informe até 15 tecnologias/);
     assert.match(htmlIncompleto, /Informe um título entre 3 e 180 caracteres/);
     assert.match(htmlIncompleto, /Selecione um curso cadastrado pela administração/);
     assert.match(htmlIncompleto, /Selecione uma turma cadastrada pela administração/);
@@ -361,6 +363,7 @@ test('mostra cursos e turmas do administrador e aponta cada campo inválido do T
         visibilidade: 'interno',
         coautores: '',
         palavrasChave: 'acessibilidade, escola, web',
+        tecnologias: 'js, JavaScript, Node.js, MongoDB',
     }, cookieAluno);
     assert.equal(criacao.status, 302);
     const caminhoTcc = criacao.headers.get('location').split('?')[0];
@@ -371,4 +374,28 @@ test('mostra cursos e turmas do administrador e aponta cada campo inválido do T
 
     const alunoAutenticado = await requisicao(caminhoTcc, { headers: { cookie: cookieAluno } });
     assert.equal(alunoAutenticado.status, 200);
+    const detalhesSalvos = await alunoAutenticado.text();
+    assert.match(detalhesSalvos, /Tecnologias utilizadas/);
+    assert.match(detalhesSalvos, /MongoDB/);
+});
+
+
+test('gráfico respeita visibilidade, filtros e ausência de resultados', async () => {
+    const publica = await requisicao('/tcc/lst');
+    const htmlPublico = await publica.text();
+    assert.match(htmlPublico, /Tecnologias mais usadas/);
+    assert.match(htmlPublico, /JavaScript: 2 TCCs/);
+    assert.doesNotMatch(htmlPublico, /Firebase/);
+
+    const cookie = await entrar('professora@exemplo.com', '123456');
+    const interna = await requisicao('/tcc/lst', { headers: { cookie } });
+    assert.match(await interna.text(), /Firebase: 1 TCCs/);
+
+    const filtrada = await requisicao('/tcc/lst?curso=T%C3%A9cnico%20em%20Meio%20Ambiente');
+    const htmlFiltrado = await filtrada.text();
+    assert.match(htmlFiltrado, /JavaScript: 1 TCCs/);
+    assert.doesNotMatch(htmlFiltrado, /Arduino/);
+
+    const vazia = await requisicao('/tcc/lst?q=naoexiste123456');
+    assert.match(await vazia.text(), /O gráfico começa com o primeiro registro/);
 });
