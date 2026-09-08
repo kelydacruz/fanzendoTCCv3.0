@@ -6,6 +6,9 @@
     <meta name="theme-color" content="#12377a">
     <meta name="description" content="Plataforma para publicação e consulta de TCCs e ideias">
     <title><%= title %> | AcervoTCC</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/public/css/style.css">
 </head>
 <body class="<%= caminhoAtual.startsWith('/admin') ? 'pagina-admin' : '' %>">
@@ -33,7 +36,6 @@
                     <a class="<%= caminhoAtual.startsWith('/ideia') ? 'ativo' : '' %>" href="/ideia/lst"><%= usuario.perfil === 'colaborador' ? 'Minhas ideias' : 'Ideias' %></a>
                     <a class="<%= caminhoAtual.startsWith('/mensagens') ? 'ativo' : '' %>" href="/mensagens">Mensagens</a>
                     <a class="<%= caminhoAtual === '/aprender' ? 'ativo' : '' %>" href="/aprender">Aprender</a>
-                    <a class="<%= caminhoAtual === '/sobre' ? 'ativo' : '' %>" href="/sobre">Sobre</a>
                     <% if (usuario.perfil === 'professor') { %>
                         <a class="<%= caminhoAtual.startsWith('/orientacoes') ? 'ativo' : '' %>" href="/orientacoes">Orientações</a>
                     <% } %>
@@ -41,6 +43,7 @@
                         <a class="<%= caminhoAtual.startsWith('/admin') ? 'ativo' : '' %>" href="/admin">Administração</a>
                     <% } %>
                 <% } %>
+                <a class="<%= caminhoAtual === '/sobre' ? 'ativo' : '' %>" href="/sobre">Sobre</a>
             </nav>
 
             <div class="acoes-usuario">

@@ -84,6 +84,7 @@ test('oferece início público e mantém o acervo como consulta sem login', asyn
     assert.match(await inicio.text(), /Encontre referências/i);
 
     const paginas = [
+        ['/sobre', 'Conheça o AcervoTCC'],
         ['/tcc/lst', 'TCCs publicados'],
         ['/tcc/detalhes/horta-inteligente', 'Horta inteligente'],
     ];
@@ -94,7 +95,7 @@ test('oferece início público e mantém o acervo como consulta sem login', asyn
         assert.match(await resposta.text(), new RegExp(trecho, 'i'), caminho);
     }
 
-    for (const caminho of ['/ideia/lst', '/ideia/detalhes/ideia-enchentes', '/aprender', '/sobre']) {
+    for (const caminho of ['/ideia/lst', '/ideia/detalhes/ideia-enchentes', '/aprender']) {
         const resposta = await requisicao(caminho);
         assert.equal(resposta.status, 302, caminho);
         assert.match(resposta.headers.get('location'), /^\/entrar/);

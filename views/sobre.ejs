@@ -1,22 +1,79 @@
 <%- include('partials/header') %>
 
-<section class="topo-pagina">
-    <div class="container container-texto">
-        <span class="destaque">Sobre o projeto</span>
-        <h1>Por que criar o AcervoTCC?</h1>
-        <p>Para organizar trabalhos anteriores, preservar sua autoria e ajudar novos alunos a encontrar referências sem repetir os mesmos temas.</p>
+<section class="sobre-hero">
+    <div class="container sobre-abertura">
+        <div>
+            <span class="destaque">Conheça o AcervoTCC</span>
+            <h1>O conhecimento de hoje.<br><span>O começo de novas ideias.</span></h1>
+            <p>Todo trabalho guarda uma descoberta. O AcervoTCC reúne projetos e aproxima estudantes, orientadores e ideias para que essas descobertas continuem inspirando.</p>
+            <div class="botoes-linha">
+                <a class="btn btn-primario" href="/tcc/lst">Explorar o acervo <span aria-hidden="true">↗</span></a>
+                <a class="btn btn-texto" href="#como-funciona">Como funciona <span aria-hidden="true">↓</span></a>
+            </div>
+            <span class="sobre-nota">Você pode conhecer o projeto e consultar TCCs públicos sem criar uma conta.</span>
+        </div>
+        <div class="sobre-mural" aria-hidden="true">
+            <div class="sobre-papel sobre-papel-fundo"></div>
+            <div class="sobre-papel sobre-papel-frente">
+                <span class="sobre-papel-selo">ACERVO / CONHECIMENTO</span>
+                <svg viewBox="0 0 160 120" fill="none"><path d="M80 97V32M80 38C60 19 30 20 15 26V88C38 81 60 84 80 100C100 84 122 81 145 88V26C130 20 100 19 80 38Z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M29 42C44 40 57 44 66 50M29 58C44 56 57 60 66 66M94 50C105 44 117 40 131 42M94 66C105 60 117 56 131 58" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <strong>Uma descoberta<br>nunca termina aqui.</strong>
+                <span class="sobre-papel-linha"></span><span class="sobre-papel-linha"></span>
+                <small>Pesquisar · Desenvolver · Compartilhar</small>
+            </div>
+            <div class="sobre-bilhete"><span>PRÓXIMO CAPÍTULO</span><strong>Sua ideia pode<br>começar aqui.</strong><span class="sobre-estrela">✳</span></div>
+        </div>
     </div>
 </section>
 
-<section class="secao container container-texto texto-longo">
-    <h2>O problema</h2>
-    <p>Muitos estudantes têm dificuldade para escolher um tema porque os TCCs anteriores não ficam reunidos em um local de consulta simples. Boas ideias também acabam se perdendo por falta de um espaço para registrá-las.</p>
+<section class="secao container sobre-missao" aria-labelledby="missao-titulo">
+    <div><span class="destaque">Por que existimos</span><h2 id="missao-titulo">Bons projetos merecem<br>ser encontrados.</h2></div>
+    <div><p>Escolher um tema fica mais fácil quando você conhece o que já foi desenvolvido. Mas, quando os trabalhos estão espalhados, pesquisar referências e descobrir possibilidades se torna mais difícil.</p><p>Criado como um projeto acadêmico do curso Técnico em Informática, o AcervoTCC organiza essa produção em um lugar de consulta e colaboração. A proposta é valorizar a autoria, preservar a memória dos projetos e apoiar os próximos estudantes.</p></div>
+</section>
 
-    <h2>A proposta</h2>
-    <p>A plataforma reúne duas áreas principais: um acervo de TCCs concluídos e um banco colaborativo de ideias. Alunos e professores podem pesquisar, visualizar detalhes e comentar. Alunos também podem publicar seus trabalhos concluídos.</p>
+<section class="sobre-comunidade">
+    <div class="secao container">
+        <div class="sobre-titulo"><span class="destaque">Quem faz parte</span><h2>Um espaço. Diferentes contribuições.</h2><p>Cada participante tem um papel no caminho entre uma ideia e um trabalho publicado.</p></div>
+        <div class="sobre-papeis">
+            <article><span class="sobre-numero">01 / ALUNOS</span><h3>Transformar ideias em projetos</h3><p>Pesquisar referências, escolher uma ideia e enviar seu TCC ao professor orientador, acompanhando as revisões no site.</p></article>
+            <article><span class="sobre-numero">02 / PROFESSORES</span><h3>Orientar cada descoberta</h3><p>Avaliar os trabalhos dos seus orientandos, solicitar correções e aprovar a publicação no acervo.</p></article>
+            <article><span class="sobre-numero">03 / ADMINISTRAÇÃO</span><h3>Cuidar da organização</h3><p>Gerenciar usuários, cursos, turmas, áreas e publicações, além de configurar os termos do filtro de conteúdo.</p></article>
+            <article><span class="sobre-numero">04 / COLABORADORES</span><h3>Trazer novas perspectivas</h3><p>Pessoas de fora da instituição podem cadastrar ideias e contribuir com desafios que inspirem projetos dos alunos.</p></article>
+        </div>
+    </div>
+</section>
 
-    <h2>Responsabilidade</h2>
-    <p>Os conteúdos exibem sua autoria, as senhas são protegidas e cada pessoa só pode editar ou excluir as próprias publicações. O sistema também verifica termos proibidos antes de aceitar textos.</p>
+<section class="secao container" id="como-funciona" aria-labelledby="fluxo-titulo">
+    <div class="sobre-titulo"><span class="destaque">Da pesquisa à publicação</span><h2 id="fluxo-titulo">Um caminho acompanhado.</h2><p>O envio pelo aluno é o início da avaliação. A publicação acontece depois da aprovação do orientador.</p></div>
+    <ol class="sobre-etapas">
+        <li><span aria-hidden="true">01</span><h3>Encontre seu ponto de partida</h3><p>Consulte trabalhos anteriores e, com sua conta, explore o banco de ideias para desenvolver uma proposta própria.</p></li>
+        <li><span aria-hidden="true">02</span><h3>Envie e acompanhe</h3><p>O aluno cadastra seu TCC, informa curso, turma e orientador e escolhe a visibilidade. O professor pode pedir ajustes antes de aprovar.</p></li>
+        <li><span aria-hidden="true">03</span><h3>Compartilhe sua contribuição</h3><p>Após a aprovação, o trabalho entra no acervo conforme o acesso escolhido. As notificações ajudam a acompanhar as etapas.</p></li>
+    </ol>
+</section>
+
+<section class="container sobre-acesso" aria-labelledby="acesso-titulo">
+    <div><span class="destaque">Autoria e acesso</span><h2 id="acesso-titulo">Compartilhar com uma escolha consciente.</h2><p>O autor escolhe a visibilidade do TCC no envio. A aprovação do orientador continua sendo necessária nos dois casos.</p><p class="sobre-autoria">Use os trabalhos como referência e dê crédito aos autores. A identificação de autoria e o acesso interno não impedem, por si só, que alguém copie um conteúdo ao qual tem acesso.</p></div>
+    <div class="sobre-acesso-opcoes">
+        <article><h3><span aria-hidden="true">↗</span> TCC público</h3><p>Pode ser consultado por qualquer visitante, inclusive sem login.</p></article>
+        <article><h3><span aria-hidden="true">⌂</span> TCC interno</h3><p>Fica disponível para alunos e professores autenticados da instituição e para a administração.</p></article>
+    </div>
+</section>
+
+<section class="secao container sobre-duvidas" aria-labelledby="duvidas-titulo">
+    <div><span class="destaque">Antes de começar</span><h2 id="duvidas-titulo">Dúvidas frequentes</h2><p>O essencial para entender sua participação no AcervoTCC.</p></div>
+    <div class="sobre-perguntas">
+        <details><summary>Preciso de uma conta para consultar os trabalhos?</summary><p>Você pode acessar o início, esta página e os TCCs públicos sem login. Uma conta é necessária para participar e acessar os recursos disponíveis para seu perfil.</p></details>
+        <details><summary>Posso cadastrar mais de um TCC?</summary><p>Cada aluno pode cadastrar um TCC. Durante a avaliação, ele pode atualizar esse mesmo trabalho para atender às correções solicitadas pelo orientador.</p></details>
+        <details><summary>Meu TCC aparece no acervo assim que eu envio?</summary><p>Não. Primeiro ele vai para o professor orientador selecionado, que pode solicitar correções ou aprovar a publicação.</p></details>
+        <details><summary>O que acontece quando escolho uma ideia?</summary><p>Ao marcar uma ideia como em desenvolvimento, o aluno a reserva e acompanha pelo perfil. Se desistir, ela volta a ficar disponível. Quando o TCC vinculado é publicado, a ideia retorna como usada.</p></details>
+        <details><summary>Quem não estuda na instituição pode participar?</summary><p>Sim, como colaborador externo, contribuindo com ideias. Esse perfil não publica TCCs e não tem acesso aos trabalhos internos. As mensagens são destinadas às conversas relacionadas às ideias.</p></details>
+    </div>
+</section>
+
+<section class="container sobre-convite">
+    <div><span class="destaque">Seu próximo passo</span><h2>Encontre uma referência.<br>Crie sua própria contribuição.</h2></div>
+    <div class="botoes-linha"><a class="btn btn-primario" href="/tcc/lst">Conhecer os trabalhos <span aria-hidden="true">↗</span></a><a class="btn btn-secundario" href="<%= usuario ? '/painel' : '/cadastro' %>"><%= usuario ? 'Acessar meu painel' : 'Quero participar' %></a></div>
 </section>
 
 <%- include('partials/footer') %>

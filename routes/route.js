@@ -8,7 +8,7 @@ const controle = new GeralController();
 router.get('/', controle.home);
 router.get('/painel', somenteAutenticado, controle.painel);
 router.get('/aprender', somenteAutenticado, controle.aprender);
-router.get('/sobre', somenteAutenticado, controle.sobre);
+router.get('/sobre', controle.sobre);
 router.get('/saude', controle.saude);
 
 export default router;
