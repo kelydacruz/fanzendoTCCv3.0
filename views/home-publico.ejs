@@ -10,13 +10,9 @@
                 <a class="btn btn-primario" href="/tcc/lst">Consultar TCCs</a>
                 <a class="btn btn-claro" href="/entrar">Entrar na plataforma</a>
             </div>
+            <span class="sobre-nota"><%= totalTccs %> TCCs públicos para consultar. Conheça também <a href="/sobre">a proposta do AcervoTCC</a>.</span>
         </div>
-        <div class="hero-publico-card">
-            <span class="destaque">Conhecimento que continua</span>
-            <span class="hero-publico-icone" aria-hidden="true">AT</span>
-            <strong>Um espaço para pesquisar, aprender e compartilhar.</strong>
-            <span><%= totalTccs %> TCCs publicados no acervo</span>
-        </div>
+        <%- include('partials/mural-academico', { tituloMural: 'Referências para o seu próximo capítulo.', notaMural: 'Da curiosidade à descoberta.' }) %>
     </div>
 </section>
 
@@ -25,13 +21,22 @@
         <div><span class="destaque">Comece por aqui</span><h2>Trabalhos em destaque</h2></div>
         <a class="link-seta" href="/tcc/lst">Ver acervo completo →</a>
     </div>
+    <% if (tccs.length) { %>
     <div class="grade grade-3">
         <% tccs.forEach((tcc) => { %>
             <%- include('partials/tcc-card', { tcc }) %>
         <% }) %>
     </div>
+    <% } else { %>
+        <div class="bloco estado-vazio"><h3>O próximo capítulo começa com o primeiro trabalho.</h3><p>Os TCCs públicos aparecerão aqui após a aprovação do orientador.</p></div>
+    <% } %>
 </section>
 
 <section class="secao container"><%- include('partials/tecnologias', { grafico }) %></section>
+
+<section class="container sobre-convite" data-animar>
+    <div><span class="destaque">Conhecimento que continua</span><h2>Mais que guardar trabalhos.<br>Conectar novas possibilidades.</h2></div>
+    <a class="btn btn-secundario" href="/sobre">Conheça o projeto <span aria-hidden="true">↗</span></a>
+</section>
 
 <%- include('partials/footer') %>
