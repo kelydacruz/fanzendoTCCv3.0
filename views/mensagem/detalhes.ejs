@@ -23,6 +23,16 @@
                     <strong><%= mensagem.autor?.nome || 'Usuário' %></strong>
                     <p><%= mensagem.texto %></p>
                     <small><%= formatarData(mensagem.createdAt) %></small>
+                    <% if (idTexto(mensagem.autor) !== idTexto(usuario)) { %>
+                    <details class="denunciar-mensagem"><summary>Denunciar mensagem</summary>
+                        <form action="/mensagens/<%= idTexto(conversa) %>/denunciar/<%= idTexto(mensagem) %>" method="post">
+                            <label for="motivo-<%= idTexto(mensagem) %>">Motivo da denúncia</label>
+                            <textarea id="motivo-<%= idTexto(mensagem) %>" name="motivo" minlength="5" maxlength="500" rows="3" required></textarea>
+                            <small>A administração receberá esta mensagem e seu motivo para análise.</small>
+                            <button class="btn btn-secundario btn-pequeno" type="submit">Enviar denúncia</button>
+                        </form>
+                    </details>
+                    <% } %>
                 </article>
             <% }) %>
             <% if (!mensagens.length) { %><p>O contato foi aceito. Envie a primeira mensagem sobre esta ideia.</p><% } %>

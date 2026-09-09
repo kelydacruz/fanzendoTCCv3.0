@@ -1,3 +1,4 @@
+import DenunciaController from '../controllers/DenunciaController.js';
 import express from 'express';
 import AdminController from '../controllers/AdminController.js';
 import { somenteAdmin } from '../middleware/autenticacao.js';
@@ -25,5 +26,8 @@ router.post('/admin/ideias/:id/moderar', controle.moderarIdeia);
 router.post('/admin/ideias/:id/excluir', controle.excluirIdeia);
 router.get('/admin/filtro', controle.filtro);
 router.post('/admin/filtro', controle.atualizarFiltro);
+
+router.get('/admin/denuncias', new DenunciaController().list);
+router.post('/admin/denuncias/:id/analisar', new DenunciaController().resolve);
 
 export default router;

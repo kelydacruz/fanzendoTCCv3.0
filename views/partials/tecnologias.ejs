@@ -4,19 +4,32 @@
         <h2>Tecnologias mais usadas</h2>
         <p>Conheça as ferramentas que fazem parte dos projetos da escola.</p>
         <div class="panorama-numero"><strong><%= grafico.informados %></strong><span>de <%= grafico.totalTccs %> TCCs desta consulta<br>informam suas tecnologias</span></div>
-        <small>Somente trabalhos aprovados e disponíveis para o seu acesso. Cada tecnologia conta uma vez por TCC.</small>
+        <small>Somente trabalhos aprovados e disponíveis para o seu acesso. Cada tecnologia conta uma vez por TCC. “Outras tecnologias” soma as ocorrências das demais ferramentas.</small>
     </div>
     <div class="panorama-grafico">
         <% if (grafico.destaques.length) { %>
-            <p class="grafico-legenda">Até 8 tecnologias · quantidade de TCCs</p>
-            <div class="grafico-barras">
-                <% grafico.destaques.forEach((item) => { %>
-                    <div class="grafico-linha">
-                        <span class="grafico-nome"><%= item.nome %></span>
-                        <meter min="0" max="<%= grafico.maximo %>" value="<%= item.total %>" aria-label="<%= item.nome %>: <%= item.total %> TCCs"><%= item.total %></meter>
-                        <strong><%= item.total %></strong>
-                    </div>
-                <% }) %>
+            <%
+                const cores = ['#2459bd', '#4c86cf', '#12365e', '#6eafbe', '#5260a3', '#93b7df', '#467879', '#b5c5d9'];
+                const fatias = grafico.itens.slice(0, 7).map((item) => ({ ...item }));
+                if (grafico.itens.length > 7) fatias.push({ nome: 'Outras tecnologias', total: grafico.itens.slice(7).reduce((soma, item) => soma + item.total, 0) });
+                const ocorrencias = fatias.reduce((soma, item) => soma + item.total, 0);
+                let inicio = 0;
+            %>
+            <p class="grafico-legenda">Distribuição das tecnologias informadas. Um TCC pode contribuir para várias fatias.</p>
+            <div class="grafico-circular">
+                <svg viewBox="0 0 220 220" role="img" aria-label="Gráfico de rosca das tecnologias. Consulte os valores na legenda.">
+                    <circle cx="110" cy="110" r="80" fill="none" stroke="#edf1f7" stroke-width="28"/>
+                    <% fatias.forEach((item, indice) => { const parte = item.total / ocorrencias * 100; %>
+                        <circle cx="110" cy="110" r="80" fill="none" stroke="<%= cores[indice] %>" stroke-width="28" pathLength="100" stroke-dasharray="<%= parte %> <%= 100 - parte %>" stroke-dashoffset="<%= -inicio %>" transform="rotate(-90 110 110)"><title><%= item.nome %>: <%= item.total %> ocorrências</title></circle>
+                    <% inicio += parte; }) %>
+                    <text x="110" y="108" text-anchor="middle" class="rosca-total"><%= grafico.informados %></text>
+                    <text x="110" y="131" text-anchor="middle" class="rosca-texto">TCCs com dados</text>
+                </svg>
+                <ul class="rosca-legenda">
+                    <% fatias.forEach((item, indice) => { %>
+                        <li aria-label="<%= item.nome %>: <%= item.total %> TCCs"><svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="<%= cores[indice] %>"/></svg><span><%= item.nome %></span><strong><%= item.total %></strong></li>
+                    <% }) %>
+                </ul>
             </div>
             <details class="grafico-tabela"><summary>Consultar todos os valores</summary>
                 <div class="tabela-responsiva"><table class="tabela-admin"><caption>Tecnologias informadas nos TCCs desta consulta</caption><thead><tr><th scope="col">Tecnologia</th><th scope="col">TCCs</th></tr></thead><tbody>

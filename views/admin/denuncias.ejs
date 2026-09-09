@@ -1,0 +1,21 @@
+<%- include('../partials/header') %>
+<section class="topo-pagina"><div class="container"><span class="destaque">Moderação</span><h1>Denúncias de mensagens</h1><p>Analise o conteúdo denunciado e registre o resultado. A denúncia não bloqueia automaticamente o autor.</p></div></section>
+<section class="secao container"><%- include('_nav') %>
+<div class="lista-admin">
+<% denuncias.forEach((item) => { %>
+<article class="bloco">
+    <span class="status"><%= item.status === 'pendente' ? 'Pendente' : 'Analisada' %></span>
+    <h2>Mensagem de <%= item.nomeAutor %></h2><blockquote><%= item.texto %></blockquote>
+    <p><strong>Motivo:</strong> <%= item.motivo %></p><small><%= formatarData(item.createdAt) %></small>
+    <% if (item.status === 'pendente') { %>
+    <form action="/admin/denuncias/<%= idTexto(item) %>/analisar" method="post" class="formulario">
+        <label for="resposta-<%= idTexto(item) %>">Resultado da análise (enviado a quem denunciou)</label>
+        <textarea id="resposta-<%= idTexto(item) %>" name="resposta" rows="3" minlength="5" maxlength="250" required></textarea>
+        <div class="botoes-linha"><button class="btn btn-primario" type="submit">Concluir análise</button><a class="btn btn-secundario" href="/admin/usuarios">Gerenciar usuários</a></div>
+    </form>
+    <% } else { %><p><strong>Resposta:</strong> <%= item.resposta %></p><% } %>
+</article>
+<% }) %>
+<% if (!denuncias.length) { %><div class="bloco estado-vazio"><h2>Nenhuma denúncia recebida.</h2></div><% } %>
+</div></section>
+<%- include('../partials/footer') %>

@@ -417,6 +417,22 @@ label { display: block; font-size: .8rem; font-weight: 600; color: #3b4d64; }
     .card:hover, .curso-card:hover { box-shadow: 0 8px 24px rgb(59 123 216 / 13%), 0 0 0 1px #c2d8f5; }
 }
 
+/* Ilustrações e luz compartilham a mesma paleta e traço */
+.sobre-hero, .secao-formulario { background-image: radial-gradient(ellipse at 80% 20%, #e1efff, transparent 62%); }
+.bloco { box-shadow: inset 0 1px 0 #fff, 0 4px 20px rgb(64 117 188 / 6%); }
+.menu a.ativo, .curso-icone, .assinatura-documento { box-shadow: inset 0 1px 0 rgb(255 255 255 / 75%), 0 2px 10px rgb(91 153 237 / 10%); }
+.grafico-circular { display: grid; grid-template-columns: minmax(160px,1fr) minmax(150px,1fr); gap: 18px; align-items: center; }
+.grafico-circular > svg { width: 100%; max-width: 260px; justify-self: center; }
+.rosca-total { font: 700 32px var(--fonte); fill: var(--azul-escuro); }
+.rosca-texto { font: 11px var(--fonte); fill: var(--texto-suave); }
+.rosca-legenda { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+.rosca-legenda li { display: grid; grid-template-columns: 12px minmax(0,1fr) auto; gap: 9px; align-items: center; font-size: .76rem; }
+.rosca-legenda span { overflow-wrap: anywhere; }
+.denunciar-mensagem { margin-top: 12px; border-top: 1px solid var(--linha); padding-top: 10px; }
+.denunciar-mensagem summary { color: var(--azul); font-size: .72rem; }
+.denunciar-mensagem form { display: grid; gap: 10px; padding-top: 12px; }
+@media (max-width: 600px) { .grafico-circular { grid-template-columns: 1fr; } }
+
 /* Identidade compartilhada entre as páginas */
 .topo-pagina::after { content: ''; position: absolute; z-index: -1; width: 320px; height: 320px; right: -80px; top: -160px; border: 42px solid #e1eaf7; border-radius: 50%; pointer-events: none; }
 .topo-pagina h1 { letter-spacing: -.05em; }

@@ -400,3 +400,35 @@ test('gráfico respeita visibilidade, filtros e ausência de resultados', async 
     const vazia = await requisicao('/tcc/lst?q=naoexiste123456');
     assert.match(await vazia.text(), /O gráfico começa com o primeiro registro/);
 });
+
+test('denúncia protege conversa, evita duplicação e permite análise apenas ao admin', async () => {
+    const { conversasIdeia, mensagensIdeia, notificacoes } = await import('../data/mock.js');
+    const { listarDenuncias, denunciarMensagem } = await import('../services/denuncias.js');
+    conversasIdeia.push({ id: 'conversa-denuncia', ideiaId: 'ideia-enchentes', alunoId: 'usuario-aluna', autorIdeiaId: 'usuario-colaborador', status: 'ativa' });
+    mensagensIdeia.push({ id: 'mensagem-denuncia', conversaId: 'conversa-denuncia', autorId: 'usuario-colaborador', texto: 'Mensagem de teste para análise.', createdAt: new Date() });
+    const aluno = await entrar('aluna@exemplo.com', '123456');
+    const professor = await entrar('professora@exemplo.com', '123456');
+    const url = '/mensagens/conversa-denuncia/denunciar/mensagem-denuncia';
+    assert.equal((await enviarFormulario(url, { motivo: 'Contato inadequado para esta ideia.' })).status, 302);
+    assert.equal((await enviarFormulario(url, { motivo: 'Contato inadequado para esta ideia.' }, professor)).status, 400);
+    assert.equal(await denunciarMensagem('conversa-denuncia', 'mensagem-denuncia', 'usuario-colaborador', 'Minha própria mensagem'), null);
+    assert.equal(await denunciarMensagem('conversa-denuncia', 'mensagem-inexistente', 'usuario-aluna', 'Mensagem não existe'), null);
+    assert.equal((await enviarFormulario(url, { motivo: 'Contato inadequado para esta ideia.' }, aluno)).status, 302);
+    assert.equal((await enviarFormulario(url, { motivo: 'Contato inadequado para esta ideia.' }, aluno)).status, 302);
+    const itens = await listarDenuncias();
+    assert.equal(itens.length, 1);
+    const paginaConversa = await requisicao('/mensagens/conversa-denuncia', { headers: { cookie: aluno } });
+    assert.equal(paginaConversa.status, 200);
+    assert.match(await paginaConversa.text(), /Denunciar mensagem/);
+    assert.equal((await requisicao('/admin/denuncias', { headers: { cookie: aluno } })).status, 302);
+    const acao = `/admin/denuncias/${itens[0].id}/analisar`;
+    assert.equal((await enviarFormulario(acao, { resposta: 'Resposta indevida' }, aluno)).status, 302);
+    assert.equal(itens[0].status, 'pendente');
+    const admin = await entrarAdmin();
+    const paginaAdmin = await requisicao('/admin/denuncias', { headers: { cookie: admin } });
+    assert.equal(paginaAdmin.status, 200);
+    assert.match(await paginaAdmin.text(), /Mensagem de teste para análise/);
+    assert.equal((await enviarFormulario(acao, { resposta: 'Conteúdo analisado pela administração.' }, admin)).status, 302);
+    assert.equal(itens[0].status, 'analisada');
+    assert.ok(notificacoes.some((item) => item.mensagem.includes('Sua denúncia foi analisada')));
+});

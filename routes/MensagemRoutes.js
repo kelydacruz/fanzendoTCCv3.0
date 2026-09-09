@@ -1,3 +1,5 @@
+import DenunciaController from '../controllers/DenunciaController.js';
+import rateLimit from 'express-rate-limit';
 import express from 'express';
 import MensagemController from '../controllers/MensagemController.js';
 import { somenteAluno, somenteAutenticado } from '../middleware/autenticacao.js';
@@ -10,5 +12,7 @@ router.get('/mensagens/:id', somenteAutenticado, controle.details);
 router.post('/mensagens/ideia/:ideiaId/solicitar', somenteAluno, controle.request);
 router.post('/mensagens/:id/responder', somenteAutenticado, controle.respond);
 router.post('/mensagens/:id/enviar', somenteAutenticado, controle.send);
+
+router.post('/mensagens/:id/denunciar/:mensagemId', somenteAutenticado, rateLimit({ windowMs: 60000, limit: 5 }), new DenunciaController().create);
 
 export default router;
