@@ -34,7 +34,6 @@
                 <a class="<%= caminhoAtual.startsWith('/tcc') ? 'ativo' : '' %>" href="/tcc/lst">TCCs</a>
                 <% if (usuario) { %>
                     <a class="<%= caminhoAtual.startsWith('/ideia') ? 'ativo' : '' %>" href="/ideia/lst"><%= usuario.perfil === 'colaborador' ? 'Minhas ideias' : 'Ideias' %></a>
-                    <a class="<%= caminhoAtual.startsWith('/mensagens') ? 'ativo' : '' %>" href="/mensagens">Mensagens</a>
                     <a class="<%= caminhoAtual === '/aprender' ? 'ativo' : '' %>" href="/aprender">Aprender</a>
                     <% if (usuario.perfil === 'professor') { %>
                         <a class="<%= caminhoAtual.startsWith('/orientacoes') ? 'ativo' : '' %>" href="/orientacoes">Orientações</a>
@@ -48,6 +47,9 @@
 
             <div class="acoes-usuario">
                 <% if (usuario) { %>
+                    <a class="link-mensagens <%= caminhoAtual.startsWith('/mensagens') ? 'ativo' : '' %>" href="/mensagens" aria-label="Mensagens" title="Mensagens" <%- caminhoAtual.startsWith('/mensagens') ? 'aria-current="page"' : '' %>>
+                        <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h3v3l5-3h8a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Z"/><path d="M7 9h10M7 13h7"/></svg>
+                    </a>
                     <a class="link-notificacoes <%= caminhoAtual.startsWith('/notificacoes') ? 'ativo' : '' %>" href="/notificacoes" aria-label="Notificações">
                         <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span class="sr-only">Notificações</span><% if (notificacoesNaoLidas > 0) { %><span class="badge-notificacao"><%= notificacoesNaoLidas %></span><% } %>
                     </a>

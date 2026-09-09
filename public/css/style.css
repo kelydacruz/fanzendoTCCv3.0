@@ -72,7 +72,8 @@ small { font-size: .8rem; }
 .acoes-usuario form { margin: 0; }
 .usuario-link { display: inline-flex; align-items: center; gap: 7px; font-size: .82rem; }
 .usuario-avatar { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: #e7eef8; color: var(--azul-escuro); font-weight: 700; }
-.link-notificacoes { position: relative; display: inline-flex; align-items: center; padding: 8px; color: var(--texto-suave); }
+.link-notificacoes, .link-mensagens { position: relative; display: inline-flex; align-items: center; justify-content: center; min-width: 40px; min-height: 40px; padding: 8px; border-radius: 10px; color: var(--texto-suave); transition: background var(--transicao), color var(--transicao); }
+.link-notificacoes:hover, .link-mensagens:hover, .link-notificacoes.ativo, .link-mensagens.ativo { color: var(--azul); background: var(--azul-claro); }
 .icone { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .badge-notificacao { position: absolute; right: -3px; top: -2px; display: grid; place-items: center; min-width: 17px; height: 17px; padding-inline: 4px; color: #fff; background: #b84049; border-radius: 12px; font-size: .62rem; }
 .aviso-demo { padding: 6px 20px; text-align: center; color: #705824; background: #fbf4df; border-bottom: 1px solid #e9dec1; font-size: .73rem; }
