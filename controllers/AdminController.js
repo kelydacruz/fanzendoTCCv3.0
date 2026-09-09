@@ -58,7 +58,13 @@ export default class AdminController {
                 if (String(req.params.id) === String(req.session.usuario.id)) {
                     return mensagem(res, '/admin/usuarios', 'Você não pode bloquear sua própria conta.');
                 }
-                await alterarStatusUsuario(req.params.id, req.body.ativo === 'true');
+                const ativo = req.body.ativo === 'true';
+                const motivo = typeof req.body.motivoBloqueio === 'string' ? req.body.motivoBloqueio.trim() : '';
+                if (!['true', 'false'].includes(req.body.ativo) || (!ativo && (motivo.length < 5 || motivo.length > 500))) {
+                    return res.status(400).render('erro', { title: 'Bloqueio não realizado', mensagemErro: 'Informe um motivo entre 5 e 500 caracteres.' });
+                }
+                const atualizado = await alterarStatusUsuario(req.params.id, ativo, motivo);
+                if (!atualizado) return res.status(404).render('404', { title: 'Usuário não encontrado' });
                 return mensagem(res, '/admin/usuarios', 'Situação do usuário atualizada.');
             } catch (erro) {
                 return next(erro);

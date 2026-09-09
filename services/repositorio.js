@@ -169,14 +169,18 @@ export async function listarUsuarios(q = '') {
         .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
 }
 
-export async function alterarStatusUsuario(usuarioId, ativo) {
+export async function alterarStatusUsuario(usuarioId, ativo, motivo = '') {
+    if (typeof ativo !== 'boolean') return null;
+    if (!ativo && (typeof motivo !== 'string' || motivo.trim().length < 5 || motivo.trim().length > 500)) return null;
+    const motivoBloqueio = ativo ? '' : motivo.trim();
     if (usandoMongo()) {
         if (!idValido(usuarioId)) return null;
-        return Usuario.findByIdAndUpdate(usuarioId, { ativo }, { new: true });
+        return Usuario.findByIdAndUpdate(usuarioId, { ativo, motivoBloqueio }, { new: true, runValidators: true });
     }
     const usuario = usuarios.find((item) => item.id === String(usuarioId));
     if (!usuario) return null;
     usuario.ativo = ativo;
+    usuario.motivoBloqueio = motivoBloqueio;
     return usuario;
 }
 

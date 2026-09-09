@@ -1,3 +1,4 @@
+import { mensagemBloqueio } from '../services/bloqueio.js';
 import bcrypt from 'bcryptjs';
 import { randomBytes } from 'crypto';
 import { rateLimit } from 'express-rate-limit';
@@ -183,7 +184,9 @@ export default class UsuarioController {
     constructor() {
         this.openLogin = (req, res) => {
             if (req.session.usuario) return res.redirect('/painel');
-            return renderLogin(req, res, 200, '');
+            const aviso = req.session.avisoBloqueio || '';
+            delete req.session.avisoBloqueio;
+            return renderLogin(req, res, 200, aviso);
         };
 
         this.login = async (req, res, next) => {
@@ -192,7 +195,7 @@ export default class UsuarioController {
                 const usuario = await buscarUsuarioPorEmail(email);
                 const senhaCorreta = Boolean(usuario?.senha && await bcrypt.compare(req.body.senha || '', usuario.senha));
                 if (!senhaCorreta) return renderLogin(req, res, 401, 'E-mail ou senha incorretos.', email);
-                if (!usuarioAtivo(usuario)) return renderLogin(req, res, 403, 'Esta conta está bloqueada. Procure a administração.', email);
+                if (!usuarioAtivo(usuario)) return renderLogin(req, res, 403, mensagemBloqueio(usuario), email);
 
                 if (loginPrecisaConfirmacao(req, usuario)) {
                     const finalidade = usuario.perfil === 'admin' ? 'admin_login' : 'confirmar_email';
@@ -235,7 +238,7 @@ export default class UsuarioController {
                 if (usuario?.googleId && usuario.googleId !== dadosGoogle.googleId) {
                     return renderLogin(req, res, 401, 'Não foi possível vincular esta conta Google.');
                 }
-                if (!usuarioAtivo(usuario) && usuario) return renderLogin(req, res, 403, 'Esta conta está bloqueada. Procure a administração.');
+                if (!usuarioAtivo(usuario) && usuario) return renderLogin(req, res, 403, mensagemBloqueio(usuario));
 
                 if (usuario) {
                     if (!usuario.googleId) usuario = await vincularContaGoogle(usuario._id, dadosGoogle.googleId);

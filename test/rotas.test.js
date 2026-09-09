@@ -432,3 +432,34 @@ test('denúncia protege conversa, evita duplicação e permite análise apenas a
     assert.equal(itens[0].status, 'analisada');
     assert.ok(notificacoes.some((item) => item.mensagem.includes('Sua denúncia foi analisada')));
 });
+
+test('bloqueio exige motivo, avisa a conta autenticada e permite reativação', async () => {
+    const admin = await entrarAdmin();
+    const cookie = await entrar('colaborador@exemplo.com', '12345678');
+    const caminho = '/admin/usuarios/usuario-colaborador/status';
+    const motivo = 'Uso inadequado das mensagens <teste>.';
+    const semMotivo = await enviarFormulario(caminho, { ativo: 'false' }, admin);
+    assert.equal(semMotivo.status, 400);
+    assert.equal((await requisicao('/perfil', { headers: { cookie } })).status, 200);
+    assert.equal((await enviarFormulario(caminho, { ativo: 'false', motivoBloqueio: motivo }, cookie)).status, 302);
+    assert.equal((await enviarFormulario(caminho, { ativo: 'false', motivoBloqueio: motivo }, admin)).status, 302);
+    const sessao = await requisicao('/perfil', { headers: { cookie } });
+    assert.equal(sessao.status, 302);
+    assert.equal(sessao.headers.get('location'), '/entrar');
+    const anonimo = sessao.headers.get('set-cookie').split(';')[0];
+    const aviso = await requisicao('/entrar', { headers: { cookie: anonimo } });
+    const html = await aviso.text();
+    assert.match(html, /Uso inadequado das mensagens &lt;teste&gt;/);
+    assert.doesNotMatch(html, /mensagens <teste>/);
+    assert.doesNotMatch(await (await requisicao('/entrar', { headers: { cookie: anonimo } })).text(), /Uso inadequado/);
+    const incorreta = await enviarFormulario('/entrar', { email: 'colaborador@exemplo.com', senha: 'incorreta' });
+    assert.equal(incorreta.status, 401);
+    assert.doesNotMatch(await incorreta.text(), /Uso inadequado/);
+    const bloqueado = await enviarFormulario('/entrar', { email: 'colaborador@exemplo.com', senha: '12345678' });
+    assert.equal(bloqueado.status, 403);
+    assert.match(await bloqueado.text(), /Uso inadequado/);
+    assert.equal((await enviarFormulario(caminho, { ativo: 'true' }, admin)).status, 302);
+    const { buscarUsuarioPorId } = await import('../services/repositorio.js');
+    assert.equal((await buscarUsuarioPorId('usuario-colaborador')).motivoBloqueio, '');
+    assert.equal((await enviarFormulario('/entrar', { email: 'colaborador@exemplo.com', senha: '12345678' })).status, 302);
+});

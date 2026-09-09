@@ -1,3 +1,4 @@
+import { mensagemBloqueio } from '../services/bloqueio.js';
 import { buscarUsuarioPorId } from '../services/repositorio.js';
 
 function redirecionarComMensagem(res, caminho, mensagem) {
@@ -8,7 +9,18 @@ export async function validarUsuarioDaSessao(req, res, next) {
     if (!req.session.usuario) return next();
     try {
         const usuario = await buscarUsuarioPorId(req.session.usuario.id);
-        if (!usuario || usuario.ativo === false) {
+        if (usuario?.ativo === false) {
+            // Encerra a autenticação e mostra o motivo uma vez, sem colocá-lo na URL.
+            return req.session.regenerate((erro) => {
+                if (erro) return next(erro);
+                req.session.avisoBloqueio = mensagemBloqueio(usuario);
+                req.session.save((erroSalvar) => {
+                    if (erroSalvar) return next(erroSalvar);
+                    res.redirect('/entrar');
+                });
+            });
+        }
+        if (!usuario) {
             return req.session.destroy(() => redirecionarComMensagem(
                 res,
                 '/entrar',

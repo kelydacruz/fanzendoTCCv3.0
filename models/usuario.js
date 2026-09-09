@@ -9,6 +9,7 @@ const UsuarioSchema = new mongoose.Schema({
     ultimoLogin: { type: Date, default: null },
     perfil: { type: String, enum: ['aluno', 'professor', 'colaborador', 'admin'], required: true },
     ativo: { type: Boolean, default: true },
+    motivoBloqueio: { type: String, trim: true, maxlength: 500, default: '' },
     curso: { type: String, trim: true, maxlength: 100, default: '' },
     areaAtuacao: { type: String, trim: true, maxlength: 100, default: '' },
 }, { timestamps: true });
