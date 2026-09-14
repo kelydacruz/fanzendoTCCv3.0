@@ -29,6 +29,7 @@
                     <label>Situação<select name="status"><option value="em_analise" <%= tcc.status === 'em_analise' ? 'selected' : '' %>>Em análise</option><option value="correcao_solicitada" <%= tcc.status === 'correcao_solicitada' ? 'selected' : '' %>>Correção solicitada</option><option value="publicado" <%= (tcc.status || 'publicado') === 'publicado' ? 'selected' : '' %>>Publicado</option><option value="rejeitado" <%= tcc.status === 'rejeitado' ? 'selected' : '' %>>Rejeitado</option></select></label>
                     <label>Observação<textarea name="feedbackOrientador" rows="2" maxlength="2000"><%= tcc.feedbackOrientador || '' %></textarea></label>
                     <button class="btn btn-primario btn-pequeno" type="submit">Salvar</button>
+                    <a class="btn btn-perigo btn-pequeno" href="/admin/tccs/<%= idTexto(tcc) %>/excluir?q=<%= encodeURIComponent(filtros.q) %>&amp;situacao=<%= filtros.situacao %>">Excluir TCC</a>
                 </form>
             </article>
         <% }) %>

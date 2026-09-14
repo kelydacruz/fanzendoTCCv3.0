@@ -500,3 +500,37 @@ test('admin pesquisa TCCs e mantém filtros após alterar situação', async () 
     assert.match(await lista('q=HORTA&situacao=em_analise'), /Horta inteligente/);
     await enviarFormulario('/admin/tccs/horta-inteligente/status', { status: 'publicado' }, cookie);
 });
+
+test('exclusão de TCC exige admin e confirmação e remove comentários', async () => {
+    const { tccs, comentarios, ideias, notificacoes } = await import('../data/mock.js');
+    tccs.push({ id: 'tcc-excluir-teste', titulo: 'Trabalho para excluir', autorId: 'usuario-aluna', status: 'publicado', visibilidade: 'publico' });
+    comentarios.push({ id: 'comentario-excluir', alvoTipo: 'tcc', alvoId: 'tcc-excluir-teste', texto: 'Teste' });
+    ideias.push({ id: 'ideia-exclusao', titulo: 'Ideia preservada', status: 'Usada', tccRelacionadoId: 'tcc-excluir-teste' });
+    const caminho = '/admin/tccs/tcc-excluir-teste/excluir';
+    const admin = await entrarAdmin();
+    const aluno = await entrar('aluna@exemplo.com', '123456');
+    const professor = await entrar('professora@exemplo.com', '123456');
+    for (const cookie of ['', aluno, professor]) {
+        assert.equal((await requisicao(caminho, { headers: { cookie } })).status, 302);
+        assert.equal((await enviarFormulario(caminho, {}, cookie)).status, 302);
+    }
+    assert.equal((await enviarFormulario(caminho, {}, admin)).status, 403);
+    const confirmacao = await requisicao(caminho + '?q=Trabalho&situacao=publicado', { headers: { cookie: admin } });
+    assert.equal(confirmacao.status, 200);
+    const html = await confirmacao.text();
+    assert.match(html, /Trabalho para excluir/);
+    assert.ok(tccs.some((tcc) => tcc.id === 'tcc-excluir-teste'));
+    const token = html.match(/name="token" value="([^"]+)"/)[1];
+    assert.equal((await enviarFormulario('/admin/tccs/horta-inteligente/excluir', { token }, admin)).status, 403);
+    const resposta = await enviarFormulario(caminho, { token, q: 'Trabalho', situacao: 'publicado' }, admin);
+    assert.equal(resposta.status, 302);
+    const retorno = new URL(resposta.headers.get('location'), origem);
+    assert.equal(retorno.searchParams.get('q'), 'Trabalho');
+    assert.equal(retorno.searchParams.get('mensagem'), 'TCC excluído com sucesso.');
+    assert.ok(!tccs.some((tcc) => tcc.id === 'tcc-excluir-teste'));
+    assert.ok(!comentarios.some((item) => item.id === 'comentario-excluir'));
+    assert.equal(ideias.find((item) => item.id === 'ideia-exclusao').tccRelacionadoId, null);
+    assert.ok(notificacoes.some((item) => item.mensagem.includes('excluiu o TCC “Trabalho para excluir”')));
+    assert.equal((await requisicao('/tcc/detalhes/tcc-excluir-teste')).status, 404);
+    assert.equal((await enviarFormulario(caminho, { token }, admin)).status, 403);
+});

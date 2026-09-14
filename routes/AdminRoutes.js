@@ -20,6 +20,8 @@ router.get('/admin/turmas', controle.turmas);
 router.post('/admin/turmas', controle.adicionarTurma);
 router.post('/admin/turmas/:id/status', controle.alterarTurma);
 router.get('/admin/tccs', controle.tccs);
+router.get('/admin/tccs/:id/excluir', controle.confirmarExclusaoTcc);
+router.post('/admin/tccs/:id/excluir', controle.excluirTcc);
 router.post('/admin/tccs/:id/status', controle.alterarTcc);
 router.get('/admin/ideias', controle.ideias);
 router.post('/admin/ideias/:id/moderar', controle.moderarIdeia);

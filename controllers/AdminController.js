@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import { normalizarTexto } from '../services/texto.js';
 import {
     alterarModeracaoIdeia,
@@ -11,6 +12,7 @@ import {
     cadastrarTurma,
     criarNotificacao,
     excluirIdeia,
+    excluirTcc,
     listarCursos,
     listarAreasAtuacao,
     cadastrarAreaAtuacao,
@@ -211,6 +213,47 @@ export default class AdminController {
                         && (!filtros.situacao || (tcc.status || 'publicado') === filtros.situacao);
                 });
                 return res.render(`${caminhoBase}tccs`, { title: 'Moderação de TCCs', tccs, filtros });
+            } catch (erro) {
+                return next(erro);
+            }
+        };
+
+
+        this.confirmarExclusaoTcc = async (req, res, next) => {
+            try {
+                const tcc = await buscarTccPorId(req.params.id);
+                if (!tcc) return res.status(404).render('404', { title: 'TCC não encontrado' });
+                req.session.tokenExclusaoTcc = randomBytes(32).toString('hex');
+                req.session.tccParaExcluir = String(req.params.id);
+                return res.render(`${caminhoBase}excluir-tcc`, {
+                    title: 'Excluir TCC', tcc, filtros: filtrosTcc(req.query),
+                    token: req.session.tokenExclusaoTcc,
+                });
+            } catch (erro) {
+                return next(erro);
+            }
+        };
+
+        this.excluirTcc = async (req, res, next) => {
+            try {
+                if (!req.session.tokenExclusaoTcc || req.body.token !== req.session.tokenExclusaoTcc || req.session.tccParaExcluir !== String(req.params.id)) {
+                    return res.status(403).render('erro', { title: 'Exclusão não confirmada', mensagemErro: 'Abra novamente a confirmação de exclusão do TCC.' });
+                }
+                const tcc = await buscarTccPorId(req.params.id);
+                if (!tcc) return res.status(404).render('404', { title: 'TCC não encontrado' });
+                delete req.session.tokenExclusaoTcc;
+                delete req.session.tccParaExcluir;
+                const autorId = tcc.autor?.id || tcc.autor?._id || tcc.autorId;
+                const ideiaId = String(tcc.ideiaOrigem?.id || tcc.ideiaOrigem?._id || tcc.ideiaOrigemId || '');
+                if (ideiaId && autorId) await liberarIdeia(ideiaId, autorId);
+                await excluirTcc(req.params.id);
+                if (autorId) await criarNotificacao({
+                    destinatario: autorId, remetente: req.session.usuario.id, tipo: 'sistema',
+                    mensagem: `A administração excluiu o TCC “${tcc.titulo}”.`,
+                    link: '/painel',
+                });
+                const retorno = new URLSearchParams({ ...filtrosTcc(req.body), mensagem: 'TCC excluído com sucesso.' });
+                return res.redirect(`/admin/tccs?${retorno}`);
             } catch (erro) {
                 return next(erro);
             }

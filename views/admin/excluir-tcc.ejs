@@ -1,0 +1,18 @@
+<%- include('../partials/header') %>
+<section class="topo-pagina"><div class="container"><span class="destaque">Administração</span><h1>Excluir TCC</h1><p>Confira o trabalho antes de confirmar.</p></div></section>
+<section class="secao container">
+    <%- include('_nav') %>
+    <div class="bloco">
+        <h2><%= tcc.titulo %></h2>
+        <p><strong>Aluno:</strong> <%= tcc.autor?.nome || 'Não informado' %></p>
+        <p>A exclusão é definitiva: o TCC, seu PDF e seus comentários serão apagados. A ideia vinculada será preservada. O aluno poderá cadastrar outro trabalho.</p>
+        <form class="form-status" action="/admin/tccs/<%= idTexto(tcc) %>/excluir" method="post">
+            <input type="hidden" name="token" value="<%= token %>">
+            <input type="hidden" name="q" value="<%= filtros.q %>">
+            <input type="hidden" name="situacao" value="<%= filtros.situacao %>">
+            <button class="btn btn-perigo" type="submit">Confirmar exclusão definitiva</button>
+            <a class="btn btn-secundario" href="/admin/tccs?q=<%= encodeURIComponent(filtros.q) %>&amp;situacao=<%= filtros.situacao %>">Cancelar</a>
+        </form>
+    </div>
+</section>
+<%- include('../partials/footer') %>

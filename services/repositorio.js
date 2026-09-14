@@ -429,10 +429,14 @@ export async function excluirTcc(id) {
     if (usandoMongo()) {
         await Promise.all([
             Tcc.findByIdAndDelete(id),
+            Ideia.updateMany({ tccRelacionado: id }, { $set: { tccRelacionado: null } }),
             Comentario.deleteMany({ alvoTipo: 'Tcc', alvo: id }),
         ]);
         return;
     }
+    ideias.forEach((ideia) => {
+        if (ideia.tccRelacionadoId === String(id)) ideia.tccRelacionadoId = null;
+    });
     const indice = tccs.findIndex((item) => item.id === String(id));
     if (indice >= 0) tccs.splice(indice, 1);
     for (let i = comentarios.length - 1; i >= 0; i -= 1) {
