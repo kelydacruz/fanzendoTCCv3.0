@@ -463,3 +463,30 @@ test('bloqueio exige motivo, avisa a conta autenticada e permite reativação', 
     assert.equal((await buscarUsuarioPorId('usuario-colaborador')).motivoBloqueio, '');
     assert.equal((await enviarFormulario('/entrar', { email: 'colaborador@exemplo.com', senha: '12345678' })).status, 302);
 });
+
+test('admin pesquisa TCCs e mantém filtros após alterar situação', async () => {
+    const cookie = await entrarAdmin();
+    async function lista(query) {
+        const resposta = await requisicao(`/admin/tccs?${query}`, { headers: { cookie } });
+        assert.equal(resposta.status, 200);
+        return resposta.text();
+    }
+    const horta = await lista('q=HORTA&situacao=publicado');
+    assert.match(horta, /Horta inteligente/);
+    assert.doesNotMatch(horta, /Descarte Certo/);
+    const curso = await lista('q=meio%20ambiente');
+    assert.match(curso, /Descarte Certo/);
+    assert.doesNotMatch(curso, /Horta inteligente/);
+    assert.match(await lista('q=naoexiste123456'), /Nenhum TCC encontrado/);
+    assert.match(await lista('q=%5B.*'), /Nenhum TCC encontrado/);
+    const alteracao = await enviarFormulario('/admin/tccs/horta-inteligente/status', {
+        status: 'em_analise', feedbackOrientador: 'Reavaliar o trabalho.', q: 'HORTA', situacao: 'publicado',
+    }, cookie);
+    assert.equal(alteracao.status, 302);
+    const retorno = new URL(alteracao.headers.get('location'), origem);
+    assert.equal(retorno.searchParams.get('q'), 'HORTA');
+    assert.equal(retorno.searchParams.get('situacao'), 'publicado');
+    assert.match(await lista('q=HORTA&situacao=publicado'), /Nenhum TCC encontrado/);
+    assert.match(await lista('q=HORTA&situacao=em_analise'), /Horta inteligente/);
+    await enviarFormulario('/admin/tccs/horta-inteligente/status', { status: 'publicado' }, cookie);
+});

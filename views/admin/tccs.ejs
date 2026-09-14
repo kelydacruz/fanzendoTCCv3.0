@@ -4,6 +4,17 @@
 
 <section class="secao container">
     <%- include('_nav') %>
+    <form class="filtros bloco" action="/admin/tccs" method="get">
+        <div class="campo campo-busca"><label for="busca-tcc-admin">Pesquisar TCCs</label><input type="search" id="busca-tcc-admin" name="q" maxlength="150" value="<%= filtros.q %>" placeholder="Título, aluno, orientador, curso ou turma"></div>
+        <div class="campo"><label for="situacao-tcc-admin">Situação</label><select id="situacao-tcc-admin" name="situacao">
+            <option value="">Todas as situações</option>
+            <% [['em_analise', 'Em análise'], ['correcao_solicitada', 'Correção solicitada'], ['publicado', 'Publicado'], ['rejeitado', 'Rejeitado']].forEach(([valor, rotulo]) => { %>
+                <option value="<%= valor %>" <%= filtros.situacao === valor ? 'selected' : '' %>><%= rotulo %></option>
+            <% }) %>
+        </select></div>
+        <div class="filtros-acoes"><button class="btn btn-primario" type="submit">Pesquisar</button><a class="btn btn-texto" href="/admin/tccs">Limpar</a></div>
+    </form>
+    <p class="resultado-cabecalho" role="status"><%= tccs.length %> trabalho<%= tccs.length === 1 ? '' : 's' %> encontrado<%= tccs.length === 1 ? '' : 's' %>.</p>
     <div class="lista-admin">
         <% tccs.forEach((tcc) => { %>
             <article class="bloco item-tcc-admin">
@@ -13,13 +24,15 @@
                     <p><strong>Aluno:</strong> <%= tcc.autor?.nome || 'Não informado' %> · <strong>Orientador:</strong> <%= tcc.orientadorUsuario?.nome || tcc.orientador %></p>
                 </div>
                 <form class="form-status" action="/admin/tccs/<%= idTexto(tcc) %>/status" method="post">
+                    <input type="hidden" name="q" value="<%= filtros.q %>">
+                    <input type="hidden" name="situacao" value="<%= filtros.situacao %>">
                     <label>Situação<select name="status"><option value="em_analise" <%= tcc.status === 'em_analise' ? 'selected' : '' %>>Em análise</option><option value="correcao_solicitada" <%= tcc.status === 'correcao_solicitada' ? 'selected' : '' %>>Correção solicitada</option><option value="publicado" <%= (tcc.status || 'publicado') === 'publicado' ? 'selected' : '' %>>Publicado</option><option value="rejeitado" <%= tcc.status === 'rejeitado' ? 'selected' : '' %>>Rejeitado</option></select></label>
                     <label>Observação<textarea name="feedbackOrientador" rows="2" maxlength="2000"><%= tcc.feedbackOrientador || '' %></textarea></label>
                     <button class="btn btn-primario btn-pequeno" type="submit">Salvar</button>
                 </form>
             </article>
         <% }) %>
-        <% if (!tccs.length) { %><div class="estado-vazio bloco"><h2>Nenhum TCC cadastrado.</h2></div><% } %>
+        <% if (!tccs.length) { %><div class="estado-vazio bloco"><h2>Nenhum TCC encontrado.</h2><p>Tente outro termo ou limpe os filtros.</p></div><% } %>
     </div>
 </section>
 

@@ -1,3 +1,4 @@
+import { normalizarTexto } from '../services/texto.js';
 import {
     alterarModeracaoIdeia,
     alterarStatusUsuario,
@@ -24,6 +25,13 @@ import {
 } from '../services/repositorio.js';
 import { textoComTamanho } from '../services/validacao.js';
 import { carregarTermosProibidos, salvarTermosProibidos } from '../services/filtroConteudo.js';
+
+function filtrosTcc(dados) {
+    return {
+        q: typeof dados.q === 'string' ? dados.q.trim().slice(0, 150) : '',
+        situacao: ['em_analise', 'correcao_solicitada', 'publicado', 'rejeitado'].includes(dados.situacao) ? dados.situacao : '',
+    };
+}
 
 function mensagem(res, caminho, texto) {
     return res.redirect(`${caminho}?mensagem=${encodeURIComponent(texto)}`);
@@ -193,8 +201,16 @@ export default class AdminController {
 
         this.tccs = async (req, res, next) => {
             try {
-                const tccs = await listarTodosTccs();
-                return res.render(`${caminhoBase}tccs`, { title: 'Moderação de TCCs', tccs });
+                const filtros = filtrosTcc(req.query);
+                const todos = await listarTodosTccs();
+                const termo = normalizarTexto(filtros.q);
+                const tccs = todos.filter((tcc) => {
+                    const texto = [tcc.titulo, tcc.tema, tcc.autor?.nome, tcc.orientadorUsuario?.nome,
+                        tcc.orientador, tcc.curso, tcc.turma].filter(Boolean).join(' ');
+                    return (!termo || normalizarTexto(texto).includes(termo))
+                        && (!filtros.situacao || (tcc.status || 'publicado') === filtros.situacao);
+                });
+                return res.render(`${caminhoBase}tccs`, { title: 'Moderação de TCCs', tccs, filtros });
             } catch (erro) {
                 return next(erro);
             }
@@ -227,7 +243,8 @@ export default class AdminController {
                         link: `/tcc/detalhes/${req.params.id}`,
                     });
                 }
-                return mensagem(res, '/admin/tccs', 'Situação do TCC atualizada.');
+                const retorno = new URLSearchParams({ ...filtrosTcc(req.body), mensagem: 'Situação do TCC atualizada. Se o trabalho deixou de corresponder ao filtro, ele não aparece nesta lista.' });
+                return res.redirect(`/admin/tccs?${retorno}`);
             } catch (erro) {
                 return next(erro);
             }
