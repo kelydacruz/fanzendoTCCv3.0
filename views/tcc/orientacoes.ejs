@@ -9,19 +9,25 @@
 </section>
 
 <section class="secao container">
+    <nav class="botoes-linha" aria-label="Situação dos TCCs orientados">
+        <% abas.forEach((aba) => { %>
+            <a class="btn <%= situacao === aba.valor ? 'btn-primario' : 'btn-secundario' %>" href="/orientacoes?situacao=<%= aba.valor %>" <%- situacao === aba.valor ? 'aria-current="page"' : '' %>><%= aba.nome %> (<%= aba.total %>)</a>
+        <% }) %>
+    </nav>
+    <p class="resultado-cabecalho">Depois de avaliar, o trabalho sai de Pendentes. Quando o aluno reenviar as correções, ele retorna para análise.</p>
     <div class="lista-admin">
         <% tccs.forEach((tcc) => { %>
             <article class="bloco item-tcc-admin">
                 <div>
-                    <span class="status status-<%= classeStatus(tcc.status || 'em_analise') %>"><%= (tcc.status || 'em_analise').replaceAll('_', ' ') %></span>
+                    <span class="status status-<%= classeStatus(tcc.status || 'publicado') %>"><%= (tcc.status || 'publicado').replaceAll('_', ' ') %></span>
                     <h2><a href="/tcc/detalhes/<%= idTexto(tcc) %>"><%= tcc.titulo %></a></h2>
                     <p><strong>Aluno:</strong> <%= tcc.autor?.nome || 'Não informado' %> · <%= tcc.curso %> · <%= tcc.turma %></p>
                 </div>
-                <a class="btn btn-secundario" href="/tcc/detalhes/<%= idTexto(tcc) %>">Analisar trabalho</a>
+                <a class="btn btn-secundario" href="/tcc/detalhes/<%= idTexto(tcc) %>"><%= situacao === 'em_analise' ? 'Analisar trabalho' : 'Ver detalhes' %></a>
             </article>
         <% }) %>
         <% if (!tccs.length) { %>
-            <div class="estado-vazio bloco"><h2>Nenhum TCC foi enviado para você.</h2><p>Quando um aluno selecionar seu nome como orientador, o trabalho aparecerá aqui.</p></div>
+            <div class="estado-vazio bloco"><h2><%= situacao === 'em_analise' ? 'Nenhum TCC pendente de análise.' : 'Nenhum TCC nesta situação.' %></h2><p>Os trabalhos aparecem aqui conforme a etapa de orientação.</p></div>
         <% } %>
     </div>
 </section>

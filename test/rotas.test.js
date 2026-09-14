@@ -303,7 +303,7 @@ test('renderiza notificações para o usuário autenticado', async () => {
 
 test('professor pede correções e aprova a publicação no acervo', async () => {
     const cookieProfessor = await entrar('professora@exemplo.com', '123456');
-    const orientacoes = await requisicao('/orientacoes', { headers: { cookie: cookieProfessor } });
+    const orientacoes = await requisicao('/orientacoes?situacao=publicado', { headers: { cookie: cookieProfessor } });
     assert.equal(orientacoes.status, 200);
     assert.match(await orientacoes.text(), /Horta inteligente/i);
 
@@ -312,6 +312,11 @@ test('professor pede correções e aprova a publicação no acervo', async () =>
         feedbackOrientador: 'Revise a justificativa e detalhe melhor os resultados obtidos.',
     }, cookieProfessor);
     assert.equal(correcao.status, 302);
+    assert.ok(correcao.headers.get('location').startsWith('/orientacoes?'));
+    const pendentes = await requisicao('/orientacoes', { headers: { cookie: cookieProfessor } });
+    assert.doesNotMatch(await pendentes.text(), /Horta inteligente/);
+    const aguardando = await requisicao('/orientacoes?situacao=correcao_solicitada', { headers: { cookie: cookieProfessor } });
+    assert.match(await aguardando.text(), /Horta inteligente/);
 
     const privado = await requisicao('/tcc/detalhes/horta-inteligente');
     assert.equal(privado.status, 404);
@@ -321,6 +326,11 @@ test('professor pede correções e aprova a publicação no acervo', async () =>
         feedbackOrientador: 'Trabalho aprovado para publicação.',
     }, cookieProfessor);
     assert.equal(aprovacao.status, 302);
+    assert.ok(aprovacao.headers.get('location').startsWith('/orientacoes?'));
+    const aprovados = await requisicao('/orientacoes?situacao=publicado', { headers: { cookie: cookieProfessor } });
+    assert.match(await aprovados.text(), /Horta inteligente/);
+    const corrigindo = await requisicao('/orientacoes?situacao=correcao_solicitada', { headers: { cookie: cookieProfessor } });
+    assert.doesNotMatch(await corrigindo.text(), /Horta inteligente/);
 
     const publicado = await requisicao('/tcc/detalhes/horta-inteligente');
     assert.equal(publicado.status, 200);

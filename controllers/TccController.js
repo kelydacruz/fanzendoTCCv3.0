@@ -360,8 +360,18 @@ export default class TccController {
 
         this.orientacoes = async (req, res, next) => {
             try {
-                const tccs = await listarTccsDoOrientador(req.session.usuario.id);
-                return res.render(`${caminhoBase}orientacoes`, { title: 'TCCs orientados', tccs });
+                const todos = await listarTccsDoOrientador(req.session.usuario.id);
+                const abas = [
+                    { valor: 'em_analise', nome: 'Pendentes' },
+                    { valor: 'correcao_solicitada', nome: 'Aguardando correção' },
+                    { valor: 'publicado', nome: 'Aprovados' },
+                    { valor: 'rejeitado', nome: 'Rejeitados' },
+                ];
+                const situacao = abas.some((aba) => aba.valor === req.query.situacao) ? req.query.situacao : 'em_analise';
+                const statusDoTcc = (tcc) => tcc.status || 'publicado';
+                const tccs = todos.filter((tcc) => statusDoTcc(tcc) === situacao);
+                abas.forEach((aba) => { aba.total = todos.filter((tcc) => statusDoTcc(tcc) === aba.valor).length; });
+                return res.render(`${caminhoBase}orientacoes`, { title: 'TCCs orientados', tccs, abas, situacao });
             } catch (erro) {
                 return next(erro);
             }
@@ -404,8 +414,8 @@ export default class TccController {
                     }
                 }
 
-                const texto = status === 'publicado' ? 'TCC aprovado e publicado no acervo.' : 'Correções solicitadas ao aluno.';
-                return res.redirect(`/tcc/detalhes/${req.params.id}?mensagem=${encodeURIComponent(texto)}`);
+                const texto = status === 'publicado' ? 'TCC aprovado e publicado com sucesso. Consulte a aba Aprovados.' : 'Correções enviadas ao aluno com sucesso. O trabalho está em Aguardando correção.';
+                return res.redirect(`/orientacoes?mensagem=${encodeURIComponent(texto)}`);
             } catch (erro) {
                 return next(erro);
             }
