@@ -10,9 +10,9 @@
 
 <section class="secao container">
     <div class="grade grade-3 numeros-painel">
-        <article><strong><%= resumo.totalTccs %></strong><span>TCCs cadastrados</span></article>
+        <% if (usuario.perfil !== 'colaborador') { %><article><strong><%= resumo.totalTccs %></strong><span>TCCs cadastrados</span></article><% } %>
         <article><strong><%= resumo.totalIdeias %></strong><span>Ideias compartilhadas</span></article>
-        <article><strong><%= resumo.totalComentarios %></strong><span>Comentários realizados</span></article>
+        <% if (usuario.perfil !== 'colaborador') { %><article><strong><%= resumo.totalComentarios %></strong><span>Comentários realizados</span></article><% } %>
     </div>
 
     <div class="bloco painel-acoes">

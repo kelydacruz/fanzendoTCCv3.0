@@ -1,0 +1,11 @@
+<%- include('../partials/header') %>
+<section class="topo-pagina"><div class="container"><span class="destaque">Administração</span><h1><%= title %></h1><p>Confira os dados antes de continuar.</p></div></section>
+<section class="secao container"><%- include('_nav') %>
+<div class="bloco formulario"><h2><%= nome %></h2><p><%= explicacao %></p>
+<form class="form-status" action="<%= destino %>" method="post">
+<input type="hidden" name="token" value="<%= token %>">
+<input type="hidden" name="q" value="<%= busca %>">
+<button type="submit" class="btn btn-perigo">Confirmar remoção</button>
+<a class="btn btn-secundario" href="<%= voltar %>">Cancelar</a>
+</form></div></section>
+<%- include('../partials/footer') %>

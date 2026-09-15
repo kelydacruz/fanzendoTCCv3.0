@@ -1,0 +1,18 @@
+<%- include('partials/header') %>
+<section class="hero"><div class="container hero-grid">
+<div><span class="destaque">Colaboração com a escola</span><h1>Compartilhe ideias.<br>Inspire <em>novas soluções.</em></h1>
+<p>Apresente problemas reais que possam inspirar os alunos. Acompanhe suas sugestões e converse com os estudantes interessados.</p>
+<div class="hero-acoes"><a class="btn btn-primario" href="/ideia/add">Compartilhar ideia</a><a class="btn btn-secundario" href="/ideia/lst">Minhas ideias</a></div></div>
+<aside class="hero-painel"><span class="destaque">Sua participação</span><h2>Uma ideia pode fazer a diferença.</h2><p>As sugestões externas passam pela administração antes de ficarem disponíveis aos alunos.</p><a class="link-seta" href="/notificacoes">Acompanhar notificações →</a></aside>
+</div></section>
+<section class="secao container"><div class="titulo-secao"><div><span class="destaque">Suas contribuições</span><h2>Ideias compartilhadas</h2></div><a href="/ideia/lst" class="link-seta">Ver todas →</a></div>
+<div class="grade grade-3"><% ideias.forEach((ideia) => { %><%- include('partials/ideia-card', { ideia }) %><% }) %></div>
+<% if (!ideias.length) { %><div class="bloco estado-vazio"><h3>Compartilhe sua primeira ideia</h3><p>Descreva um desafio da comunidade ou uma oportunidade de melhoria.</p></div><% } %></section>
+<section class="secao container como-funciona"><h2>Como colaborar</h2><div class="grade grade-3 passos">
+<article><span>01</span><h3>Proponha</h3><p>Explique o problema e quem se beneficiaria de uma solução.</p></article>
+<article><span>02</span><h3>Acompanhe</h3><p>Receba atualizações da moderação e do interesse dos alunos.</p></article>
+<article><span>03</span><h3>Converse</h3><p>Quando um aluno solicitar contato, troque informações na área de mensagens.</p></article>
+</div></section>
+<section class="secao container"><div class="titulo-secao"><div><span class="destaque">Acervo público</span><h2>Conheça os trabalhos da escola</h2><p>Consulte as publicações respeitando a autoria dos estudantes.</p></div><a class="link-seta" href="/tcc/lst">Consultar acervo →</a></div>
+<div class="grade grade-3"><% tccs.forEach((tcc) => { %><%- include('partials/tcc-card', { tcc }) %><% }) %></div></section>
+<%- include('partials/footer') %>

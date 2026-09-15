@@ -32,7 +32,7 @@ function validarDados(dados, cursos) {
     if (!textoComTamanho(dados.titulo, 3, 180)) return 'Informe um título entre 3 e 180 caracteres.';
     if (!textoComTamanho(dados.tema, 2, 100)) return 'Informe o tema da ideia.';
     if (!textoComTamanho(dados.descricao, 20, 2000)) return 'A descrição deve ter entre 20 e 2.000 caracteres.';
-    if (!cursos.some((curso) => curso.nome === dados.curso)) return 'Selecione um curso cadastrado pela administração.';
+    if (dados.curso !== 'Outros' && !cursos.some((curso) => curso.nome === dados.curso)) return 'Selecione um curso cadastrado ou a opção Outros.';
     return '';
 }
 
@@ -83,7 +83,7 @@ export default class IdeiaController {
                 return res.render(`${caminhoBase}lst`, {
                     title: colaborador ? 'Minhas ideias' : 'Banco de ideias',
                     ideias,
-                    cursos: cursosCadastrados.map((curso) => curso.nome),
+                    cursos: [...new Set([...cursosCadastrados.map((curso) => curso.nome), 'Outros'])],
                     filtros,
                     colaborador,
                 });
@@ -112,8 +112,8 @@ export default class IdeiaController {
                     podeEditar: usuarioEhDono(req.session.usuario, ideia) && ideia.status === 'Disponível',
                     interessado: interessados.includes(usuarioId),
                     reservou: reservadaPor === usuarioId,
-                    podeDemonstrarInteresse: ehAluno && ideia.status === 'Disponível' && !interessados.includes(usuarioId),
-                    podeReservar: ehAluno && ideia.status === 'Disponível',
+                    podeDemonstrarInteresse: ehAluno && autorId(ideia) !== usuarioId && ideia.status === 'Disponível' && !interessados.includes(usuarioId),
+                    podeReservar: ehAluno && autorId(ideia) !== usuarioId && ideia.status === 'Disponível',
                     podeDesistir: ehAluno && reservadaPor === usuarioId,
                     podeSolicitarContato: ehAluno && autorId(ideia) !== usuarioId
                         && (interessados.includes(usuarioId) || reservadaPor === usuarioId),

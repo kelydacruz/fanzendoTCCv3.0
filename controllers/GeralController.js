@@ -19,6 +19,10 @@ export default class GeralController {
                     listarTccs({ usuario: req.session.usuario }),
                     listarIdeias({ usuario: req.session.usuario }),
                 ]);
+                if (req.session.usuario.perfil === 'colaborador') {
+                    const minhasIdeias = await listarIdeias({ usuario: req.session.usuario, autorId: req.session.usuario.id, incluirOcultas: true });
+                    return res.render('home-colaborador', { title: 'Início', ideias: minhasIdeias.slice(0, 3), tccs: tccs.slice(0, 3) });
+                }
                 const cursos = [...new Set(tccs.map((tcc) => tcc.curso))]
                     .sort()
                     .map((nome) => ({

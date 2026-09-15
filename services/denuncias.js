@@ -38,3 +38,20 @@ export async function analisarDenuncia(id, administrador, resposta) {
     Object.assign(item, dados);
     return item;
 }
+
+export async function buscarDenuncia(id) {
+    if (mongoose.connection.readyState === 1) {
+        if (!mongoose.Types.ObjectId.isValid(id)) return null;
+        return Denuncia.findById(id).lean();
+    }
+    return demonstracao.find((item) => item.id === id) || null;
+}
+
+export async function excluirDenuncia(id) {
+    if (mongoose.connection.readyState === 1) {
+        if (!mongoose.Types.ObjectId.isValid(id)) return null;
+        return Denuncia.findByIdAndDelete(id);
+    }
+    const indice = demonstracao.findIndex((item) => item.id === id);
+    return indice < 0 ? null : demonstracao.splice(indice, 1)[0];
+}

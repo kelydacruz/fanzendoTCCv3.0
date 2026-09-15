@@ -13,7 +13,8 @@
         <label for="curso">Curso relacionado *</label>
         <select id="curso" name="curso" required>
             <option value="">Selecione o curso</option>
-            <% (cursos || []).forEach((curso) => { %>
+            <option value="Outros" <%= dados.curso === 'Outros' ? 'selected' : '' %>>Outros</option>
+            <% (cursos || []).filter((curso) => curso.nome !== 'Outros').forEach((curso) => { %>
                 <option value="<%= curso.nome %>" <%= dados.curso === curso.nome ? 'selected' : '' %>><%= curso.nome %></option>
             <% }) %>
         </select>

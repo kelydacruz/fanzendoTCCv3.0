@@ -307,6 +307,9 @@ test('professor pede correções e aprova a publicação no acervo', async () =>
     assert.equal(orientacoes.status, 200);
     assert.match(await orientacoes.text(), /Horta inteligente/i);
 
+    const { tccs } = await import('../data/mock.js');
+    tccs.find((item) => item.id === 'horta-inteligente').status = 'em_analise';
+
     const correcao = await enviarFormulario('/orientacoes/horta-inteligente/avaliar', {
         acao: 'corrigir',
         feedbackOrientador: 'Revise a justificativa e detalhe melhor os resultados obtidos.',
@@ -331,6 +334,11 @@ test('professor pede correções e aprova a publicação no acervo', async () =>
     assert.match(await aprovados.text(), /Horta inteligente/);
     const corrigindo = await requisicao('/orientacoes?situacao=correcao_solicitada', { headers: { cookie: cookieProfessor } });
     assert.doesNotMatch(await corrigindo.text(), /Horta inteligente/);
+
+    const detalhesProfessor = await requisicao('/tcc/detalhes/horta-inteligente', { headers: { cookie: cookieProfessor } });
+    assert.doesNotMatch(await detalhesProfessor.text(), /Avaliar trabalho|Aprovar e publicar/);
+    await enviarFormulario('/orientacoes/horta-inteligente/avaliar', { acao: 'corrigir', feedbackOrientador: 'Tentativa após aprovação.' }, cookieProfessor);
+    assert.equal(tccs.find((item) => item.id === 'horta-inteligente').status, 'publicado');
 
     const publicado = await requisicao('/tcc/detalhes/horta-inteligente');
     assert.equal(publicado.status, 200);
@@ -533,4 +541,84 @@ test('exclusão de TCC exige admin e confirmação e remove comentários', async
     assert.ok(notificacoes.some((item) => item.mensagem.includes('excluiu o TCC “Trabalho para excluir”')));
     assert.equal((await requisicao('/tcc/detalhes/tcc-excluir-teste')).status, 404);
     assert.equal((await enviarFormulario(caminho, { token }, admin)).status, 403);
+});
+
+test('autor não demonstra interesse nem reserva sua ideia e aceita curso Outros', async () => {
+    const aluno = await entrar('aluna@exemplo.com', '123456');
+    const dados = { titulo: 'Proposta de melhoria comunitária', tema: 'Comunidade', descricao: 'Uma proposta para organizar e melhorar serviços utilizados pela comunidade local.', curso: 'Outros', dificuldade: 'Iniciante' };
+    const criacao = await enviarFormulario('/ideia/add', dados, aluno);
+    assert.equal(criacao.status, 302);
+    const caminho = criacao.headers.get('location').split('?')[0];
+    const id = caminho.split('/').pop();
+    const html = await (await requisicao(caminho, { headers: { cookie: aluno } })).text();
+    assert.doesNotMatch(html, /Tenho interesse|Usar no meu TCC/);
+    for (const acao of ['interesse', 'desenvolver']) await enviarFormulario(`/ideia/${id}/${acao}`, {}, aluno);
+    const { buscarIdeiaPorId } = await import('../services/repositorio.js');
+    const ideia = await buscarIdeiaPorId(id);
+    assert.equal(ideia.status, 'Disponível');
+    assert.equal((ideia.interessados || []).length, 0);
+    assert.match(await (await requisicao('/ideia/lst?curso=Outros', { headers: { cookie: aluno } })).text(), /Proposta de melhoria comunitária/);
+    const outroCurso = await enviarFormulario('/ideia/add', { ...dados, curso: 'Curso inexistente' }, aluno);
+    assert.equal(outroCurso.status, 400);
+});
+
+test('colaborador recebe início próprio sem chamadas para produzir TCC', async () => {
+    cookiesDeTeste.delete('colaborador@exemplo.com:12345678');
+    const cookie = await entrar('colaborador@exemplo.com', '12345678');
+    const resposta = await requisicao('/', { headers: { cookie } });
+    assert.equal(resposta.status, 200);
+    const html = await resposta.text();
+    assert.match(html, /Compartilhe ideias/);
+    assert.match(html, /Minhas ideias/);
+    assert.doesNotMatch(html, /seu próximo projeto|Aprenda a fazer seu TCC|Publicar meu TCC/);
+});
+
+test('admin pesquisa e exclui denúncia com confirmação sem apagar mensagem', async () => {
+    const { denunciarMensagem, listarDenuncias } = await import('../services/denuncias.js');
+    const { conversasIdeia, mensagensIdeia } = await import('../data/mock.js');
+    conversasIdeia.push({ id: 'conversa-remover-denuncia', ideiaId: 'ideia-enchentes', alunoId: 'usuario-aluna', autorIdeiaId: 'usuario-colaborador', status: 'ativa' });
+    mensagensIdeia.push({ id: 'mensagem-remover-denuncia', conversaId: 'conversa-remover-denuncia', autorId: 'usuario-colaborador', texto: 'Conteúdo para pesquisa exclusiva', createdAt: new Date() });
+    const item = await denunciarMensagem('conversa-remover-denuncia', 'mensagem-remover-denuncia', 'usuario-aluna', 'Motivo de pesquisa exclusiva');
+    const admin = await entrarAdmin();
+    const aluno = await entrar('aluna@exemplo.com', '123456');
+    const caminho = `/admin/denuncias/${item.id}/excluir`;
+    assert.equal((await enviarFormulario(caminho, {}, aluno)).status, 302);
+    assert.equal((await enviarFormulario(caminho, {}, admin)).status, 403);
+    const busca = await requisicao('/admin/denuncias?q=pesquisa%20exclusiva', { headers: { cookie: admin } });
+    assert.match(await busca.text(), /Conteúdo para pesquisa exclusiva/);
+    const vazia = await requisicao('/admin/denuncias?q=naoexiste987', { headers: { cookie: admin } });
+    assert.match(await vazia.text(), /Nenhuma denúncia encontrada/);
+    const confirmacao = await requisicao(caminho, { headers: { cookie: admin } });
+    assert.equal(confirmacao.status, 200);
+    const token = (await confirmacao.text()).match(/name="token" value="([^"]+)"/)[1];
+    const remocao = await enviarFormulario(caminho, { token, q: 'pesquisa exclusiva' }, admin);
+    assert.equal(remocao.status, 302);
+    assert.equal(new URL(remocao.headers.get('location'), origem).searchParams.get('q'), 'pesquisa exclusiva');
+    assert.ok(!(await listarDenuncias()).some((denuncia) => denuncia.id === item.id));
+    assert.ok(mensagensIdeia.some((mensagem) => mensagem.id === 'mensagem-remover-denuncia'));
+});
+
+test('remove somente usuário bloqueado e preserva autoria e bloqueio de acesso', async () => {
+    const { usuarios } = await import('../data/mock.js');
+    const { removerUsuarioBloqueado, buscarUsuarioPorId, listarUsuarios, alterarStatusUsuario } = await import('../services/repositorio.js');
+    const admin = await entrarAdmin();
+    const aluno = await entrar('aluna@exemplo.com', '123456');
+    assert.equal(await removerUsuarioBloqueado('usuario-aluna'), null);
+    const original = usuarios.find((item) => item.id === 'usuario-aluna');
+    usuarios.push({ ...original, id: 'usuario-remover', nome: 'Conta removível', email: 'remover@academico.ifsul.edu.br', ativo: false });
+    const caminho = '/admin/usuarios/usuario-remover/remover';
+    assert.equal((await enviarFormulario(caminho, {}, aluno)).status, 302);
+    assert.equal((await enviarFormulario(caminho, {}, admin)).status, 403);
+    const confirmacao = await requisicao(caminho, { headers: { cookie: admin } });
+    assert.equal(confirmacao.status, 200);
+    const token = (await confirmacao.text()).match(/name="token" value="([^"]+)"/)[1];
+    assert.equal((await enviarFormulario(caminho, { token }, admin)).status, 302);
+    const removido = await buscarUsuarioPorId('usuario-remover');
+    assert.equal(removido.removido, true);
+    assert.equal(removido.nome, 'Conta removível');
+    assert.ok(!(await listarUsuarios()).some((item) => item.id === 'usuario-remover'));
+    assert.equal(await alterarStatusUsuario('usuario-remover', true), null);
+    const login = await enviarFormulario('/entrar', { email: 'remover@academico.ifsul.edu.br', senha: '123456' });
+    assert.equal(login.status, 403);
+    assert.match(await login.text(), /conta foi removida/);
 });

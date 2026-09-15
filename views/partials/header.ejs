@@ -34,7 +34,7 @@
                 <a class="<%= caminhoAtual.startsWith('/tcc') ? 'ativo' : '' %>" href="/tcc/lst">TCCs</a>
                 <% if (usuario) { %>
                     <a class="<%= caminhoAtual.startsWith('/ideia') ? 'ativo' : '' %>" href="/ideia/lst"><%= usuario.perfil === 'colaborador' ? 'Minhas ideias' : 'Ideias' %></a>
-                    <a class="<%= caminhoAtual === '/aprender' ? 'ativo' : '' %>" href="/aprender">Aprender</a>
+                    <% if (usuario.perfil !== 'colaborador') { %><a class="<%= caminhoAtual === '/aprender' ? 'ativo' : '' %>" href="/aprender">Aprender</a><% } %>
                     <% if (usuario.perfil === 'professor') { %>
                         <a class="<%= caminhoAtual.startsWith('/orientacoes') ? 'ativo' : '' %>" href="/orientacoes">Orientações</a>
                     <% } %>

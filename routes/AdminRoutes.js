@@ -9,6 +9,8 @@ const controle = new AdminController();
 router.use('/admin', somenteAdmin);
 router.get('/admin', controle.index);
 router.get('/admin/usuarios', controle.usuarios);
+router.get('/admin/usuarios/:id/remover', controle.confirmarRemocaoUsuario);
+router.post('/admin/usuarios/:id/remover', controle.removerUsuario);
 router.post('/admin/usuarios/:id/status', controle.alterarUsuario);
 router.get('/admin/cursos', controle.cursos);
 router.post('/admin/cursos', controle.adicionarCurso);
@@ -29,6 +31,8 @@ router.post('/admin/ideias/:id/excluir', controle.excluirIdeia);
 router.get('/admin/filtro', controle.filtro);
 router.post('/admin/filtro', controle.atualizarFiltro);
 
+router.get('/admin/denuncias/:id/excluir', new DenunciaController().confirmDelete);
+router.post('/admin/denuncias/:id/excluir', new DenunciaController().delete);
 router.get('/admin/denuncias', new DenunciaController().list);
 router.post('/admin/denuncias/:id/analisar', new DenunciaController().resolve);
 

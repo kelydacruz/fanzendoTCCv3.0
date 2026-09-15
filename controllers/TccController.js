@@ -185,7 +185,7 @@ export default class TccController {
                     podeEditar: dono && ['em_analise', 'correcao_solicitada'].includes(tcc.status),
                     podeExcluir: dono && tcc.status !== 'publicado',
                     podeAvaliar: usuarioEhOrientador(req.session.usuario, tcc)
-                        && ['em_analise', 'correcao_solicitada', 'publicado'].includes(tcc.status),
+                        && ['em_analise', 'correcao_solicitada'].includes(tcc.status),
                     temPdf: Boolean(tcc.pdf?.nome || tcc.pdf?.dados),
                     comentariosPermitidos: usuarioInstitucional(req.session.usuario),
                 });
@@ -381,7 +381,7 @@ export default class TccController {
             try {
                 const tcc = await buscarTccPorId(req.params.id);
                 if (!tcc || !usuarioEhOrientador(req.session.usuario, tcc)) return res.redirect('/orientacoes?mensagem=Você não é o orientador deste TCC.');
-                if (!['em_analise', 'correcao_solicitada', 'publicado'].includes(tcc.status)) return res.redirect(`/tcc/detalhes/${req.params.id}?mensagem=Este TCC já foi avaliado.`);
+                if (!['em_analise', 'correcao_solicitada'].includes(tcc.status)) return res.redirect(`/tcc/detalhes/${req.params.id}?mensagem=Este TCC já foi avaliado.`);
                 const status = req.body.acao === 'aprovar' ? 'publicado' : 'correcao_solicitada';
                 const feedback = String(req.body.feedbackOrientador || '').trim();
                 if (status === 'correcao_solicitada' && !textoComTamanho(feedback, 5, 2000)) {

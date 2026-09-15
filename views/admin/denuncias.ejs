@@ -1,6 +1,11 @@
 <%- include('../partials/header') %>
 <section class="topo-pagina"><div class="container"><span class="destaque">Moderação</span><h1>Denúncias de mensagens</h1><p>Analise o conteúdo denunciado e registre o resultado. A denúncia não bloqueia automaticamente o autor.</p></div></section>
 <section class="secao container"><%- include('_nav') %>
+<form action="/admin/denuncias" method="get" class="filtros bloco">
+<div class="campo campo-busca"><label for="busca-denuncia">Pesquisar denúncias</label><input type="search" id="busca-denuncia" name="q" maxlength="150" value="<%= busca %>" placeholder="Autor, mensagem, motivo ou situação"></div>
+<button type="submit" class="btn btn-primario">Pesquisar</button><a href="/admin/denuncias" class="btn btn-secundario">Limpar</a>
+</form>
+<p role="status"><%= denuncias.length %> denúncia(s) encontrada(s).</p>
 <div class="lista-admin">
 <% denuncias.forEach((item) => { %>
 <article class="bloco">
@@ -14,8 +19,9 @@
         <div class="botoes-linha"><button class="btn btn-primario" type="submit">Concluir análise</button><a class="btn btn-secundario" href="/admin/usuarios">Gerenciar usuários</a></div>
     </form>
     <% } else { %><p><strong>Resposta:</strong> <%= item.resposta %></p><% } %>
+<a class="btn btn-perigo btn-pequeno" href="/admin/denuncias/<%= idTexto(item) %>/excluir?q=<%= encodeURIComponent(busca) %>">Excluir denúncia</a>
 </article>
 <% }) %>
-<% if (!denuncias.length) { %><div class="bloco estado-vazio"><h2>Nenhuma denúncia recebida.</h2></div><% } %>
+<% if (!denuncias.length) { %><div class="bloco estado-vazio"><h2>Nenhuma denúncia encontrada.</h2></div><% } %>
 </div></section>
 <%- include('../partials/footer') %>

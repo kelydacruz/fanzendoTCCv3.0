@@ -160,11 +160,12 @@ export async function listarUsuarios(q = '') {
                 { email: new RegExp(escaparRegex(q), 'i') },
             ],
         } : {};
+        filtro.removido = { $ne: true };
         return Usuario.find(filtro).sort({ nome: 1 }).lean();
     }
     const termo = normalizarTexto(q);
     return usuarios
-        .filter((usuario) => !termo || normalizarTexto(`${usuario.nome} ${usuario.email}`).includes(termo))
+        .filter((usuario) => !usuario.removido && (!termo || normalizarTexto(`${usuario.nome} ${usuario.email}`).includes(termo)))
         .map(usuarioPublico)
         .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
 }
@@ -175,10 +176,11 @@ export async function alterarStatusUsuario(usuarioId, ativo, motivo = '') {
     const motivoBloqueio = ativo ? '' : motivo.trim();
     if (usandoMongo()) {
         if (!idValido(usuarioId)) return null;
-        return Usuario.findByIdAndUpdate(usuarioId, { ativo, motivoBloqueio }, { new: true, runValidators: true });
+        return Usuario.findOneAndUpdate({ _id: usuarioId, removido: { $ne: true } }, { ativo, motivoBloqueio }, { new: true, runValidators: true });
     }
     const usuario = usuarios.find((item) => item.id === String(usuarioId));
     if (!usuario) return null;
+    if (usuario.removido) return null;
     usuario.ativo = ativo;
     usuario.motivoBloqueio = motivoBloqueio;
     return usuario;
@@ -595,6 +597,7 @@ export async function registrarInteresseIdeia(id, alunoId) {
         return Ideia.findOneAndUpdate(
             {
                 _id: id,
+                autor: { $ne: alunoId },
                 status: 'Disponível',
                 $or: [{ moderacao: 'aprovada' }, { moderacao: { $exists: false } }],
             },
@@ -603,6 +606,7 @@ export async function registrarInteresseIdeia(id, alunoId) {
         ).populate('autor', 'nome perfil');
     }
     const ideia = ideias.find((item) => item.id === String(id)
+        && item.autorId !== String(alunoId)
         && item.status === 'Disponível'
         && (item.moderacao || 'aprovada') === 'aprovada');
     if (!ideia) return null;
@@ -632,6 +636,7 @@ export async function reservarIdeia(id, alunoId) {
         return Ideia.findOneAndUpdate(
             {
                 _id: id,
+                autor: { $ne: alunoId },
                 status: 'Disponível',
                 $or: [{ moderacao: 'aprovada' }, { moderacao: { $exists: false } }],
             },
@@ -640,6 +645,7 @@ export async function reservarIdeia(id, alunoId) {
         ).populate('autor', 'nome perfil');
     }
     const ideia = ideias.find((item) => item.id === String(id)
+        && item.autorId !== String(alunoId)
         && item.status === 'Disponível'
         && (item.moderacao || 'aprovada') === 'aprovada');
     if (!ideia) return null;
@@ -1098,4 +1104,17 @@ export async function resumoAdministrativo() {
         totalAreas: areasAtuacao.length,
         totalIdeias: ideias.length,
     };
+}
+
+// Mantém a autoria e impede que a conta removida volte a acessar o sistema.
+export async function removerUsuarioBloqueado(id) {
+    const dados = { removido: true, ativo: false };
+    if (usandoMongo()) {
+        if (!idValido(id)) return null;
+        return Usuario.findOneAndUpdate({ _id: id, ativo: false, removido: { $ne: true }, perfil: { $ne: 'admin' } }, dados, { new: true });
+    }
+    const usuario = usuarios.find((item) => item.id === String(id) && item.ativo === false && !item.removido && item.perfil !== 'admin');
+    if (!usuario) return null;
+    Object.assign(usuario, dados);
+    return usuario;
 }
