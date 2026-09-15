@@ -1,0 +1,11 @@
+<%- include('partials/header') %>
+<section class="topo-pagina"><div class="container"><span class="destaque">Moderação</span><h1>Denunciar <%= tipo === 'usuario' ? 'usuário' : 'comentário' %></h1><p>A administração analisará sua denúncia. Você receberá a resposta nas notificações.</p></div></section>
+<section class="secao container container-form"><div class="bloco formulario"><h2><%= alvo.nomeAutor %></h2><blockquote><%= alvo.texto %></blockquote>
+<form action="/denunciar/<%= tipo %>/<%= id %>" method="post" class="formulario">
+<input type="hidden" name="token" value="<%= token %>">
+<input type="hidden" name="publicacaoTipo" value="<%= contexto.publicacaoTipo || '' %>">
+<input type="hidden" name="publicacaoId" value="<%= contexto.publicacaoId || '' %>">
+<label for="motivo">Motivo da denúncia</label><textarea id="motivo" name="motivo" minlength="5" maxlength="500" rows="4" required></textarea>
+<p>A denúncia não remove conteúdo nem bloqueia a conta automaticamente.</p>
+<div class="botoes-linha"><button class="btn btn-primario" type="submit">Enviar denúncia</button><a class="btn btn-secundario" href="<%= alvo.link %>">Cancelar</a></div>
+</form></div></section><%- include('partials/footer') %>

@@ -1,5 +1,5 @@
 <%- include('../partials/header') %>
-<section class="topo-pagina"><div class="container"><span class="destaque">Moderação</span><h1>Denúncias de mensagens</h1><p>Analise o conteúdo denunciado e registre o resultado. A denúncia não bloqueia automaticamente o autor.</p></div></section>
+<section class="topo-pagina"><div class="container"><span class="destaque">Moderação</span><h1>Denúncias</h1><p>Analise o conteúdo denunciado e registre o resultado. A denúncia não bloqueia automaticamente o autor.</p></div></section>
 <section class="secao container"><%- include('_nav') %>
 <form action="/admin/denuncias" method="get" class="filtros bloco">
 <div class="campo campo-busca"><label for="busca-denuncia">Pesquisar denúncias</label><input type="search" id="busca-denuncia" name="q" maxlength="150" value="<%= busca %>" placeholder="Autor, mensagem, motivo ou situação"></div>
@@ -10,7 +10,7 @@
 <% denuncias.forEach((item) => { %>
 <article class="bloco">
     <span class="status"><%= item.status === 'pendente' ? 'Pendente' : 'Analisada' %></span>
-    <h2>Mensagem de <%= item.nomeAutor %></h2><blockquote><%= item.texto %></blockquote>
+    <h2><%= item.tipo === 'usuario' ? 'Usuário:' : item.tipo === 'comentario' ? 'Comentário de' : 'Mensagem de' %> <%= item.nomeAutor %></h2><blockquote><%= item.texto %></blockquote>
     <p><strong>Motivo:</strong> <%= item.motivo %></p><small><%= formatarData(item.createdAt) %></small>
     <% if (item.status === 'pendente') { %>
     <form action="/admin/denuncias/<%= idTexto(item) %>/analisar" method="post" class="formulario">

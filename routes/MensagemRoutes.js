@@ -15,4 +15,7 @@ router.post('/mensagens/:id/enviar', somenteAutenticado, controle.send);
 
 router.post('/mensagens/:id/denunciar/:mensagemId', somenteAutenticado, rateLimit({ windowMs: 60000, limit: 5 }), new DenunciaController().create);
 
+router.get('/denunciar/:tipo/:id', somenteAutenticado, new DenunciaController().form);
+router.post('/denunciar/:tipo/:id', somenteAutenticado, rateLimit({ windowMs: 60000, limit: 5 }), new DenunciaController().report);
+
 export default router;

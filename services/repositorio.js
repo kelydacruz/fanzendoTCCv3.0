@@ -491,6 +491,7 @@ export async function listarTccsRelacionados(tcc, limite = 3) {
 export async function listarIdeias({
     q = '',
     curso = '',
+    area = '',
     status = '',
     dificuldade = '',
     origem = '',
@@ -515,6 +516,7 @@ export async function listarIdeias({
             filtros.$or = [{ titulo: termo }, { tema: termo }, { descricao: termo }];
         }
         if (curso) filtros.curso = curso;
+        if (area) filtros.area = area;
         if (status) filtros.status = status;
         if (dificuldade) filtros.dificuldade = dificuldade;
         if (origem) filtros.origem = origem;
@@ -539,6 +541,7 @@ export async function listarIdeias({
                 && (!autorId || ideia.autorId === String(autorId))
                 && (!termo || texto.includes(termo))
                 && (!curso || ideia.curso === curso)
+                && (!area || ideia.area === area)
                 && (!status || ideia.status === status)
                 && (!dificuldade || ideia.dificuldade === dificuldade)
                 && (!origem || (ideia.origem || 'interna') === origem);

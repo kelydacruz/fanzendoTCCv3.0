@@ -7,7 +7,7 @@ import {
     excluirIdeia,
     liberarIdeia,
     listarComentarios,
-    listarCursos,
+    listarAreasAtuacao,
     listarIdeias,
     registrarInteresseIdeia,
     reservarIdeia,
@@ -21,7 +21,7 @@ function dadosDoFormulario(body) {
         titulo: String(body.titulo || '').trim(),
         tema: String(body.tema || '').trim(),
         descricao: String(body.descricao || '').trim(),
-        curso: String(body.curso || '').trim(),
+        area: String(body.area || '').trim(),
         dificuldade: ['Iniciante', 'Intermediária', 'Avançada'].includes(body.dificuldade)
             ? body.dificuldade
             : 'Intermediária',
@@ -32,7 +32,7 @@ function validarDados(dados, cursos) {
     if (!textoComTamanho(dados.titulo, 3, 180)) return 'Informe um título entre 3 e 180 caracteres.';
     if (!textoComTamanho(dados.tema, 2, 100)) return 'Informe o tema da ideia.';
     if (!textoComTamanho(dados.descricao, 20, 2000)) return 'A descrição deve ter entre 20 e 2.000 caracteres.';
-    if (dados.curso !== 'Outros' && !cursos.some((curso) => curso.nome === dados.curso)) return 'Selecione um curso cadastrado ou a opção Outros.';
+    if (dados.area !== 'Outros' && !cursos.some((curso) => curso.nome === dados.area)) return 'Selecione uma área cadastrada ou a opção Outros.';
     return '';
 }
 
@@ -51,7 +51,7 @@ function podeVisualizar(usuario, ideia) {
 }
 
 async function renderFormulario(res, pagina, status, erro, dados) {
-    const cursos = await listarCursos({ somenteAtivos: true });
+    const cursos = await listarAreasAtuacao({ somenteAtivas: true });
     return res.status(status).render(`ideia/${pagina}`, {
         title: pagina === 'add' ? 'Publicar ideia' : 'Editar ideia', erro, dados, cursos,
     });
@@ -69,7 +69,7 @@ export default class IdeiaController {
                     : (['interna', 'externa'].includes(req.query.origem) ? req.query.origem : 'interna');
                 const filtros = {
                     q: req.query.q,
-                    curso: req.query.curso,
+                    area: req.query.area,
                     status: req.query.status,
                     dificuldade: req.query.dificuldade,
                     origem,
@@ -78,7 +78,7 @@ export default class IdeiaController {
                 };
                 const [ideias, cursosCadastrados] = await Promise.all([
                     listarIdeias(filtros),
-                    listarCursos({ somenteAtivos: true }),
+                    listarAreasAtuacao({ somenteAtivas: true }),
                 ]);
                 return res.render(`${caminhoBase}lst`, {
                     title: colaborador ? 'Minhas ideias' : 'Banco de ideias',
@@ -135,7 +135,7 @@ export default class IdeiaController {
         this.add = async (req, res, next) => {
             const dados = dadosDoFormulario(req.body);
             try {
-                const cursos = await listarCursos({ somenteAtivos: true });
+                const cursos = await listarAreasAtuacao({ somenteAtivas: true });
                 validarConteudo(dados.titulo, dados.tema, dados.descricao);
                 const erroDados = validarDados(dados, cursos);
                 if (erroDados) return renderFormulario(res, 'add', 400, erroDados, req.body);
@@ -179,7 +179,7 @@ export default class IdeiaController {
                 if (!usuarioEhDono(req.session.usuario, ideia) || ideia.status !== 'Disponível') {
                     return res.redirect(`/ideia/detalhes/${req.params.id}?mensagem=Esta ideia não está disponível para edição.`);
                 }
-                const cursos = await listarCursos({ somenteAtivos: true });
+                const cursos = await listarAreasAtuacao({ somenteAtivas: true });
                 validarConteudo(dados.titulo, dados.tema, dados.descricao);
                 const erroDados = validarDados(dados, cursos);
                 if (erroDados) return renderFormulario(res, 'edt', 400, erroDados, { ...ideia, ...req.body });

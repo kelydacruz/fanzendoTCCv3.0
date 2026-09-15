@@ -195,7 +195,7 @@ test('executa o fluxo de criação, comentário, edição e exclusão de ideia',
         titulo: 'Mapa colaborativo de acessibilidade',
         tema: 'Acessibilidade urbana',
         descricao: 'Plataforma para registrar barreiras e recursos acessíveis nos espaços da comunidade escolar.',
-        curso: 'Técnico em Informática',
+        area: 'Outros',
         status: 'Disponível',
         dificuldade: 'Intermediária',
     }, cookieAluno);
@@ -218,7 +218,7 @@ test('executa o fluxo de criação, comentário, edição e exclusão de ideia',
         titulo: 'Mapa escolar de acessibilidade',
         tema: 'Acessibilidade urbana',
         descricao: 'Plataforma para registrar barreiras e recursos acessíveis nos espaços da comunidade escolar.',
-        curso: 'Técnico em Informática',
+        area: 'Outros',
         status: 'Em desenvolvimento',
         dificuldade: 'Avançada',
     }, cookieAluno);
@@ -543,9 +543,9 @@ test('exclusão de TCC exige admin e confirmação e remove comentários', async
     assert.equal((await enviarFormulario(caminho, { token }, admin)).status, 403);
 });
 
-test('autor não demonstra interesse nem reserva sua ideia e aceita curso Outros', async () => {
+test('autor não demonstra interesse nem reserva sua ideia e aceita área Outros', async () => {
     const aluno = await entrar('aluna@exemplo.com', '123456');
-    const dados = { titulo: 'Proposta de melhoria comunitária', tema: 'Comunidade', descricao: 'Uma proposta para organizar e melhorar serviços utilizados pela comunidade local.', curso: 'Outros', dificuldade: 'Iniciante' };
+    const dados = { titulo: 'Proposta de melhoria comunitária', tema: 'Comunidade', descricao: 'Uma proposta para organizar e melhorar serviços utilizados pela comunidade local.', area: 'Outros', dificuldade: 'Iniciante' };
     const criacao = await enviarFormulario('/ideia/add', dados, aluno);
     assert.equal(criacao.status, 302);
     const caminho = criacao.headers.get('location').split('?')[0];
@@ -557,8 +557,8 @@ test('autor não demonstra interesse nem reserva sua ideia e aceita curso Outros
     const ideia = await buscarIdeiaPorId(id);
     assert.equal(ideia.status, 'Disponível');
     assert.equal((ideia.interessados || []).length, 0);
-    assert.match(await (await requisicao('/ideia/lst?curso=Outros', { headers: { cookie: aluno } })).text(), /Proposta de melhoria comunitária/);
-    const outroCurso = await enviarFormulario('/ideia/add', { ...dados, curso: 'Curso inexistente' }, aluno);
+    assert.match(await (await requisicao('/ideia/lst?area=Outros', { headers: { cookie: aluno } })).text(), /Proposta de melhoria comunitária/);
+    const outroCurso = await enviarFormulario('/ideia/add', { ...dados, area: 'Área inexistente' }, aluno);
     assert.equal(outroCurso.status, 400);
 });
 
@@ -621,4 +621,57 @@ test('remove somente usuário bloqueado e preserva autoria e bloqueio de acesso'
     const login = await enviarFormulario('/entrar', { email: 'remover@academico.ifsul.edu.br', senha: '123456' });
     assert.equal(login.status, 403);
     assert.match(await login.text(), /conta foi removida/);
+});
+
+test('denuncia comentários acessíveis e usuários com resposta e sem duplicação', async () => {
+    const { comentarios, tccs, notificacoes } = await import('../data/mock.js');
+    const { denunciarAlvo, listarDenuncias } = await import('../services/denuncias.js');
+    const { buscarUsuarioPorId } = await import('../services/repositorio.js');
+    const aluno = await entrar('aluna@exemplo.com', '123456');
+    const usuario = await buscarUsuarioPorId('usuario-aluna');
+    comentarios.push({ id: 'comentario-denunciavel', autorId: 'usuario-professora', alvoTipo: 'tcc', alvoId: 'horta-inteligente', texto: 'Comentário para análise', createdAt: new Date() });
+    const contexto = { publicacaoTipo: 'tcc', publicacaoId: 'horta-inteligente' };
+    const caminho = '/denunciar/comentario/comentario-denunciavel';
+    assert.equal((await requisicao(caminho + '?' + new URLSearchParams(contexto))).status, 302);
+    assert.equal((await enviarFormulario(caminho, contexto, aluno)).status, 403);
+    const formulario = await requisicao(caminho + '?' + new URLSearchParams(contexto), { headers: { cookie: aluno } });
+    assert.equal(formulario.status, 200);
+    const token = (await formulario.text()).match(/name="token" value="([^"]+)"/)[1];
+    assert.equal((await enviarFormulario(caminho, { ...contexto, token, motivo: 'Conteúdo inadequado para a discussão.' }, aluno)).status, 302);
+    const item = await denunciarAlvo('comentario', 'comentario-denunciavel', usuario, 'Outro motivo de análise.', contexto);
+    assert.equal((await listarDenuncias()).filter((d) => d.mensagem === 'comentario:comentario-denunciavel').length, 1);
+    assert.equal(await denunciarAlvo('usuario', 'usuario-aluna', usuario, 'Denúncia de mim mesmo.'), null);
+    const professor = await buscarUsuarioPorId('usuario-professora');
+    assert.equal(await denunciarAlvo('comentario', 'comentario-denunciavel', professor, 'Meu comentário.', contexto), null);
+    const tcc = tccs.find((t) => t.id === 'horta-inteligente');
+    const anterior = tcc.visibilidade;
+    tcc.visibilidade = 'interno';
+    const externo = await buscarUsuarioPorId('usuario-colaborador');
+    assert.equal(await denunciarAlvo('comentario', 'comentario-denunciavel', externo, 'Não posso acessar.', contexto), null);
+    tcc.visibilidade = anterior;
+    assert.equal(await denunciarAlvo('comentario', 'comentario-denunciavel', usuario, 'Contexto errado.', { publicacaoTipo: 'ideia', publicacaoId: 'ideia-enchentes' }), null);
+    const perfil = await requisicao('/denunciar/usuario/usuario-professora', { headers: { cookie: aluno } });
+    assert.equal(perfil.status, 200);
+    const tokenPerfil = (await perfil.text()).match(/name="token" value="([^"]+)"/)[1];
+    assert.equal((await enviarFormulario('/denunciar/usuario/usuario-professora', { token: tokenPerfil, motivo: 'Conduta que precisa ser analisada.' }, aluno)).status, 302);
+    const admin = await entrarAdmin();
+    assert.equal((await enviarFormulario(`/admin/denuncias/${item.id}/analisar`, { resposta: 'Análise do comentário concluída.' }, admin)).status, 302);
+    assert.ok(notificacoes.some((n) => n.mensagem.includes('Análise do comentário concluída.') && n.link === '/tcc/detalhes/horta-inteligente'));
+    const lista = await requisicao('/admin/denuncias?q=comentario', { headers: { cookie: admin } });
+    assert.match(await lista.text(), /Comentário para análise/);
+});
+
+test('ideias usam áreas ativas da administração e preservam cadastro anterior', async () => {
+    const { cadastrarAreaAtuacao } = await import('../services/repositorio.js');
+    await cadastrarAreaAtuacao({ nome: 'Sustentabilidade comunitária' });
+    const aluno = await entrar('aluna@exemplo.com', '123456');
+    const formulario = await requisicao('/ideia/add', { headers: { cookie: aluno } });
+    const html = await formulario.text();
+    assert.match(html, /Área relacionada/);
+    assert.match(html, /Sustentabilidade comunitária/);
+    assert.doesNotMatch(html, /Curso relacionado/);
+    const resposta = await enviarFormulario('/ideia/add', { titulo: 'Projeto de sustentabilidade', tema: 'Comunidade', descricao: 'Uma proposta para melhorar a sustentabilidade e a organização da comunidade.', area: 'Sustentabilidade comunitária', dificuldade: 'Iniciante' }, aluno);
+    assert.equal(resposta.status, 302);
+    const filtrada = await requisicao('/ideia/lst?area=' + encodeURIComponent('Sustentabilidade comunitária'), { headers: { cookie: aluno } });
+    assert.match(await filtrada.text(), /Projeto de sustentabilidade/);
 });

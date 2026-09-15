@@ -25,11 +25,11 @@
             <input id="q" type="search" name="q" value="<%= filtros.q || '' %>" placeholder="Título, tema ou descrição">
         </div>
         <div class="campo">
-            <label for="curso">Curso</label>
-            <select id="curso" name="curso">
+            <label for="area">Área</label>
+            <select id="area" name="area">
                 <option value="">Todos</option>
                 <% cursos.forEach((curso) => { %>
-                    <option value="<%= curso %>" <%= filtros.curso === curso ? 'selected' : '' %>><%= curso %></option>
+                    <option value="<%= curso %>" <%= filtros.area === curso ? 'selected' : '' %>><%= curso %></option>
                 <% }) %>
             </select>
         </div>

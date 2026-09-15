@@ -1,7 +1,9 @@
 import { mongoose } from '../config/conexao.js';
 const schema = new mongoose.Schema({
     mensagem: { type: String, required: true },
-    conversa: { type: String, required: true },
+    conversa: { type: String, default: '' },
+    tipo: { type: String, enum: ['mensagem', 'comentario', 'usuario'], default: 'mensagem' },
+    link: { type: String, default: '' },
     denunciante: { type: String, required: true },
     autor: { type: String, required: true },
     nomeAutor: String,

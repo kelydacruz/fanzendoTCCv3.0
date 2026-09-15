@@ -3,6 +3,7 @@
 <section class="topo-pagina"><div class="container container-form"><a class="voltar" href="/mensagens">← Voltar</a><span class="destaque">Conversa vinculada</span><h1><%= conversa.ideia?.titulo || 'Ideia' %></h1><p>Contato com <strong><%= outroUsuario?.nome || 'Usuário' %></strong>.</p></div></section>
 
 <section class="secao container container-form">
+<% if (outroUsuario && idTexto(outroUsuario) !== idTexto(usuario)) { %><a class="btn btn-texto" href="/denunciar/usuario/<%= idTexto(outroUsuario) %>">Denunciar usuário</a><% } %>
     <% if (conversa.status === 'pendente') { %>
         <div class="bloco aviso-fluxo">
             <h2>Solicitação aguardando resposta</h2>
