@@ -1086,9 +1086,9 @@ export async function atualizarTurma(id, dados) {
 export async function resumoAdministrativo() {
     if (usandoMongo()) {
         const [totalUsuarios, totalAlunos, totalProfessores, tccsPendentes, totalCursos, totalTurmas, totalIdeias, totalAreas] = await Promise.all([
-            Usuario.countDocuments(),
-            Usuario.countDocuments({ perfil: 'aluno' }),
-            Usuario.countDocuments({ perfil: 'professor' }),
+            Usuario.countDocuments({ removido: { $ne: true } }),
+            Usuario.countDocuments({ perfil: 'aluno', removido: { $ne: true } }),
+            Usuario.countDocuments({ perfil: 'professor', removido: { $ne: true } }),
             Tcc.countDocuments({ status: { $in: ['em_analise', 'correcao_solicitada'] } }),
             Curso.countDocuments(),
             Turma.countDocuments(),
@@ -1098,9 +1098,9 @@ export async function resumoAdministrativo() {
         return { totalUsuarios, totalAlunos, totalProfessores, tccsPendentes, totalCursos, totalTurmas, totalIdeias, totalAreas };
     }
     return {
-        totalUsuarios: usuarios.length,
-        totalAlunos: usuarios.filter((usuario) => usuario.perfil === 'aluno').length,
-        totalProfessores: usuarios.filter((usuario) => usuario.perfil === 'professor').length,
+        totalUsuarios: usuarios.filter((usuario) => !usuario.removido).length,
+        totalAlunos: usuarios.filter((usuario) => !usuario.removido && usuario.perfil === 'aluno').length,
+        totalProfessores: usuarios.filter((usuario) => !usuario.removido && usuario.perfil === 'professor').length,
         tccsPendentes: tccs.filter((tcc) => ['em_analise', 'correcao_solicitada'].includes(tcc.status)).length,
         totalCursos: cursos.length,
         totalTurmas: turmas.length,

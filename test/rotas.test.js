@@ -675,3 +675,27 @@ test('ideias usam áreas ativas da administração e preservam cadastro anterior
     const filtrada = await requisicao('/ideia/lst?area=' + encodeURIComponent('Sustentabilidade comunitária'), { headers: { cookie: aluno } });
     assert.match(await filtrada.text(), /Projeto de sustentabilidade/);
 });
+
+test('resumo administrativo ignora removidos e mantém contas apenas bloqueadas', async () => {
+    const { usuarios } = await import('../data/mock.js');
+    const { resumoAdministrativo, removerUsuarioBloqueado, listarUsuarios } = await import('../services/repositorio.js');
+    const antes = await resumoAdministrativo();
+    const ids = ['contagem-aluno', 'contagem-professor'];
+    try {
+        usuarios.push({ id: ids[0], nome: 'Aluno da contagem', perfil: 'aluno', ativo: false });
+        usuarios.push({ id: ids[1], nome: 'Professor da contagem', perfil: 'professor', ativo: false });
+        const bloqueados = await resumoAdministrativo();
+        assert.equal(bloqueados.totalUsuarios, antes.totalUsuarios + 2);
+        assert.equal(bloqueados.totalAlunos, antes.totalAlunos + 1);
+        assert.equal(bloqueados.totalProfessores, antes.totalProfessores + 1);
+        for (const id of ids) await removerUsuarioBloqueado(id);
+        const removidos = await resumoAdministrativo();
+        assert.equal(removidos.totalUsuarios, antes.totalUsuarios);
+        assert.equal(removidos.totalAlunos, antes.totalAlunos);
+        assert.equal(removidos.totalProfessores, antes.totalProfessores);
+        assert.equal(removidos.totalUsuarios, (await listarUsuarios()).length);
+        assert.ok(ids.every((id) => usuarios.some((usuario) => usuario.id === id)));
+    } finally {
+        for (let i = usuarios.length - 1; i >= 0; i--) if (ids.includes(usuarios[i].id)) usuarios.splice(i, 1);
+    }
+});
