@@ -16,6 +16,8 @@ router.get('/admin/cursos', controle.cursos);
 router.post('/admin/cursos', controle.adicionarCurso);
 router.post('/admin/cursos/:id/status', controle.alterarCurso);
 router.get('/admin/areas', controle.areas);
+router.get('/admin/areas/:id/excluir', controle.confirmarExclusaoArea);
+router.post('/admin/areas/:id/excluir', controle.excluirArea);
 router.post('/admin/areas', controle.adicionarArea);
 router.post('/admin/areas/:id/status', controle.alterarArea);
 router.get('/admin/turmas', controle.turmas);

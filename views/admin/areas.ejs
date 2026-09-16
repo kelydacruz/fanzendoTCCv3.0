@@ -1,6 +1,6 @@
 <%- include('../partials/header') %>
 
-<section class="topo-pagina"><div class="container"><span class="destaque">Administração</span><h1>Áreas de atuação</h1><p>Essas opções aparecem no cadastro e no perfil dos professores.</p></div></section>
+<section class="topo-pagina"><div class="container"><span class="destaque">Administração</span><h1>Áreas de atuação</h1><p>Essas opções aparecem no cadastro e no perfil dos professores e nas ideias.</p></div></section>
 
 <section class="secao container">
     <%- include('_nav') %>
@@ -17,7 +17,8 @@
             <% areas.forEach((area) => { %>
                 <article class="bloco item-admin">
                     <div><span class="etiqueta"><%= area.ativo ? 'Ativa' : 'Inativa' %></span><h2><%= area.nome %></h2></div>
-                    <form action="/admin/areas/<%= idTexto(area) %>/status" method="post"><input type="hidden" name="ativo" value="<%= area.ativo ? 'false' : 'true' %>"><button class="btn btn-secundario btn-pequeno" type="submit"><%= area.ativo ? 'Desativar' : 'Reativar' %></button></form>
+                    <div class="botoes-linha"><form action="/admin/areas/<%= idTexto(area) %>/status" method="post"><input type="hidden" name="ativo" value="<%= area.ativo ? 'false' : 'true' %>"><button class="btn btn-secundario btn-pequeno" type="submit"><%= area.ativo ? 'Desativar' : 'Reativar' %></button></form>
+                    <a class="btn btn-perigo btn-pequeno" href="/admin/areas/<%= idTexto(area) %>/excluir">Excluir área</a></div>
                 </article>
             <% }) %>
         </div>

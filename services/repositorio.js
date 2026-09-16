@@ -1121,3 +1121,12 @@ export async function removerUsuarioBloqueado(id) {
     Object.assign(usuario, dados);
     return usuario;
 }
+
+export async function excluirAreaAtuacao(id) {
+    if (usandoMongo()) {
+        if (!idValido(id)) return null;
+        return AreaAtuacao.findByIdAndDelete(id);
+    }
+    const indice = areasAtuacao.findIndex((area) => area.id === String(id));
+    return indice < 0 ? null : areasAtuacao.splice(indice, 1)[0];
+}

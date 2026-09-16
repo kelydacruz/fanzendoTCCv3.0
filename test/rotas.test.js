@@ -699,3 +699,36 @@ test('resumo administrativo ignora removidos e mantém contas apenas bloqueadas'
         for (let i = usuarios.length - 1; i >= 0; i--) if (ids.includes(usuarios[i].id)) usuarios.splice(i, 1);
     }
 });
+
+test('admin exclui área com confirmação e preserva ideias e perfis existentes', async () => {
+    const { cadastrarAreaAtuacao, listarAreasAtuacao, resumoAdministrativo } = await import('../services/repositorio.js');
+    const { ideias, usuarios } = await import('../data/mock.js');
+    const nome = 'Área para excluir';
+    const antes = await resumoAdministrativo();
+    const area = await cadastrarAreaAtuacao({ nome });
+    ideias.push({ id: 'ideia-area-excluida', titulo: 'Ideia preservada', area: nome });
+    usuarios.push({ id: 'perfil-area-excluida', nome: 'Professor preservado', perfil: 'professor', areaAtuacao: nome });
+    const admin = await entrarAdmin();
+    const aluno = await entrar('aluna@exemplo.com', '123456');
+    const caminho = `/admin/areas/${area.id}/excluir`;
+    for (const cookie of ['', aluno]) {
+        assert.equal((await requisicao(caminho, { headers: { cookie } })).status, 302);
+        assert.equal((await enviarFormulario(caminho, {}, cookie)).status, 302);
+    }
+    assert.equal((await enviarFormulario(caminho, {}, admin)).status, 403);
+    const confirmacao = await requisicao(caminho, { headers: { cookie: admin } });
+    assert.equal(confirmacao.status, 200);
+    const html = await confirmacao.text();
+    assert.match(html, /Área para excluir/);
+    assert.ok((await listarAreasAtuacao()).some((item) => item.id === area.id));
+    const token = html.match(/name="token" value="([^"]+)"/)[1];
+    assert.equal((await enviarFormulario(caminho, { token }, admin)).status, 302);
+    assert.ok(!(await listarAreasAtuacao()).some((item) => item.id === area.id));
+    assert.equal((await resumoAdministrativo()).totalAreas, antes.totalAreas);
+    assert.equal(ideias.find((item) => item.id === 'ideia-area-excluida').area, nome);
+    assert.equal(usuarios.find((item) => item.id === 'perfil-area-excluida').areaAtuacao, nome);
+    assert.equal((await requisicao(caminho, { headers: { cookie: admin } })).status, 404);
+    assert.equal((await enviarFormulario(caminho, { token }, admin)).status, 403);
+    const formulario = await requisicao('/ideia/add', { headers: { cookie: aluno } });
+    assert.doesNotMatch(await formulario.text(), /Área para excluir/);
+});

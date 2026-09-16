@@ -20,6 +20,7 @@ import {
     listarAreasAtuacao,
     cadastrarAreaAtuacao,
     atualizarAreaAtuacao,
+    excluirAreaAtuacao,
     listarIdeias,
     listarTodosTccs,
     listarTurmas,
@@ -173,6 +174,29 @@ export default class AdminController {
                 if (erro.code === 11000) return mensagem(res, '/admin/areas', 'Essa área já foi cadastrada.');
                 return next(erro);
             }
+        };
+
+        this.confirmarExclusaoArea = async (req, res, next) => {
+            try {
+                const areas = await listarAreasAtuacao();
+                const area = areas.find((item) => String(item.id || item._id) === req.params.id);
+                if (!area) return res.status(404).render('404', { title: 'Área não encontrada' });
+                return res.render('admin/confirmar-remocao', {
+                    title: 'Excluir área', nome: area.nome,
+                    explicacao: 'A área será excluída da lista e das opções para novos cadastros. As informações já salvas em perfis e ideias serão preservadas. Para apenas suspender seu uso temporariamente, escolha Desativar na lista de áreas.',
+                    destino: `/admin/areas/${req.params.id}/excluir`, voltar: '/admin/areas', busca: '',
+                    token: prepararConfirmacao(req, 'area', req.params.id),
+                });
+            } catch (erro) { return next(erro); }
+        };
+
+        this.excluirArea = async (req, res, next) => {
+            try {
+                if (!consumirConfirmacao(req, 'area', req.params.id)) return res.status(403).render('erro', { title: 'Confirmação necessária', mensagemErro: 'Abra novamente a confirmação de exclusão da área.' });
+                const area = await excluirAreaAtuacao(req.params.id);
+                if (!area) return res.status(404).render('404', { title: 'Área não encontrada' });
+                return mensagem(res, '/admin/areas', 'Área excluída com sucesso. Os cadastros existentes foram preservados.');
+            } catch (erro) { return next(erro); }
         };
 
         this.alterarArea = async (req, res, next) => {
