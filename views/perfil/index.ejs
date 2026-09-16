@@ -28,7 +28,8 @@
                 <p><%= ideiaEmDesenvolvimento.descricao %></p>
                 <div class="botoes-linha">
                     <a class="btn btn-primario" href="/tcc/add">Usar no meu TCC</a>
-                    <form action="/ideia/<%= idTexto(ideiaEmDesenvolvimento) %>/desistir" method="post" data-confirm="Deseja desistir desta ideia?"><button class="btn btn-secundario" type="submit">Desistir da ideia</button></form>
+                    <form action="/ideia/<%= idTexto(ideiaEmDesenvolvimento) %>/desistir" method="post" data-confirm="Deseja desistir desta ideia?">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-secundario" type="submit">Desistir da ideia</button></form>
                 </div>
             <% } else { %>
                 <p>Você ainda não reservou uma ideia. Demonstre interesse ou escolha uma sugestão no Banco de Ideias.</p>
@@ -47,6 +48,7 @@
     <% } %>
 
     <form class="formulario bloco" action="/perfil" method="post">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <h2>Dados do perfil</h2>
         <% if (erro) { %><div class="erro-form" role="alert"><%= erro %></div><% } %>
 

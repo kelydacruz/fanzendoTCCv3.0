@@ -5,7 +5,8 @@
     <a class="<%= caminhoAtual.startsWith('/admin/areas') ? 'ativo' : '' %>" href="/admin/areas">Áreas</a>
     <a class="<%= caminhoAtual.startsWith('/admin/turmas') ? 'ativo' : '' %>" href="/admin/turmas">Turmas</a>
     <a class="<%= caminhoAtual.startsWith('/admin/tccs') ? 'ativo' : '' %>" href="/admin/tccs">TCCs</a>
-    <a class="<%= caminhoAtual.startsWith('/admin/ideias') ? 'ativo' : '' %>" href="/admin/ideias">Ideias</a>
+    <a class="<%= caminhoAtual === '/admin/ideias' ? 'ativo' : '' %>" href="/admin/ideias">Ideias</a>
+    <a class="<%= caminhoAtual === '/admin/ideias/externas' ? 'ativo' : '' %>" href="/admin/ideias/externas">Ideias externas novas</a>
     <a class="<%= caminhoAtual.startsWith('/admin/filtro') ? 'ativo' : '' %>" href="/admin/filtro">Palavras proibidas</a>
 <a class="<%= caminhoAtual.startsWith('/admin/denuncias') ? 'ativo' : '' %>" href="/admin/denuncias">Denúncias</a>
 </nav>

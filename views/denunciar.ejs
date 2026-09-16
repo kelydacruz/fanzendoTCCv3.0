@@ -2,6 +2,7 @@
 <section class="topo-pagina"><div class="container"><span class="destaque">Moderação</span><h1>Denunciar <%= tipo === 'usuario' ? 'usuário' : 'comentário' %></h1><p>A administração analisará sua denúncia. Você receberá a resposta nas notificações.</p></div></section>
 <section class="secao container container-form"><div class="bloco formulario"><h2><%= alvo.nomeAutor %></h2><blockquote><%= alvo.texto %></blockquote>
 <form action="/denunciar/<%= tipo %>/<%= id %>" method="post" class="formulario">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
 <input type="hidden" name="token" value="<%= token %>">
 <input type="hidden" name="publicacaoTipo" value="<%= contexto.publicacaoTipo || '' %>">
 <input type="hidden" name="publicacaoId" value="<%= contexto.publicacaoId || '' %>">

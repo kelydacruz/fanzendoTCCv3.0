@@ -8,6 +8,7 @@
         <p>Enviamos um código de 6 números para <strong><%= emailMascarado %></strong>.</p>
 
         <form class="formulario bloco confirmacao-card" action="/confirmar-codigo" method="post">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <% if (erro) { %><div class="erro-form" role="alert"><%= erro %></div><% } %>
             <% if (mensagemCodigo) { %><div class="sucesso-form" role="status"><%= mensagemCodigo %></div><% } %>
 
@@ -28,6 +29,7 @@
         </form>
 
         <form class="reenvio-codigo" action="/confirmar-codigo/reenviar" method="post">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <span>Não recebeu?</span>
             <button class="btn btn-texto" type="submit">Enviar outro código</button>
         </form>

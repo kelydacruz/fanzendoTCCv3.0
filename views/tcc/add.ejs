@@ -11,6 +11,7 @@
 
 <section class="secao container container-form">
     <form class="formulario bloco" action="/tcc/add" method="post" enctype="multipart/form-data">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <% if (erro) { %><div class="erro-form" role="alert"><%= erro %></div><% } %>
         <%- include('_form', { dados, editando: false }) %>
         <div class="botoes-form">

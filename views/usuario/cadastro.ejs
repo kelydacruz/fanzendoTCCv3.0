@@ -10,6 +10,7 @@
         </div>
 
         <form class="formulario bloco" action="/cadastro" method="post">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <h2>Criar conta</h2>
             <% if (erro) { %><div class="erro-form" role="alert"><%= erro %></div><% } %>
 

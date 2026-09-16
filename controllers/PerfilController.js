@@ -1,10 +1,6 @@
-import {
-    atualizarDadosPerfilUsuario,
-    buscarIdeiaReservadaPeloAluno,
-    buscarUsuarioPorId,
-    listarAreasAtuacao,
-    listarCursos,
-} from '../services/repositorio.js';
+import { atualizarDadosPerfilUsuario, buscarUsuarioPorId } from '../services/usuarios.js';
+import { buscarIdeiaReservadaPeloAluno } from '../services/ideias.js';
+import { listarAreasAtuacao, listarCursos } from '../services/cadastros.js';
 import { descricaoPerfil } from '../services/perfis.js';
 import { textoComTamanho } from '../services/validacao.js';
 

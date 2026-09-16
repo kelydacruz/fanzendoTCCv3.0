@@ -22,6 +22,7 @@
                         <td>
                             <% if (idTexto(item) !== usuario.id) { %>
                                 <form action="/admin/usuarios/<%= idTexto(item) %>/status" method="post">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
                                     <input type="hidden" name="ativo" value="<%= item.ativo === false ? 'true' : 'false' %>">
                                     <% if (item.ativo !== false) { %>
                                         <label for="motivo-<%= idTexto(item) %>">Motivo do bloqueio</label>

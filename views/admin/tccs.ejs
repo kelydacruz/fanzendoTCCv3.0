@@ -24,6 +24,7 @@
                     <p><strong>Aluno:</strong> <%= tcc.autor?.nome || 'Não informado' %> · <strong>Orientador:</strong> <%= tcc.orientadorUsuario?.nome || tcc.orientador %></p>
                 </div>
                 <form class="form-status" action="/admin/tccs/<%= idTexto(tcc) %>/status" method="post">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <input type="hidden" name="q" value="<%= filtros.q %>">
                     <input type="hidden" name="situacao" value="<%= filtros.situacao %>">
                     <label>Situação<select name="status"><option value="em_analise" <%= tcc.status === 'em_analise' ? 'selected' : '' %>>Em análise</option><option value="correcao_solicitada" <%= tcc.status === 'correcao_solicitada' ? 'selected' : '' %>>Correção solicitada</option><option value="publicado" <%= (tcc.status || 'publicado') === 'publicado' ? 'selected' : '' %>>Publicado</option><option value="rejeitado" <%= tcc.status === 'rejeitado' ? 'selected' : '' %>>Rejeitado</option></select></label>

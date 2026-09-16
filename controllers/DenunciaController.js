@@ -1,7 +1,15 @@
 import { prepararConfirmacao, consumirConfirmacao } from '../services/confirmacao.js';
 import { normalizarTexto } from '../services/texto.js';
-import { denunciarMensagem, listarDenuncias, analisarDenuncia, buscarDenuncia, excluirDenuncia, alvoDaDenuncia, denunciarAlvo } from '../services/denuncias.js';
-import { criarNotificacao } from '../services/repositorio.js';
+import {
+    denunciarMensagem,
+    listarDenuncias,
+    analisarDenuncia,
+    buscarDenuncia,
+    excluirDenuncia,
+    alvoDaDenuncia,
+    denunciarAlvo,
+} from '../services/denuncias.js';
+import { criarNotificacao } from '../services/notificacoes.js';
 export default class DenunciaController {
     constructor() {
         this.form = async (req, res, next) => {

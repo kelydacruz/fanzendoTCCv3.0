@@ -15,6 +15,7 @@
                     <% if (podeEditar) { %><a class="btn btn-secundario" href="/tcc/edt/<%= idTexto(tcc) %>">Editar</a><% } %>
                     <% if (podeExcluir) { %>
                         <form action="/tcc/del/<%= idTexto(tcc) %>" method="post" data-confirm="Tem certeza que deseja excluir este TCC?">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
                             <button class="btn btn-perigo" type="submit">Excluir</button>
                         </form>
                     <% } %>
@@ -42,6 +43,7 @@
 
         <% if (podeAvaliar) { %>
             <form class="bloco formulario avaliacao-tcc" action="/orientacoes/<%= idTexto(tcc) %>/avaliar" method="post">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <span class="destaque">Parecer do orientador</span>
                 <h2>Avaliar trabalho</h2>
                 <label for="feedbackOrientador">Correções ou observação</label>
@@ -90,6 +92,7 @@
 
             <% if (comentariosPermitidos) { %>
                 <form class="comentario-form" action="/tcc/comentario/<%= idTexto(tcc) %>" method="post">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <label for="texto">Deixe uma dúvida, dica ou explicação</label>
                     <textarea id="texto" name="texto" rows="3" maxlength="500" required></textarea>
                     <button class="btn btn-primario" type="submit">Comentar</button>

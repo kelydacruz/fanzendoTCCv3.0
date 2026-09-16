@@ -28,14 +28,27 @@ async function requisicao(caminho, opcoes = {}) {
     });
 }
 
+async function formularioDaSessao(cookie = '') {
+    const pagina = await requisicao('/entrar', { headers: cookie ? { cookie } : {} });
+    // An authenticated account is redirected from login to its dashboard.
+    let html = await pagina.text();
+    let atual = pagina.headers.get('set-cookie')?.split(';')[0] || cookie;
+    if (pagina.status === 302) {
+        const painel = await requisicao('/perfil', { headers: { cookie: atual } });
+        html = await painel.text();
+        atual = painel.headers.get('set-cookie')?.split(';')[0] || atual;
+    }
+    const token = html.match(/name="_csrf" value="([^"]+)"/)?.[1];
+    assert.ok(token, 'Página deve fornecer o token CSRF');
+    return { token, cookie: atual };
+}
+
 async function enviarFormulario(caminho, dados, cookie = '') {
+    const sessao = await formularioDaSessao(cookie);
     return requisicao(caminho, {
         method: 'POST',
-        headers: {
-            'content-type': 'application/x-www-form-urlencoded',
-            ...(cookie ? { cookie } : {}),
-        },
-        body: new URLSearchParams(dados),
+        headers: { 'content-type': 'application/x-www-form-urlencoded', cookie: sessao.cookie },
+        body: new URLSearchParams({ ...dados, _csrf: sessao.token }),
     });
 }
 
@@ -127,6 +140,7 @@ test('envia cabeçalhos de segurança e usa cookie próprio para a sessão', asy
 
 test('recusa arquivo falso mesmo quando o tipo informado é PDF', async () => {
     const cookieAluno = await entrar('aluna@exemplo.com', '123456');
+    const sessaoFormulario = await formularioDaSessao(cookieAluno);
     const formulario = new FormData();
     formulario.append('titulo', 'Documento acadêmico de demonstração');
     formulario.append('tema', 'Segurança de arquivos');
@@ -140,7 +154,7 @@ test('recusa arquivo falso mesmo quando o tipo informado é PDF', async () => {
 
     const resposta = await requisicao('/tcc/add', {
         method: 'POST',
-        headers: { cookie: cookieAluno },
+        headers: { cookie: sessaoFormulario.cookie, 'x-csrf-token': sessaoFormulario.token },
         body: formulario,
     });
 
@@ -731,4 +745,50 @@ test('admin exclui área com confirmação e preserva ideias e perfis existentes
     assert.equal((await enviarFormulario(caminho, { token }, admin)).status, 403);
     const formulario = await requisicao('/ideia/add', { headers: { cookie: aluno } });
     assert.doesNotMatch(await formulario.text(), /Área para excluir/);
+});
+
+test('ideias externas entram na fila, notificam admin e saem após a decisão', async () => {
+    const { ideias, notificacoes } = await import('../data/mock.js');
+    const colaborador = await entrar('colaborador@exemplo.com', '12345678');
+    const aluno = await entrar('aluna@exemplo.com', '123456');
+    const admin = await entrarAdmin();
+    assert.equal((await requisicao('/admin/ideias/externas', { headers: { cookie: aluno } })).status, 302);
+    const dados = { titulo: 'Nova sugestão da comunidade', tema: 'Comunidade', descricao: 'Uma sugestão externa para melhorar os serviços oferecidos à comunidade escolar.', area: 'Outros', dificuldade: 'Iniciante' };
+    const criacao = await enviarFormulario('/ideia/add', dados, colaborador);
+    assert.equal(criacao.status, 302);
+    const id = criacao.headers.get('location').split('?')[0].split('/').pop();
+    const ideia = ideias.find((item) => item.id === id);
+    assert.equal(ideia.moderacao, 'pendente');
+    assert.ok(notificacoes.some((item) => item.destinatario === 'usuario-admin' && item.link === '/admin/ideias/externas' && item.mensagem.includes(dados.titulo)));
+    let fila = await requisicao('/admin/ideias/externas', { headers: { cookie: admin } });
+    assert.match(await fila.text(), /Nova sugestão da comunidade/);
+    const publica = await requisicao('/ideia/lst?origem=externa', { headers: { cookie: aluno } });
+    assert.doesNotMatch(await publica.text(), /Nova sugestão da comunidade/);
+    const aprovacao = await enviarFormulario(`/admin/ideias/${id}/moderar`, { acao: 'aprovar', fila: 'externas', q: 'sugestão' }, admin);
+    assert.equal(aprovacao.status, 302);
+    assert.ok(aprovacao.headers.get('location').startsWith('/admin/ideias/externas?'));
+    fila = await requisicao('/admin/ideias/externas', { headers: { cookie: admin } });
+    assert.doesNotMatch(await fila.text(), /Nova sugestão da comunidade/);
+    await enviarFormulario(`/ideia/edt/${id}`, { ...dados, titulo: 'Sugestão revisada da comunidade' }, colaborador);
+    assert.equal(ideias.find((item) => item.id === id).moderacao, 'pendente');
+    assert.ok(notificacoes.some((item) => item.destinatario === 'usuario-admin' && item.mensagem.includes('reenviada para análise')));
+    await enviarFormulario(`/admin/ideias/${id}/moderar`, { acao: 'rejeitar', fila: 'externas' }, admin);
+    fila = await requisicao('/admin/ideias/externas', { headers: { cookie: admin } });
+    assert.doesNotMatch(await fila.text(), /Sugestão revisada da comunidade/);
+});
+
+test('formulários recusam token ausente ou de outra sessão inclusive upload', async () => {
+    const aluno = await entrar('aluna@exemplo.com', '123456');
+    const outraSessao = await formularioDaSessao();
+    for (const token of ['', outraSessao.token]) {
+        const resposta = await requisicao('/perfil', { method: 'POST', headers: { cookie: aluno, 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ nome: 'Alteração indevida', _csrf: token }) });
+        assert.equal(resposta.status, 403);
+    }
+    const form = new FormData();
+    form.set('titulo', 'Sem token');
+    const upload = await requisicao('/tcc/add', { method: 'POST', headers: { cookie: aluno }, body: form });
+    assert.equal(upload.status, 403);
+    const pagina = await requisicao('/ideia/add', { headers: { cookie: aluno } });
+    const html = await pagina.text();
+    assert.ok([...html.matchAll(/<form[\s\S]*?<\/form>/g)].filter((m) => /method="post"/.test(m[0])).every((m) => m[0].includes('name="_csrf"')));
 });

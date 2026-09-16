@@ -26,6 +26,7 @@ function segredoCodigo() {
     return segredo;
 }
 
+// Guardamos um resumo protegido do código, nunca o código recebido pelo e-mail.
 function gerarHash(identificador, codigo) {
     return createHmac('sha256', segredoCodigo())
         .update(`${identificador}:${codigo}`)

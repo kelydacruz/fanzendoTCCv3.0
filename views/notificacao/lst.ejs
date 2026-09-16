@@ -12,7 +12,8 @@
     <div class="cabecalho-secao">
         <h2>Mais recentes</h2>
         <% if (notificacoes.some((item) => !item.lida)) { %>
-            <form action="/notificacoes/todas-lidas" method="post"><button class="btn btn-texto" type="submit">Marcar todas como lidas</button></form>
+            <form action="/notificacoes/todas-lidas" method="post">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-texto" type="submit">Marcar todas como lidas</button></form>
         <% } %>
     </div>
 
@@ -25,6 +26,7 @@
                     <small><%= formatarData(notificacao.createdAt) %></small>
                 </div>
                 <form action="/notificacoes/<%= idTexto(notificacao) %>/lida" method="post">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <button class="btn btn-secundario btn-pequeno" type="submit"><%= notificacao.lida ? 'Abrir' : 'Ver' %></button>
                 </form>
             </article>

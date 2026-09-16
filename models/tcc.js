@@ -7,7 +7,7 @@ const TccSchema = new mongoose.Schema({
     curso: { type: String, required: true, trim: true, minlength: 2, maxlength: 100 },
     cursoCadastro: { type: mongoose.Schema.Types.ObjectId, ref: 'Curso', default: null },
     area: { type: String, required: true, trim: true, minlength: 2, maxlength: 100 },
-    turma: { type: String, required: true, trim: true, minlength: 2, maxlength: 50 },
+    turma: { type: String, required: true, trim: true, minlength: 2, maxlength: 80 },
     turmaCadastro: { type: mongoose.Schema.Types.ObjectId, ref: 'Turma', default: null },
     orientador: { type: String, required: true, trim: true, minlength: 3, maxlength: 100 },
     orientadorUsuario: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario', default: null },
@@ -35,6 +35,7 @@ const TccSchema = new mongoose.Schema({
     },
 }, { timestamps: true });
 
+// O índice único garante um TCC por autor mesmo se duas requisições chegarem juntas.
 TccSchema.index({ autor: 1 }, { unique: true });
 
 export default mongoose.models.Tcc || mongoose.model('Tcc', TccSchema);

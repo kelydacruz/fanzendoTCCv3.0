@@ -6,6 +6,7 @@
     <%- include('_nav') %>
     <div class="admin-duas-colunas">
         <form class="formulario bloco" action="/admin/cursos" method="post">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <h2>Novo curso</h2>
             <% if (erro) { %><div class="erro-form" role="alert"><%= erro %></div><% } %>
             <label for="nome">Nome *</label><input id="nome" name="nome" maxlength="100" required placeholder="Técnico em Informática">
@@ -18,7 +19,8 @@
             <% cursos.forEach((curso) => { %>
                 <article class="bloco item-admin">
                     <div><span class="etiqueta"><%= curso.sigla %></span><h2><%= curso.nome %></h2><p><%= curso.area %> · <%= curso.ativo ? 'Ativo' : 'Inativo' %></p></div>
-                    <form action="/admin/cursos/<%= idTexto(curso) %>/status" method="post"><input type="hidden" name="ativo" value="<%= curso.ativo ? 'false' : 'true' %>"><button class="btn btn-secundario btn-pequeno" type="submit"><%= curso.ativo ? 'Desativar' : 'Reativar' %></button></form>
+                    <form action="/admin/cursos/<%= idTexto(curso) %>/status" method="post">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="ativo" value="<%= curso.ativo ? 'false' : 'true' %>"><button class="btn btn-secundario btn-pequeno" type="submit"><%= curso.ativo ? 'Desativar' : 'Reativar' %></button></form>
                 </article>
             <% }) %>
         </div>

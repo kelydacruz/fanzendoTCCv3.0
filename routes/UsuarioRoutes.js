@@ -1,3 +1,4 @@
+import rateLimit from 'express-rate-limit';
 import express from 'express';
 import UsuarioController, {
     limitarConfirmacao,
@@ -13,7 +14,7 @@ router.get('/entrar', controle.openLogin);
 router.post('/entrar', limitarLogin, controle.login);
 router.post('/entrar/google', limitarLogin, controle.loginGoogle);
 router.get('/cadastro', controle.openCadastro);
-router.post('/cadastro', controle.cadastro);
+router.post('/cadastro', rateLimit({ windowMs: 15 * 60 * 1000, limit: 5 }), controle.cadastro);
 router.get('/cadastro/google', controle.openCadastroGoogle);
 router.post('/cadastro/google', limitarLogin, controle.cadastroGoogle);
 router.get('/confirmar-codigo', controle.openConfirmacao);

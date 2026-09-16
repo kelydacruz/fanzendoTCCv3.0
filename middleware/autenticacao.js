@@ -1,5 +1,5 @@
 import { mensagemBloqueio } from '../services/bloqueio.js';
-import { buscarUsuarioPorId } from '../services/repositorio.js';
+import { buscarUsuarioPorId } from '../services/usuarios.js';
 
 function redirecionarComMensagem(res, caminho, mensagem) {
     res.redirect(`${caminho}?mensagem=${encodeURIComponent(mensagem)}`);

@@ -16,6 +16,7 @@ function obterClienteGoogle() {
 export async function verificarCredencialGoogle(credencial, nonceEsperado) {
     if (!credencial || !nonceEsperado) throw new Error('Credencial do Google não informada.');
 
+    // A biblioteca confere assinatura, validade e destinatário do token. O nonce o vincula a este login.
     const ticket = await obterClienteGoogle().verifyIdToken({
         idToken: credencial,
         audience: process.env.GOOGLE_CLIENT_ID,

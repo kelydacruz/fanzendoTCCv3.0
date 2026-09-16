@@ -26,6 +26,7 @@
                 <p>Para criar ou trocar a senha, enviaremos um único código ao seu e-mail.</p>
             </div>
             <form action="/conta/definir-senha/solicitar" method="post">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <button class="btn btn-primario" type="submit"><%= temSenha ? 'Trocar senha' : 'Criar senha' %></button>
             </form>
         </article>

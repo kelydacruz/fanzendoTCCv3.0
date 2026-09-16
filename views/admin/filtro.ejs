@@ -5,6 +5,7 @@
 <section class="secao container container-form">
     <%- include('_nav') %>
     <form class="formulario bloco" action="/admin/filtro" method="post">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <h2>Termos bloqueados</h2>
         <% if (erro) { %><div class="erro-form" role="alert"><%= erro %></div><% } %>
         <label for="termos">Uma palavra ou expressão por linha</label>

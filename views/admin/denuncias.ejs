@@ -14,6 +14,7 @@
     <p><strong>Motivo:</strong> <%= item.motivo %></p><small><%= formatarData(item.createdAt) %></small>
     <% if (item.status === 'pendente') { %>
     <form action="/admin/denuncias/<%= idTexto(item) %>/analisar" method="post" class="formulario">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <label for="resposta-<%= idTexto(item) %>">Resultado da análise (enviado a quem denunciou)</label>
         <textarea id="resposta-<%= idTexto(item) %>" name="resposta" rows="3" minlength="5" maxlength="250" required></textarea>
         <div class="botoes-linha"><button class="btn btn-primario" type="submit">Concluir análise</button><a class="btn btn-secundario" href="/admin/usuarios">Gerenciar usuários</a></div>

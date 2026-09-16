@@ -1,14 +1,16 @@
 <%- include('../partials/header') %>
 
-<section class="topo-pagina"><div class="container"><span class="destaque">Administração</span><h1>Moderação de ideias</h1><p>Aprove sugestões externas antes que elas apareçam para os alunos.</p></div></section>
+<section class="topo-pagina"><div class="container"><span class="destaque">Administração</span><h1><%= somenteExternas ? 'Ideias externas novas' : 'Moderação de ideias' %></h1><p>Aprove sugestões externas antes que elas apareçam para os alunos.</p></div></section>
 
 <section class="secao container">
     <%- include('_nav') %>
-    <form class="filtros bloco" action="/admin/ideias" method="get">
+    <form class="filtros bloco" action="<%= somenteExternas ? '/admin/ideias/externas' : '/admin/ideias' %>" method="get">
         <div class="campo campo-busca"><label for="q">Pesquisar</label><input id="q" name="q" value="<%= busca %>" placeholder="Título, tema ou descrição"></div>
         <button class="btn btn-primario" type="submit">Pesquisar</button>
     </form>
 
+    <div class="botoes-linha"><a class="btn btn-secundario" href="/admin/ideias/externas">Externas pendentes</a><a class="btn btn-secundario" href="/admin/ideias">Todas as ideias</a></div>
+    <p role="status"><%= ideias.length %> ideia(s) nesta lista.</p>
     <div class="lista-admin">
         <% ideias.forEach((ideia) => { %>
             <article class="bloco item-admin">
@@ -20,12 +22,15 @@
                 </div>
                 <div class="botoes-linha">
                     <% if (ideia.origem === 'externa' && ideia.moderacao !== 'aprovada') { %>
-                        <form action="/admin/ideias/<%= idTexto(ideia) %>/moderar" method="post"><button class="btn btn-primario btn-pequeno" name="acao" value="aprovar" type="submit">Aprovar</button></form>
+                        <form action="/admin/ideias/<%= idTexto(ideia) %>/moderar" method="post">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="fila" value="<%= somenteExternas ? 'externas' : 'todas' %>"><input type="hidden" name="q" value="<%= busca %>"><button class="btn btn-primario btn-pequeno" name="acao" value="aprovar" type="submit">Aprovar</button></form>
                     <% } %>
                     <% if (ideia.origem === 'externa' && ideia.moderacao !== 'rejeitada') { %>
-                        <form action="/admin/ideias/<%= idTexto(ideia) %>/moderar" method="post"><button class="btn btn-secundario btn-pequeno" name="acao" value="rejeitar" type="submit">Recusar</button></form>
+                        <form action="/admin/ideias/<%= idTexto(ideia) %>/moderar" method="post">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="fila" value="<%= somenteExternas ? 'externas' : 'todas' %>"><input type="hidden" name="q" value="<%= busca %>"><button class="btn btn-secundario btn-pequeno" name="acao" value="rejeitar" type="submit">Recusar</button></form>
                     <% } %>
-                    <form action="/admin/ideias/<%= idTexto(ideia) %>/excluir" method="post" data-confirm="Tem certeza que deseja remover esta ideia?"><button class="btn btn-perigo btn-pequeno" type="submit">Remover</button></form>
+                    <form action="/admin/ideias/<%= idTexto(ideia) %>/excluir" method="post" data-confirm="Tem certeza que deseja remover esta ideia?">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-perigo btn-pequeno" type="submit">Remover</button></form>
                 </div>
             </article>
         <% }) %>

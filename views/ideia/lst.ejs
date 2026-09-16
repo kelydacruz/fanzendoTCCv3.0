@@ -28,8 +28,8 @@
             <label for="area">Área</label>
             <select id="area" name="area">
                 <option value="">Todos</option>
-                <% cursos.forEach((curso) => { %>
-                    <option value="<%= curso %>" <%= filtros.area === curso ? 'selected' : '' %>><%= curso %></option>
+                <% areas.forEach((area) => { %>
+                    <option value="<%= area %>" <%= filtros.area === area ? 'selected' : '' %>><%= area %></option>
                 <% }) %>
             </select>
         </div>

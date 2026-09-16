@@ -14,6 +14,7 @@
                 <div class="botoes-linha">
                     <a class="btn btn-claro" href="/ideia/edt/<%= idTexto(ideia) %>">Editar</a>
                     <form action="/ideia/del/<%= idTexto(ideia) %>" method="post" data-confirm="Tem certeza que deseja excluir esta ideia?">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <button class="btn btn-perigo" type="submit">Excluir</button>
                     </form>
                 </div>
@@ -44,18 +45,22 @@
         <% if (podeDemonstrarInteresse || podeReservar || podeDesistir || podeSolicitarContato) { %>
             <div class="botoes-linha acoes-ideia">
                 <% if (podeDemonstrarInteresse) { %>
-                    <form action="/ideia/<%= idTexto(ideia) %>/interesse" method="post"><button class="btn btn-secundario" type="submit">Tenho interesse</button></form>
+                    <form action="/ideia/<%= idTexto(ideia) %>/interesse" method="post">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-secundario" type="submit">Tenho interesse</button></form>
                 <% } else if (interessado && ideia.status === 'Disponível') { %>
                     <span class="etiqueta">Interesse registrado</span>
                 <% } %>
                 <% if (podeReservar) { %>
-                    <form action="/ideia/<%= idTexto(ideia) %>/desenvolver" method="post" data-confirm="Deseja reservar esta ideia para desenvolver seu TCC?"><button class="btn btn-primario" type="submit">Usar no meu TCC</button></form>
+                    <form action="/ideia/<%= idTexto(ideia) %>/desenvolver" method="post" data-confirm="Deseja reservar esta ideia para desenvolver seu TCC?">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-primario" type="submit">Usar no meu TCC</button></form>
                 <% } %>
                 <% if (podeDesistir) { %>
-                    <form action="/ideia/<%= idTexto(ideia) %>/desistir" method="post" data-confirm="Deseja desistir desta ideia e torná-la disponível novamente?"><button class="btn btn-secundario" type="submit">Desistir da ideia</button></form>
+                    <form action="/ideia/<%= idTexto(ideia) %>/desistir" method="post" data-confirm="Deseja desistir desta ideia e torná-la disponível novamente?">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-secundario" type="submit">Desistir da ideia</button></form>
                 <% } %>
                 <% if (podeSolicitarContato) { %>
-                    <form action="/mensagens/ideia/<%= idTexto(ideia) %>/solicitar" method="post"><button class="btn btn-texto" type="submit">Solicitar contato com o autor</button></form>
+                    <form action="/mensagens/ideia/<%= idTexto(ideia) %>/solicitar" method="post">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-texto" type="submit">Solicitar contato com o autor</button></form>
                 <% } %>
             </div>
         <% } %>
@@ -66,6 +71,7 @@
 
         <% if (usuario) { %>
             <form class="comentario-form" action="/ideia/comentario/<%= idTexto(ideia) %>" method="post">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <label for="texto">Compartilhe uma sugestão ou pergunta</label>
                 <textarea id="texto" name="texto" rows="3" maxlength="500" required></textarea>
                 <button class="btn btn-primario" type="submit">Comentar</button>

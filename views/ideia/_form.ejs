@@ -14,8 +14,8 @@
         <select id="area" name="area" required>
             <option value="">Selecione a área</option>
             <option value="Outros" <%= dados.area === 'Outros' ? 'selected' : '' %>>Outros</option>
-            <% (cursos || []).filter((curso) => curso.nome !== 'Outros').forEach((curso) => { %>
-                <option value="<%= curso.nome %>" <%= dados.area === curso.nome ? 'selected' : '' %>><%= curso.nome %></option>
+            <% (areas || []).filter((area) => area.nome !== 'Outros').forEach((area) => { %>
+                <option value="<%= area.nome %>" <%= dados.area === area.nome ? 'selected' : '' %>><%= area.nome %></option>
             <% }) %>
         </select>
     </div>

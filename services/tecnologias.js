@@ -25,6 +25,7 @@ export function normalizarTecnologias(valor = '') {
 }
 
 // Recebe somente os TCCs que o visitante tem permissão para consultar.
+// Um TCC pode citar várias tecnologias; o gráfico conta ocorrências, não partes exclusivas dos trabalhos.
 export function resumirTecnologias(tccs) {
     const contagens = new Map();
     let informados = 0;

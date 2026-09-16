@@ -6,6 +6,7 @@ export function prepararConfirmacao(req, acao, id) {
     return token;
 }
 
+// O código aleatório pertence à sessão e à ação; depois de usado, deixa de valer.
 export function consumirConfirmacao(req, acao, id) {
     const item = req.session.confirmacao;
     if (!item || item.acao !== acao || item.id !== String(id) || req.body.token !== item.token) return false;

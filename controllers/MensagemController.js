@@ -1,12 +1,12 @@
 import {
     atualizarStatusConversaIdeia,
     buscarConversaIdeiaPorId,
-    criarNotificacao,
     cadastrarMensagemIdeia,
     listarConversasIdeia,
     listarMensagensIdeia,
     solicitarConversaIdeia,
-} from '../services/repositorio.js';
+} from '../services/mensagens.js';
+import { criarNotificacao } from '../services/notificacoes.js';
 import { validarConteudo } from '../services/filtroConteudo.js';
 import { obterId } from '../services/permissoes.js';
 import { textoComTamanho } from '../services/validacao.js';

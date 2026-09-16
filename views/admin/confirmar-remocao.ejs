@@ -3,6 +3,7 @@
 <section class="secao container"><%- include('_nav') %>
 <div class="bloco formulario"><h2><%= nome %></h2><p><%= explicacao %></p>
 <form class="form-status" action="<%= destino %>" method="post">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
 <input type="hidden" name="token" value="<%= token %>">
 <input type="hidden" name="q" value="<%= busca %>">
 <button type="submit" class="btn btn-perigo">Confirmar remoção</button>

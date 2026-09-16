@@ -6,6 +6,7 @@
     <%- include('_nav') %>
     <div class="admin-duas-colunas">
         <form class="formulario bloco" action="/admin/areas" method="post">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <h2>Nova área</h2>
             <% if (erro) { %><div class="erro-form" role="alert"><%= erro %></div><% } %>
             <label for="nome">Nome da área *</label>
@@ -17,7 +18,8 @@
             <% areas.forEach((area) => { %>
                 <article class="bloco item-admin">
                     <div><span class="etiqueta"><%= area.ativo ? 'Ativa' : 'Inativa' %></span><h2><%= area.nome %></h2></div>
-                    <div class="botoes-linha"><form action="/admin/areas/<%= idTexto(area) %>/status" method="post"><input type="hidden" name="ativo" value="<%= area.ativo ? 'false' : 'true' %>"><button class="btn btn-secundario btn-pequeno" type="submit"><%= area.ativo ? 'Desativar' : 'Reativar' %></button></form>
+                    <div class="botoes-linha"><form action="/admin/areas/<%= idTexto(area) %>/status" method="post">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="ativo" value="<%= area.ativo ? 'false' : 'true' %>"><button class="btn btn-secundario btn-pequeno" type="submit"><%= area.ativo ? 'Desativar' : 'Reativar' %></button></form>
                     <a class="btn btn-perigo btn-pequeno" href="/admin/areas/<%= idTexto(area) %>/excluir">Excluir área</a></div>
                 </article>
             <% }) %>

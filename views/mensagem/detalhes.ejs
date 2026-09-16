@@ -10,6 +10,7 @@
             <p>As mensagens serão liberadas apenas após a aceitação do autor da ideia.</p>
             <% if (podeResponderSolicitacao) { %>
                 <form class="botoes-linha" action="/mensagens/<%= idTexto(conversa) %>/responder" method="post">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <button class="btn btn-primario" name="acao" value="aceitar" type="submit">Aceitar contato</button>
                     <button class="btn btn-secundario" name="acao" value="recusar" type="submit">Recusar</button>
                 </form>
@@ -27,6 +28,7 @@
                     <% if (idTexto(mensagem.autor) !== idTexto(usuario)) { %>
                     <details class="denunciar-mensagem"><summary>Denunciar mensagem</summary>
                         <form action="/mensagens/<%= idTexto(conversa) %>/denunciar/<%= idTexto(mensagem) %>" method="post">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
                             <label for="motivo-<%= idTexto(mensagem) %>">Motivo da denúncia</label>
                             <textarea id="motivo-<%= idTexto(mensagem) %>" name="motivo" minlength="5" maxlength="500" rows="3" required></textarea>
                             <small>A administração receberá esta mensagem e seu motivo para análise.</small>
@@ -39,6 +41,7 @@
             <% if (!mensagens.length) { %><p>O contato foi aceito. Envie a primeira mensagem sobre esta ideia.</p><% } %>
         </div>
         <form class="formulario bloco" action="/mensagens/<%= idTexto(conversa) %>/enviar" method="post">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <label for="texto">Mensagem</label>
             <textarea id="texto" name="texto" rows="4" maxlength="1000" required></textarea>
             <small class="ajuda-campo">Use esta conversa somente para assuntos relacionados à ideia.</small>

@@ -7,6 +7,7 @@
         <p><strong>Aluno:</strong> <%= tcc.autor?.nome || 'Não informado' %></p>
         <p>A exclusão é definitiva: o TCC, seu PDF e seus comentários serão apagados. A ideia vinculada será preservada. O aluno poderá cadastrar outro trabalho.</p>
         <form class="form-status" action="/admin/tccs/<%= idTexto(tcc) %>/excluir" method="post">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <input type="hidden" name="token" value="<%= token %>">
             <input type="hidden" name="q" value="<%= filtros.q %>">
             <input type="hidden" name="situacao" value="<%= filtros.situacao %>">

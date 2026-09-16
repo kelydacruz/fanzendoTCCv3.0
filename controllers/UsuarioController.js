@@ -11,11 +11,10 @@ import {
     buscarUsuarioComCredenciaisPorId,
     cadastrarUsuario,
     confirmarAcessoUsuario,
-    listarAreasAtuacao,
-    listarCursos,
     registrarLoginUsuario,
     vincularContaGoogle,
-} from '../services/repositorio.js';
+} from '../services/usuarios.js';
+import { listarAreasAtuacao, listarCursos } from '../services/cadastros.js';
 import { verificarCredencialGoogle } from '../services/autenticacaoGoogle.js';
 import { normalizarTexto } from '../services/texto.js';
 import { perfilPeloEmail } from '../services/perfis.js';
@@ -80,7 +79,9 @@ function usuarioAtivo(usuario) {
     return usuario && usuario.ativo !== false;
 }
 
+// Troca o identificador da sessão após autenticar para impedir reaproveitamento de uma sessão anterior.
 async function iniciarSessao(req, res, usuario, mensagem) {
+    if (!usuarioAtivo(usuario)) return renderLogin(req, res, 403, mensagemBloqueio(usuario));
     await regenerarSessao(req);
     req.session.usuario = {
         id: String(usuario.id || usuario._id),
@@ -332,6 +333,7 @@ export default class UsuarioController {
 
                 let usuario = await buscarUsuarioPorEmail(contaGoogle.email);
                 if (usuario?.googleId && usuario.googleId !== contaGoogle.googleId) return renderLogin(req, res, 401, 'Não foi possível vincular esta conta Google.');
+                if (usuario && !usuarioAtivo(usuario)) return renderLogin(req, res, 403, mensagemBloqueio(usuario));
                 if (usuario) usuario = await vincularContaGoogle(usuario._id, contaGoogle.googleId);
                 else {
                     usuario = await cadastrarUsuario({

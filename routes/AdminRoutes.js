@@ -28,6 +28,7 @@ router.get('/admin/tccs/:id/excluir', controle.confirmarExclusaoTcc);
 router.post('/admin/tccs/:id/excluir', controle.excluirTcc);
 router.post('/admin/tccs/:id/status', controle.alterarTcc);
 router.get('/admin/ideias', controle.ideias);
+router.get('/admin/ideias/externas', controle.ideias);
 router.post('/admin/ideias/:id/moderar', controle.moderarIdeia);
 router.post('/admin/ideias/:id/excluir', controle.excluirIdeia);
 router.get('/admin/filtro', controle.filtro);

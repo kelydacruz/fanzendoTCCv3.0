@@ -1,17 +1,16 @@
 import {
     atualizarIdeia,
     buscarIdeiaPorId,
-    cadastrarComentario,
     cadastrarIdeia,
-    criarNotificacao,
     excluirIdeia,
     liberarIdeia,
-    listarComentarios,
-    listarAreasAtuacao,
     listarIdeias,
     registrarInteresseIdeia,
     reservarIdeia,
-} from '../services/repositorio.js';
+} from '../services/ideias.js';
+import { cadastrarComentario, listarComentarios } from '../services/comentarios.js';
+import { criarNotificacao, notificarAdministradores } from '../services/notificacoes.js';
+import { listarAreasAtuacao } from '../services/cadastros.js';
 import { validarConteudo } from '../services/filtroConteudo.js';
 import { obterId, usuarioEhAdmin, usuarioEhDono } from '../services/permissoes.js';
 import { comentarioValido, textoComTamanho } from '../services/validacao.js';
@@ -28,11 +27,11 @@ function dadosDoFormulario(body) {
     };
 }
 
-function validarDados(dados, cursos) {
+function validarDados(dados, areas) {
     if (!textoComTamanho(dados.titulo, 3, 180)) return 'Informe um título entre 3 e 180 caracteres.';
     if (!textoComTamanho(dados.tema, 2, 100)) return 'Informe o tema da ideia.';
     if (!textoComTamanho(dados.descricao, 20, 2000)) return 'A descrição deve ter entre 20 e 2.000 caracteres.';
-    if (dados.area !== 'Outros' && !cursos.some((curso) => curso.nome === dados.area)) return 'Selecione uma área cadastrada ou a opção Outros.';
+    if (dados.area !== 'Outros' && !areas.some((area) => area.nome === dados.area)) return 'Selecione uma área cadastrada ou a opção Outros.';
     return '';
 }
 
@@ -51,9 +50,9 @@ function podeVisualizar(usuario, ideia) {
 }
 
 async function renderFormulario(res, pagina, status, erro, dados) {
-    const cursos = await listarAreasAtuacao({ somenteAtivas: true });
+    const areas = await listarAreasAtuacao({ somenteAtivas: true });
     return res.status(status).render(`ideia/${pagina}`, {
-        title: pagina === 'add' ? 'Publicar ideia' : 'Editar ideia', erro, dados, cursos,
+        title: pagina === 'add' ? 'Publicar ideia' : 'Editar ideia', erro, dados, areas,
     });
 }
 
@@ -76,14 +75,14 @@ export default class IdeiaController {
                     usuario: req.session.usuario,
                     autorId: colaborador ? req.session.usuario.id : '',
                 };
-                const [ideias, cursosCadastrados] = await Promise.all([
+                const [ideias, areasCadastradas] = await Promise.all([
                     listarIdeias(filtros),
                     listarAreasAtuacao({ somenteAtivas: true }),
                 ]);
                 return res.render(`${caminhoBase}lst`, {
                     title: colaborador ? 'Minhas ideias' : 'Banco de ideias',
                     ideias,
-                    cursos: [...new Set([...cursosCadastrados.map((curso) => curso.nome), 'Outros'])],
+                    areas: [...new Set([...areasCadastradas.map((area) => area.nome), 'Outros'])],
                     filtros,
                     colaborador,
                 });
@@ -135,9 +134,9 @@ export default class IdeiaController {
         this.add = async (req, res, next) => {
             const dados = dadosDoFormulario(req.body);
             try {
-                const cursos = await listarAreasAtuacao({ somenteAtivas: true });
+                const areas = await listarAreasAtuacao({ somenteAtivas: true });
                 validarConteudo(dados.titulo, dados.tema, dados.descricao);
-                const erroDados = validarDados(dados, cursos);
+                const erroDados = validarDados(dados, areas);
                 if (erroDados) return renderFormulario(res, 'add', 400, erroDados, req.body);
 
                 const externa = req.session.usuario.perfil === 'colaborador';
@@ -148,6 +147,7 @@ export default class IdeiaController {
                     moderacao: externa ? 'pendente' : 'aprovada',
                     autor: req.session.usuario.id,
                 });
+                if (externa) await notificarAdministradores(req.session.usuario.id, `Nova ideia externa: “${ideia.titulo}”.`, '/admin/ideias/externas');
                 const mensagem = externa
                     ? 'Ideia enviada para análise da administração.'
                     : 'Ideia publicada com sucesso.';
@@ -179,15 +179,16 @@ export default class IdeiaController {
                 if (!usuarioEhDono(req.session.usuario, ideia) || ideia.status !== 'Disponível') {
                     return res.redirect(`/ideia/detalhes/${req.params.id}?mensagem=Esta ideia não está disponível para edição.`);
                 }
-                const cursos = await listarAreasAtuacao({ somenteAtivas: true });
+                const areas = await listarAreasAtuacao({ somenteAtivas: true });
                 validarConteudo(dados.titulo, dados.tema, dados.descricao);
-                const erroDados = validarDados(dados, cursos);
+                const erroDados = validarDados(dados, areas);
                 if (erroDados) return renderFormulario(res, 'edt', 400, erroDados, { ...ideia, ...req.body });
 
                 await atualizarIdeia(req.params.id, {
                     ...dados,
                     moderacao: ideia.origem === 'externa' ? 'pendente' : ideia.moderacao,
                 });
+                if (ideia.origem === 'externa') await notificarAdministradores(req.session.usuario.id, `Ideia externa reenviada para análise: “${dados.titulo}”.`, '/admin/ideias/externas');
                 return res.redirect(`/ideia/detalhes/${req.params.id}?mensagem=Ideia atualizada com sucesso.`);
             } catch (erro) {
                 if (erro.message.includes('termo não permitido')) return renderFormulario(res, 'edt', 400, erro.message, req.body);

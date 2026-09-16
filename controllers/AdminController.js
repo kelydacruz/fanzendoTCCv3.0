@@ -3,32 +3,28 @@ import { randomBytes } from 'node:crypto';
 import { normalizarTexto } from '../services/texto.js';
 import {
     alterarModeracaoIdeia,
-    alterarStatusUsuario,
+    buscarIdeiaPorId,
+    excluirIdeia,
+    listarIdeias,
+    marcarIdeiaUsada,
+    liberarIdeia,
+} from '../services/ideias.js';
+import { alterarStatusUsuario, buscarUsuarioPorId, removerUsuarioBloqueado, listarUsuarios } from '../services/usuarios.js';
+import {
     atualizarCurso,
     atualizarTurma,
-    avaliarTcc,
-    buscarIdeiaPorId,
-    buscarTccPorId,
-    buscarUsuarioPorId,
-    removerUsuarioBloqueado,
     cadastrarCurso,
     cadastrarTurma,
-    criarNotificacao,
-    excluirIdeia,
-    excluirTcc,
     listarCursos,
     listarAreasAtuacao,
     cadastrarAreaAtuacao,
     atualizarAreaAtuacao,
     excluirAreaAtuacao,
-    listarIdeias,
-    listarTodosTccs,
     listarTurmas,
-    listarUsuarios,
-    marcarIdeiaUsada,
-    liberarIdeia,
-    resumoAdministrativo,
-} from '../services/repositorio.js';
+} from '../services/cadastros.js';
+import { avaliarTcc, buscarTccPorId, excluirTcc, listarTodosTccs } from '../services/tccs.js';
+import { criarNotificacao } from '../services/notificacoes.js';
+import { resumoAdministrativo } from '../services/resumos.js';
 import { textoComTamanho } from '../services/validacao.js';
 import { carregarTermosProibidos, salvarTermosProibidos } from '../services/filtroConteudo.js';
 
@@ -346,13 +342,17 @@ export default class AdminController {
 
         this.ideias = async (req, res, next) => {
             try {
-                const ideias = await listarIdeias({ q: req.query.q || '', incluirOcultas: true });
+                const busca = typeof req.query.q === 'string' ? req.query.q.trim().slice(0, 150) : '';
+                const somenteExternas = req.path === '/admin/ideias/externas';
+                const todas = await listarIdeias({ q: busca, incluirOcultas: true });
+                const ideias = somenteExternas
+                    ? todas.filter((ideia) => ideia.origem === 'externa' && ideia.moderacao === 'pendente')
+                    : todas;
                 return res.render(`${caminhoBase}ideias`, {
-                    title: 'Moderação de ideias', ideias, busca: req.query.q || '',
+                    title: somenteExternas ? 'Ideias externas novas' : 'Moderação de ideias',
+                    ideias, busca, somenteExternas,
                 });
-            } catch (erro) {
-                return next(erro);
-            }
+            } catch (erro) { return next(erro); }
         };
 
         this.excluirIdeia = async (req, res, next) => {
@@ -366,6 +366,7 @@ export default class AdminController {
 
         this.moderarIdeia = async (req, res, next) => {
             try {
+                if (!['aprovar', 'rejeitar'].includes(req.body.acao)) return mensagem(res, '/admin/ideias', 'Ação inválida.');
                 const moderacao = req.body.acao === 'aprovar' ? 'aprovada' : 'rejeitada';
                 const ideia = await buscarIdeiaPorId(req.params.id);
                 if (!ideia) return mensagem(res, '/admin/ideias', 'Ideia não encontrada.');
@@ -382,7 +383,8 @@ export default class AdminController {
                         link: `/ideia/detalhes/${req.params.id}`,
                     });
                 }
-                return mensagem(res, '/admin/ideias', moderacao === 'aprovada' ? 'Ideia aprovada.' : 'Ideia recusada.');
+                const destino = req.body.fila === 'externas' ? '/admin/ideias/externas' : '/admin/ideias';
+                return res.redirect(`${destino}?${new URLSearchParams({ q: typeof req.body.q === 'string' ? req.body.q.slice(0, 150) : '', mensagem: moderacao === 'aprovada' ? 'Ideia aprovada e removida da fila de pendentes.' : 'Ideia recusada e removida da fila de pendentes.' })}`);
             } catch (erro) {
                 return next(erro);
             }

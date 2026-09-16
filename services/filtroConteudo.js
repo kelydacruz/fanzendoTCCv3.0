@@ -1,3 +1,4 @@
+import { usandoMongo } from './banco.js';
 import Configuracao from '../models/configuracao.js';
 import { mongoose } from '../config/conexao.js';
 import { normalizarTexto } from './texto.js';
@@ -25,7 +26,7 @@ export async function carregarTermosProibidos() {
     if (termosCache) return termosCache;
     if (carregamento) return carregamento;
     carregamento = (async () => {
-        if (mongoose.connection.readyState === 1) {
+        if (usandoMongo()) {
             const configuracao = await Configuracao.findOne({ chave: CONFIG_CHAVE }).lean();
             termosCache = normalizarLista(configuracao?.termosProibidos || termosDoAmbiente());
         } else {
@@ -46,7 +47,7 @@ export function listarTermosProibidos() {
 
 export async function salvarTermosProibidos(termos) {
     const lista = normalizarLista(termos);
-    if (mongoose.connection.readyState === 1) {
+    if (usandoMongo()) {
         await Configuracao.findOneAndUpdate(
             { chave: CONFIG_CHAVE },
             { chave: CONFIG_CHAVE, termosProibidos: lista },

@@ -2,27 +2,22 @@ import { normalizarTecnologias, resumirTecnologias } from '../services/tecnologi
 import {
     atualizarTcc,
     avaliarTcc,
-    buscarIdeiaReservadaPeloAluno,
     buscarTccDoAluno,
     buscarTccPorId,
-    buscarUsuarioPorId,
-    cadastrarComentario,
     cadastrarTcc,
-    criarNotificacao,
     excluirTcc,
-    liberarIdeia,
-    listarComentarios,
-    listarCursos,
-    listarProfessores,
     listarTccs,
     listarTccsDoOrientador,
     listarTccsRelacionados,
-    listarTurmas,
-    marcarIdeiaUsada,
     obterPdfTcc,
     registrarDownloadTcc,
     registrarVisualizacaoTcc,
-} from '../services/repositorio.js';
+} from '../services/tccs.js';
+import { buscarIdeiaReservadaPeloAluno, liberarIdeia, marcarIdeiaUsada } from '../services/ideias.js';
+import { buscarUsuarioPorId, listarProfessores } from '../services/usuarios.js';
+import { cadastrarComentario, listarComentarios } from '../services/comentarios.js';
+import { criarNotificacao } from '../services/notificacoes.js';
+import { listarCursos, listarTurmas } from '../services/cadastros.js';
 import { validarConteudo } from '../services/filtroConteudo.js';
 import { separarLista } from '../services/texto.js';
 import { obterId, usuarioEhAdmin, usuarioEhDono } from '../services/permissoes.js';
@@ -112,6 +107,7 @@ function validarDados(dados, contexto) {
     if (!textoComTamanho(dados.resumo, 30, 3000)) erros.resumo = 'O resumo deve ter entre 30 e 3.000 caracteres.';
     if (!contexto.curso) erros.cursoCadastro = 'Selecione um curso cadastrado pela administração.';
     if (!textoComTamanho(dados.area, 2, 100)) erros.area = 'Informe a área do conhecimento.';
+    if (contexto.turma && (!Number.isInteger(dados.ano) || dados.ano < 1980 || dados.ano > new Date().getFullYear())) erros.turmaCadastro = 'Selecione uma turma do ano atual ou de anos anteriores.';
     if (!contexto.turma) erros.turmaCadastro = 'Selecione uma turma cadastrada pela administração.';
     if (contexto.turma && contexto.curso
         && obterId(contexto.turma.curso || contexto.turma.cursoId) !== obterId(contexto.curso)) {
@@ -382,8 +378,10 @@ export default class TccController {
                 const tcc = await buscarTccPorId(req.params.id);
                 if (!tcc || !usuarioEhOrientador(req.session.usuario, tcc)) return res.redirect('/orientacoes?mensagem=Você não é o orientador deste TCC.');
                 if (!['em_analise', 'correcao_solicitada'].includes(tcc.status)) return res.redirect(`/tcc/detalhes/${req.params.id}?mensagem=Este TCC já foi avaliado.`);
+                if (!['aprovar', 'corrigir'].includes(req.body.acao)) return res.redirect('/orientacoes?mensagem=Ação inválida.');
                 const status = req.body.acao === 'aprovar' ? 'publicado' : 'correcao_solicitada';
                 const feedback = String(req.body.feedbackOrientador || '').trim();
+                if (feedback.length > 2000) return res.redirect(`/tcc/detalhes/${req.params.id}?mensagem=O parecer deve ter até 2.000 caracteres.`);
                 if (status === 'correcao_solicitada' && !textoComTamanho(feedback, 5, 2000)) {
                     return res.redirect(`/tcc/detalhes/${req.params.id}?mensagem=Explique as correções necessárias.`);
                 }

@@ -1,8 +1,4 @@
-import {
-    listarNotificacoes,
-    marcarNotificacaoLida,
-    marcarTodasNotificacoesLidas,
-} from '../services/repositorio.js';
+import { listarNotificacoes, marcarNotificacaoLida, marcarTodasNotificacoesLidas } from '../services/notificacoes.js';
 
 function idUsuario(req) {
     return req.session.usuario.id;

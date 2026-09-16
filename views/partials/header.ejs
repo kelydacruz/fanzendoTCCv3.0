@@ -58,6 +58,7 @@
                         <span><%= usuario.nome.split(' ')[0] %></span>
                     </a>
                     <form action="/sair" method="post">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <button class="btn btn-secundario btn-pequeno" type="submit">Sair</button>
                     </form>
                 <% } else { %>

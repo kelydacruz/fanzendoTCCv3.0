@@ -1,3 +1,4 @@
+import { prepararCsrf, validarCsrf } from './middleware/csrf.js';
 import 'dotenv/config';
 import express from 'express';
 import session from 'express-session';
@@ -16,7 +17,7 @@ import ideiaRoutes from './routes/IdeiaRoutes.js';
 import adminRoutes from './routes/AdminRoutes.js';
 import perfilRoutes from './routes/PerfilRoutes.js';
 import { carregarTermosProibidos } from './services/filtroConteudo.js';
-import { contarNotificacoesNaoLidas } from './services/repositorio.js';
+import { contarNotificacoesNaoLidas } from './services/notificacoes.js';
 import notificacaoRoutes from './routes/NotificacaoRoutes.js';
 import mensagemRoutes from './routes/MensagemRoutes.js';
 
@@ -70,18 +71,27 @@ if (process.env.MONGODB_URI) {
     });
 }
 
+// O navegador guarda só o identificador; os dados da sessão ficam no servidor (MongoDB em produção).
 app.use(session(configuracaoSessao));
 
-app.use(async (req, res, next) => {
-    const bancoConectado = await conectarBanco();
-    req.modoDemo = !bancoConectado;
-    await carregarTermosProibidos();
-    res.locals.modoDemo = req.modoDemo;
+app.use((req, res, next) => {
+    Object.assign(res.locals, { usuario: null, caminhoAtual: req.path, mensagem: '', modoDemo: false, notificacoesNaoLidas: 0 });
     next();
+});
+
+app.use(async (req, res, next) => {
+    try {
+        const bancoConectado = await conectarBanco();
+        req.modoDemo = !bancoConectado;
+        await carregarTermosProibidos();
+        res.locals.modoDemo = req.modoDemo;
+        next();
+    } catch (erro) { next(erro); }
 });
 
 app.use(validarUsuarioDaSessao);
 app.use(adicionarUsuarioNasTelas);
+app.use(prepararCsrf);
 
 app.use(async (req, res, next) => {
     try {
@@ -106,6 +116,11 @@ app.locals.formatarNumero = (valor) => new Intl.NumberFormat('pt-BR').format(Num
 app.locals.idTexto = (valor) => String(valor?.id || valor?._id || valor || '');
 app.locals.classeStatus = classeStatus;
 
+// Formulários com PDF só podem ser verificados depois que o multer lê os campos.
+app.use((req, res, next) => {
+    if (req.is('multipart/form-data') && (req.path === '/tcc/add' || req.path.startsWith('/tcc/edt/'))) return next();
+    return validarCsrf(req, res, next);
+});
 app.use(usuarioRoutes);
 app.use(tccRoutes);
 app.use(ideiaRoutes);
@@ -136,9 +151,9 @@ app.use((erro, req, res, next) => {
 
     console.error(erro);
 
-    return res.status(500).render('erro', {
+    return res.status(erro.status === 503 ? 503 : 500).render('erro', {
         title: 'Erro no sistema',
-        mensagemErro: 'Não foi possível concluir a operação. Tente novamente.',
+        mensagemErro: erro.status === 503 ? 'Banco de dados indisponível. Nenhum dado será salvo em modo demonstração. Tente novamente em instantes.' : 'Não foi possível concluir a operação. Tente novamente.',
     });
 });
 

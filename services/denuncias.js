@@ -1,6 +1,11 @@
+import { usandoMongo } from './banco.js';
 import { mongoose } from '../config/conexao.js';
 import Denuncia from '../models/denuncia.js';
-import { buscarUsuarioPorId, buscarTccPorId, buscarIdeiaPorId, listarComentarios, listarMensagensIdeia } from './repositorio.js';
+import { buscarUsuarioPorId } from './usuarios.js';
+import { buscarTccPorId } from './tccs.js';
+import { buscarIdeiaPorId } from './ideias.js';
+import { listarComentarios } from './comentarios.js';
+import { listarMensagensIdeia } from './mensagens.js';
 import { obterId } from './permissoes.js';
 import { randomUUID } from 'node:crypto';
 const demonstracao = [];
@@ -15,10 +20,11 @@ export async function denunciarMensagem(conversa, mensagemId, usuario, motivo) {
     return salvarDenuncia(dados);
 }
 
+// O índice mensagem + denunciante evita duplicação. Novos tipos usam prefixos na chave.
 async function salvarDenuncia(dados) {
     const mensagemId = dados.mensagem;
     const usuario = dados.denunciante;
-    if (mongoose.connection.readyState === 1) {
+    if (usandoMongo()) {
         try { return await Denuncia.findOneAndUpdate({ mensagem: mensagemId, denunciante: usuario }, { $setOnInsert: dados }, { upsert: true, new: true, runValidators: true }); }
         catch (erro) { if (erro.code === 11000) return Denuncia.findOne({ mensagem: mensagemId, denunciante: usuario }); throw erro; }
     }
@@ -29,13 +35,13 @@ async function salvarDenuncia(dados) {
     return denuncia;
 }
 export async function listarDenuncias() {
-    if (mongoose.connection.readyState === 1) return Denuncia.find().sort({ createdAt: -1 }).lean();
+    if (usandoMongo()) return Denuncia.find().sort({ createdAt: -1 }).lean();
     return [...demonstracao].reverse();
 }
 export async function analisarDenuncia(id, administrador, resposta) {
     if (typeof resposta !== 'string' || resposta.trim().length < 5 || resposta.trim().length > 250) return null;
     const dados = { status: 'analisada', administrador, resposta: resposta.trim() };
-    if (mongoose.connection.readyState === 1) {
+    if (usandoMongo()) {
         if (!mongoose.Types.ObjectId.isValid(id)) return null;
         return Denuncia.findOneAndUpdate({ _id: id, status: 'pendente' }, dados, { new: true, runValidators: true });
     }
@@ -46,7 +52,7 @@ export async function analisarDenuncia(id, administrador, resposta) {
 }
 
 export async function buscarDenuncia(id) {
-    if (mongoose.connection.readyState === 1) {
+    if (usandoMongo()) {
         if (!mongoose.Types.ObjectId.isValid(id)) return null;
         return Denuncia.findById(id).lean();
     }
@@ -54,7 +60,7 @@ export async function buscarDenuncia(id) {
 }
 
 export async function excluirDenuncia(id) {
-    if (mongoose.connection.readyState === 1) {
+    if (usandoMongo()) {
         if (!mongoose.Types.ObjectId.isValid(id)) return null;
         return Denuncia.findByIdAndDelete(id);
     }
