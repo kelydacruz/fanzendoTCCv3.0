@@ -6,7 +6,7 @@ import {
     usuarioEhAdmin,
     usuarioEhDono,
     usuarioEhProfessor,
-} from '../services/permissoes.js';
+} from '../models/permissoes.js';
 
 test('somente aluno pode publicar TCC', () => {
     assert.equal(podePublicarTcc({ perfil: 'aluno' }), true);

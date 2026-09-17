@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { usandoMongo } from '../services/banco.js';
+import { usandoMongo } from '../config/banco.js';
 import conectarBanco from '../config/conexao.js';
 
 test('demonstração só funciona sem banco configurado e fora de produção', async () => {

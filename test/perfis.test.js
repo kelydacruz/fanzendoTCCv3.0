@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { perfilPeloEmail } from '../services/perfis.js';
+import { perfilPeloEmail } from '../models/perfis.js';
 
 test('define perfis institucionais e limita outros domínios ao colaborador externo', () => {
     assert.equal(perfilPeloEmail('kely@academico.ifsul.edu.br'), 'aluno');

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
     possuiConteudoInadequado,
     validarConteudo,
-} from '../services/filtroConteudo.js';
+} from '../models/filtroConteudo.js';
 
 test('identifica um termo proibido como palavra completa', () => {
     assert.equal(possuiConteudoInadequado('Isto é spam'), true);

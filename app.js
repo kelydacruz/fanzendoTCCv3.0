@@ -16,8 +16,8 @@ import tccRoutes from './routes/TccRoutes.js';
 import ideiaRoutes from './routes/IdeiaRoutes.js';
 import adminRoutes from './routes/AdminRoutes.js';
 import perfilRoutes from './routes/PerfilRoutes.js';
-import { carregarTermosProibidos } from './services/filtroConteudo.js';
-import { contarNotificacoesNaoLidas } from './services/notificacoes.js';
+import { carregarTermosProibidos } from './models/filtroConteudo.js';
+import { contarNotificacoesNaoLidas } from './models/notificacaoOperacoes.js';
 import notificacaoRoutes from './routes/NotificacaoRoutes.js';
 import mensagemRoutes from './routes/MensagemRoutes.js';
 

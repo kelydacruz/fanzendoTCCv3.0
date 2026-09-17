@@ -5,23 +5,33 @@
 <section class="secao container">
     <%- include('_nav') %>
     <div class="admin-duas-colunas">
-        <form class="formulario bloco" action="/admin/turmas" method="post">
-<input type="hidden" name="_csrf" value="<%= csrfToken %>">
-            <h2>Nova turma</h2>
+        <form class="formulario bloco" action="/admin/turmas<%= edicao ? `/${edicao}/editar` : '' %>" method="post">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <h2><%= edicao ? 'Editar turma' : 'Nova turma' %></h2>
             <% if (erro) { %><div class="erro-form" role="alert"><%= erro %></div><% } %>
-            <label for="nome">Nome *</label><input id="nome" name="nome" maxlength="50" required placeholder="3º ano A">
-            <label for="ano">Ano *</label><input id="ano" type="number" name="ano" min="2000" max="<%= new Date().getFullYear() + 5 %>" value="<%= new Date().getFullYear() %>" required>
+            <label for="nome">Nome *</label>
+            <input id="nome" name="nome" value="<%= dados.nome || '' %>" maxlength="50" required placeholder="3º ano A">
+            <label for="ano">Ano *</label>
+            <input id="ano" type="number" name="ano" min="2000" max="<%= new Date().getFullYear() + 5 %>" value="<%= dados.ano ?? new Date().getFullYear() %>" required>
             <label for="curso">Curso *</label>
-            <select id="curso" name="curso" required><option value="">Selecione</option><% cursos.forEach((curso) => { %><option value="<%= idTexto(curso) %>"><%= curso.nome %></option><% }) %></select>
-            <button class="btn btn-primario" type="submit">Cadastrar turma</button>
+            <select id="curso" name="curso" required><option value="">Selecione</option><% const cursoAtual = String(dados.curso || dados.cursoId || ''); cursos.filter((curso) => curso.ativo || idTexto(curso) === cursoAtual).forEach((curso) => { %><option value="<%= idTexto(curso) %>" <%= idTexto(curso) === cursoAtual ? 'selected' : '' %>><%= curso.nome %><%= curso.ativo ? '' : ' (inativo)' %></option><% }) %></select>
+            <button class="btn btn-primario" type="submit"><%= edicao ? 'Salvar alterações' : 'Cadastrar turma' %></button>
+            <% if (edicao) { %>
+                <a class="btn btn-secundario" href="/admin/turmas">Cancelar edição</a>
+                <p class="texto-suave">Os nomes já registrados em trabalhos e perfis serão preservados como histórico.</p>
+            <% } %>
         </form>
 
         <div class="lista-admin">
             <% turmas.forEach((turma) => { %>
                 <article class="bloco item-admin">
                     <div><span class="etiqueta"><%= turma.ano %></span><h2><%= turma.nome %></h2><p><%= turma.curso?.nome || 'Curso não informado' %> · <%= turma.ativo ? 'Ativa' : 'Inativa' %></p></div>
-                    <form action="/admin/turmas/<%= idTexto(turma) %>/status" method="post">
-<input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="ativo" value="<%= turma.ativo ? 'false' : 'true' %>"><button class="btn btn-secundario btn-pequeno" type="submit"><%= turma.ativo ? 'Desativar' : 'Reativar' %></button></form>
+                    <div class="botoes-linha">
+                        <a class="btn btn-secundario btn-pequeno" href="/admin/turmas/<%= idTexto(turma) %>/editar">Editar</a>
+                        <form action="/admin/turmas/<%= idTexto(turma) %>/status" method="post">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="ativo" value="<%= turma.ativo ? 'false' : 'true' %>"><button class="btn btn-secundario btn-pequeno" type="submit"><%= turma.ativo ? 'Desativar' : 'Reativar' %></button></form>
+                    <a class="btn btn-perigo btn-pequeno" href="/admin/turmas/<%= idTexto(turma) %>/excluir">Excluir</a>
+                    </div>
                 </article>
             <% }) %>
         </div>

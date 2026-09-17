@@ -4,7 +4,7 @@ import {
     formatoCodigoValido,
     gerarCodigo,
     mascararEmail,
-} from '../services/verificacaoLogin.js';
+} from '../models/verificacaoOperacoes.js';
 
 test('gera códigos com exatamente seis números', () => {
     for (let i = 0; i < 30; i += 1) {

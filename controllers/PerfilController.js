@@ -1,7 +1,8 @@
-import { atualizarDadosPerfilUsuario, buscarUsuarioPorId } from '../services/usuarios.js';
-import { buscarIdeiaReservadaPeloAluno } from '../services/ideias.js';
-import { listarAreasAtuacao, listarCursos } from '../services/cadastros.js';
-import { descricaoPerfil } from '../services/perfis.js';
+import { atualizarDadosPerfilUsuario, buscarUsuarioPorId } from '../models/usuarioOperacoes.js';
+import { buscarIdeiaReservadaPeloAluno } from '../models/ideiaOperacoes.js';
+import { listarAreasAtuacao } from '../models/areaOperacoes.js';
+import { listarCursos } from '../models/cursoOperacoes.js';
+import { descricaoPerfil } from '../models/perfis.js';
 import { textoComTamanho } from '../services/validacao.js';
 
 function opcaoValida(valor, opcoes) {

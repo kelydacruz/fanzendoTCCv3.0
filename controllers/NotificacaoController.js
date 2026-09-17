@@ -1,4 +1,4 @@
-import { listarNotificacoes, marcarNotificacaoLida, marcarTodasNotificacoesLidas } from '../services/notificacoes.js';
+import { listarNotificacoes, marcarNotificacaoLida, marcarTodasNotificacoesLidas } from '../models/notificacaoOperacoes.js';
 
 function idUsuario(req) {
     return req.session.usuario.id;

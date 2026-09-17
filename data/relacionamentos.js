@@ -4,7 +4,7 @@ import {
     ideias,
     cursos,
     turmas,
-} from '../data/mock.js';
+} from './mock.js';
 
 // Monta os relacionamentos dos exemplos locais, como o populate faz no MongoDB.
 // Não copiamos senha nem credenciais quando os dados do autor são enviados para as telas.

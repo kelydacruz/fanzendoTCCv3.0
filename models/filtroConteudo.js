@@ -1,7 +1,6 @@
-import { usandoMongo } from './banco.js';
-import Configuracao from '../models/configuracao.js';
-import { mongoose } from '../config/conexao.js';
-import { normalizarTexto } from './texto.js';
+import { usandoMongo } from '../config/banco.js';
+import Configuracao from './configuracao.js';
+import { normalizarTexto } from '../services/texto.js';
 
 const CONFIG_CHAVE = 'filtro_conteudo';
 const palavrasPadrao = ['palavrao', 'ofensa', 'spam'];

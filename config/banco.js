@@ -1,4 +1,4 @@
-import { mongoose } from '../config/conexao.js';
+import { mongoose } from './conexao.js';
 
 // Sem URI, usamos os dados de exemplo. Com URI, uma queda do banco deve interromper a operação.
 export function usandoMongo() {

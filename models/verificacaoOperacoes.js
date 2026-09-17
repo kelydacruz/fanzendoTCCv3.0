@@ -1,11 +1,6 @@
-import {
-    createHmac,
-    randomInt,
-    randomUUID,
-    timingSafeEqual,
-} from 'crypto';
-import VerificacaoLogin from '../models/verificacaoLogin.js';
-import { enviarCodigoEmail } from './email.js';
+import { createHmac, randomInt, randomUUID, timingSafeEqual } from 'crypto';
+import VerificacaoLogin from './verificacaoLogin.js';
+import { enviarCodigoEmail } from '../services/email.js';
 
 const MAXIMO_TENTATIVAS = 5;
 

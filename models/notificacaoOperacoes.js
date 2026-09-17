@@ -1,8 +1,8 @@
-import { listarUsuarios } from './usuarios.js';
-import Notificacao from '../models/notificacao.js';
+import { listarUsuarios } from './usuarioOperacoes.js';
+import Notificacao from './notificacao.js';
 import { notificacoes, novoId } from '../data/mock.js';
-import { usandoMongo, idValido } from './banco.js';
-import { autorDemo } from './dadosDemo.js';
+import { usandoMongo, idValido } from '../config/banco.js';
+import { autorDemo } from '../data/relacionamentos.js';
 
 // Funções de notificacoes: cada consulta usa MongoDB ou os dados locais de demonstração.
 export async function criarNotificacao({ destinatario, remetente = null, tipo, mensagem, link }) {

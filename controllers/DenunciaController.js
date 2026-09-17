@@ -8,8 +8,8 @@ import {
     excluirDenuncia,
     alvoDaDenuncia,
     denunciarAlvo,
-} from '../services/denuncias.js';
-import { criarNotificacao } from '../services/notificacoes.js';
+} from '../models/denunciaOperacoes.js';
+import { criarNotificacao } from '../models/notificacaoOperacoes.js';
 export default class DenunciaController {
     constructor() {
         this.form = async (req, res, next) => {

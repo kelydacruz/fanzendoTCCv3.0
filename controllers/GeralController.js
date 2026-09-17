@@ -1,7 +1,7 @@
-import { resumirTecnologias } from '../services/tecnologias.js';
-import { listarTccs } from '../services/tccs.js';
-import { listarIdeias } from '../services/ideias.js';
-import { resumoDoPainel } from '../services/resumos.js';
+import { resumirTecnologias } from '../models/tecnologias.js';
+import { listarTccs } from '../models/tccOperacoes.js';
+import { listarIdeias } from '../models/ideiaOperacoes.js';
+import { resumoDoPainel } from '../models/resumos.js';
 import { modulos } from '../data/modulos.js';
 
 export default class GeralController {

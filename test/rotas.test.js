@@ -435,7 +435,7 @@ test('gráfico respeita visibilidade, filtros e ausência de resultados', async 
 
 test('denúncia protege conversa, evita duplicação e permite análise apenas ao admin', async () => {
     const { conversasIdeia, mensagensIdeia, notificacoes } = await import('../data/mock.js');
-    const { listarDenuncias, denunciarMensagem } = await import('../services/denuncias.js');
+    const { listarDenuncias, denunciarMensagem } = await import('../models/denunciaOperacoes.js');
     conversasIdeia.push({ id: 'conversa-denuncia', ideiaId: 'ideia-enchentes', alunoId: 'usuario-aluna', autorIdeiaId: 'usuario-colaborador', status: 'ativa' });
     mensagensIdeia.push({ id: 'mensagem-denuncia', conversaId: 'conversa-denuncia', autorId: 'usuario-colaborador', texto: 'Mensagem de teste para análise.', createdAt: new Date() });
     const aluno = await entrar('aluna@exemplo.com', '123456');
@@ -491,7 +491,7 @@ test('bloqueio exige motivo, avisa a conta autenticada e permite reativação', 
     assert.equal(bloqueado.status, 403);
     assert.match(await bloqueado.text(), /Uso inadequado/);
     assert.equal((await enviarFormulario(caminho, { ativo: 'true' }, admin)).status, 302);
-    const { buscarUsuarioPorId } = await import('../services/repositorio.js');
+    const { buscarUsuarioPorId } = await import('../models/usuarioOperacoes.js');
     assert.equal((await buscarUsuarioPorId('usuario-colaborador')).motivoBloqueio, '');
     assert.equal((await enviarFormulario('/entrar', { email: 'colaborador@exemplo.com', senha: '12345678' })).status, 302);
 });
@@ -567,7 +567,7 @@ test('autor não demonstra interesse nem reserva sua ideia e aceita área Outros
     const html = await (await requisicao(caminho, { headers: { cookie: aluno } })).text();
     assert.doesNotMatch(html, /Tenho interesse|Usar no meu TCC/);
     for (const acao of ['interesse', 'desenvolver']) await enviarFormulario(`/ideia/${id}/${acao}`, {}, aluno);
-    const { buscarIdeiaPorId } = await import('../services/repositorio.js');
+    const { buscarIdeiaPorId } = await import('../models/ideiaOperacoes.js');
     const ideia = await buscarIdeiaPorId(id);
     assert.equal(ideia.status, 'Disponível');
     assert.equal((ideia.interessados || []).length, 0);
@@ -588,7 +588,7 @@ test('colaborador recebe início próprio sem chamadas para produzir TCC', async
 });
 
 test('admin pesquisa e exclui denúncia com confirmação sem apagar mensagem', async () => {
-    const { denunciarMensagem, listarDenuncias } = await import('../services/denuncias.js');
+    const { denunciarMensagem, listarDenuncias } = await import('../models/denunciaOperacoes.js');
     const { conversasIdeia, mensagensIdeia } = await import('../data/mock.js');
     conversasIdeia.push({ id: 'conversa-remover-denuncia', ideiaId: 'ideia-enchentes', alunoId: 'usuario-aluna', autorIdeiaId: 'usuario-colaborador', status: 'ativa' });
     mensagensIdeia.push({ id: 'mensagem-remover-denuncia', conversaId: 'conversa-remover-denuncia', autorId: 'usuario-colaborador', texto: 'Conteúdo para pesquisa exclusiva', createdAt: new Date() });
@@ -614,7 +614,7 @@ test('admin pesquisa e exclui denúncia com confirmação sem apagar mensagem', 
 
 test('remove somente usuário bloqueado e preserva autoria e bloqueio de acesso', async () => {
     const { usuarios } = await import('../data/mock.js');
-    const { removerUsuarioBloqueado, buscarUsuarioPorId, listarUsuarios, alterarStatusUsuario } = await import('../services/repositorio.js');
+    const { removerUsuarioBloqueado, buscarUsuarioPorId, listarUsuarios, alterarStatusUsuario } = await import('../models/usuarioOperacoes.js');
     const admin = await entrarAdmin();
     const aluno = await entrar('aluna@exemplo.com', '123456');
     assert.equal(await removerUsuarioBloqueado('usuario-aluna'), null);
@@ -639,8 +639,8 @@ test('remove somente usuário bloqueado e preserva autoria e bloqueio de acesso'
 
 test('denuncia comentários acessíveis e usuários com resposta e sem duplicação', async () => {
     const { comentarios, tccs, notificacoes } = await import('../data/mock.js');
-    const { denunciarAlvo, listarDenuncias } = await import('../services/denuncias.js');
-    const { buscarUsuarioPorId } = await import('../services/repositorio.js');
+    const { denunciarAlvo, listarDenuncias } = await import('../models/denunciaOperacoes.js');
+    const { buscarUsuarioPorId } = await import('../models/usuarioOperacoes.js');
     const aluno = await entrar('aluna@exemplo.com', '123456');
     const usuario = await buscarUsuarioPorId('usuario-aluna');
     comentarios.push({ id: 'comentario-denunciavel', autorId: 'usuario-professora', alvoTipo: 'tcc', alvoId: 'horta-inteligente', texto: 'Comentário para análise', createdAt: new Date() });
@@ -676,7 +676,7 @@ test('denuncia comentários acessíveis e usuários com resposta e sem duplicaç
 });
 
 test('ideias usam áreas ativas da administração e preservam cadastro anterior', async () => {
-    const { cadastrarAreaAtuacao } = await import('../services/repositorio.js');
+    const { cadastrarAreaAtuacao } = await import('../models/areaOperacoes.js');
     await cadastrarAreaAtuacao({ nome: 'Sustentabilidade comunitária' });
     const aluno = await entrar('aluna@exemplo.com', '123456');
     const formulario = await requisicao('/ideia/add', { headers: { cookie: aluno } });
@@ -692,7 +692,8 @@ test('ideias usam áreas ativas da administração e preservam cadastro anterior
 
 test('resumo administrativo ignora removidos e mantém contas apenas bloqueadas', async () => {
     const { usuarios } = await import('../data/mock.js');
-    const { resumoAdministrativo, removerUsuarioBloqueado, listarUsuarios } = await import('../services/repositorio.js');
+    const { resumoAdministrativo } = await import('../models/resumos.js');
+    const { removerUsuarioBloqueado, listarUsuarios } = await import('../models/usuarioOperacoes.js');
     const antes = await resumoAdministrativo();
     const ids = ['contagem-aluno', 'contagem-professor'];
     try {
@@ -715,7 +716,8 @@ test('resumo administrativo ignora removidos e mantém contas apenas bloqueadas'
 });
 
 test('admin exclui área com confirmação e preserva ideias e perfis existentes', async () => {
-    const { cadastrarAreaAtuacao, listarAreasAtuacao, resumoAdministrativo } = await import('../services/repositorio.js');
+    const { cadastrarAreaAtuacao, listarAreasAtuacao } = await import('../models/areaOperacoes.js');
+    const { resumoAdministrativo } = await import('../models/resumos.js');
     const { ideias, usuarios } = await import('../data/mock.js');
     const nome = 'Área para excluir';
     const antes = await resumoAdministrativo();
@@ -791,4 +793,99 @@ test('formulários recusam token ausente ou de outra sessão inclusive upload', 
     const pagina = await requisicao('/ideia/add', { headers: { cookie: aluno } });
     const html = await pagina.text();
     assert.ok([...html.matchAll(/<form[\s\S]*?<\/form>/g)].filter((m) => /method="post"/.test(m[0])).every((m) => m[0].includes('name="_csrf"')));
+});
+
+test('admin edita cursos, turmas e áreas e exclui somente cadastros sem vínculos', async () => {
+    const { cursos, turmas, areasAtuacao, tccs } = await import('../data/mock.js');
+    const admin = await entrarAdmin();
+    const professor = await entrar('professora@exemplo.com', '123456');
+    const cursoDados = { nome: 'Curso de edição administrativa', sigla: 'CEA', area: 'Tecnologia' };
+    assert.equal((await enviarFormulario('/admin/cursos', cursoDados, admin)).status, 302);
+    const curso = cursos.find((item) => item.nome === cursoDados.nome);
+    assert.ok(curso);
+    const areaNome = 'Área de edição administrativa';
+    assert.equal((await enviarFormulario('/admin/areas', { nome: areaNome }, admin)).status, 302);
+    const area = areasAtuacao.find((item) => item.nome === areaNome);
+    const turmaDados = { nome: 'Turma de edição', ano: new Date().getFullYear(), curso: curso.id };
+    assert.equal((await enviarFormulario('/admin/turmas', turmaDados, admin)).status, 302);
+    const turma = turmas.find((item) => item.nome === turmaDados.nome);
+    assert.ok(turma);
+
+    const cadastros = [
+        ['cursos', curso, { ...cursoDados, nome: 'Curso revisado', sigla: 'REV', area: 'Ciências' }],
+        ['turmas', turma, { ...turmaDados, nome: 'Turma revisada', ano: turmaDados.ano - 1 }],
+        ['areas', area, { nome: 'Área revisada' }],
+    ];
+    for (const [caminho, item, novosDados] of cadastros) {
+        const url = `/admin/${caminho}/${item.id}/editar`;
+        const negado = await requisicao(url, { headers: { cookie: professor } });
+        assert.equal(negado.status, 302);
+        assert.match(negado.headers.get('location'), /^\/painel/);
+        const nomeAnterior = item.nome;
+        const edicaoNegada = await enviarFormulario(url, novosDados, professor);
+        assert.equal(edicaoNegada.status, 302);
+        assert.match(edicaoNegada.headers.get('location'), /^\/painel/);
+        assert.equal(item.nome, nomeAnterior);
+        const formulario = await requisicao(url, { headers: { cookie: admin } });
+        assert.equal(formulario.status, 200);
+        const html = await formulario.text();
+        assert.ok(html.includes(`value="${item.nome}"`));
+        assert.match(html, /Salvar alterações/);
+        const invalido = await enviarFormulario(url, { ...novosDados, nome: '' }, admin);
+        assert.equal(invalido.status, 400);
+        assert.match(await invalido.text(), /Informe um nome/);
+        assert.equal((await enviarFormulario(url, novosDados, admin)).status, 302);
+        assert.equal(item.nome, novosDados.nome);
+        assert.equal(item.ativo, true);
+        assert.equal((await enviarFormulario(`/admin/${caminho}/${item.id}/status`, { ativo: 'qualquer' }, admin)).status, 400);
+        assert.equal((await enviarFormulario(`/admin/${caminho}/${item.id}/excluir`, {}, admin)).status, 403);
+    }
+    assert.equal(curso.sigla, 'REV');
+    assert.equal(curso.area, 'Ciências');
+    assert.equal(turma.ano, turmaDados.ano - 1);
+    const duplicado = await enviarFormulario('/admin/cursos', { ...cursoDados, nome: curso.nome.toLowerCase() }, admin);
+    assert.equal(duplicado.status, 409);
+    assert.equal((await enviarFormulario('/admin/turmas', { ...turmaDados, curso: 'inexistente' }, admin)).status, 400);
+    assert.equal((await enviarFormulario(`/admin/areas/inexistente/editar`, { nome: 'Válido' }, admin)).status, 404);
+
+    async function excluir(caminho, id) {
+        const url = `/admin/${caminho}/${id}/excluir`;
+        const confirmacao = await requisicao(url, { headers: { cookie: admin } });
+        assert.equal(confirmacao.status, 200);
+        const html = await confirmacao.text();
+        const token = html.match(/name="token" value="([^"]+)"/)[1];
+        return enviarFormulario(url, { token }, admin);
+    }
+    // O curso ainda possui uma turma; a exclusão deve explicar por que foi impedida.
+    const cursoVinculado = await excluir('cursos', curso.id);
+    assert.equal(cursoVinculado.status, 409);
+    assert.match(await cursoVinculado.text(), /Desative-o/);
+    const trabalho = { id: 'teste-vinculo-cadastro', cursoCadastroId: curso.id, turmaCadastroId: turma.id };
+    tccs.push(trabalho);
+    try {
+        const turmaVinculada = await excluir('turmas', turma.id);
+        assert.equal(turmaVinculada.status, 409);
+        assert.match(await turmaVinculada.text(), /TCCs vinculados/);
+    } finally { tccs.splice(tccs.indexOf(trabalho), 1); }
+    assert.equal((await excluir('turmas', turma.id)).status, 302);
+    assert.equal((await excluir('cursos', curso.id)).status, 302);
+    assert.equal((await excluir('areas', area.id)).status, 302);
+    assert.ok(!turmas.includes(turma) && !cursos.includes(curso) && !areasAtuacao.includes(area));
+});
+
+test('edição preserva curso inativo da turma e rejeita novos vínculos com cursos inativos', async () => {
+    const { cadastrarCurso, atualizarCurso, excluirCurso } = await import('../models/cursoOperacoes.js');
+    const { cadastrarTurma, atualizarTurma, excluirTurma } = await import('../models/turmaOperacoes.js');
+    const curso = await cadastrarCurso({ nome: 'Curso inativo para edição', sigla: 'CIE', area: 'Tecnologia' });
+    const turma = await cadastrarTurma({ nome: 'Turma mantida', ano: 2025, curso: curso.id });
+    await atualizarCurso(curso.id, { ativo: false });
+    const admin = await entrarAdmin();
+    const pagina = await requisicao(`/admin/turmas/${turma.id}/editar`, { headers: { cookie: admin } });
+    assert.equal(pagina.status, 200);
+    assert.match(await pagina.text(), new RegExp(`value="${curso.id}" selected`));
+    const editada = await atualizarTurma(turma.id, { nome: 'Turma corrigida' });
+    assert.equal(editada.nome, 'Turma corrigida');
+    await assert.rejects(cadastrarTurma({ nome: 'Nova turma', ano: 2025, curso: curso.id }), /curso ativo/);
+    await excluirTurma(turma.id);
+    await excluirCurso(curso.id);
 });

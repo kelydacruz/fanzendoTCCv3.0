@@ -1,4 +1,4 @@
-import { normalizarTexto } from './texto.js';
+import { normalizarTexto } from '../services/texto.js';
 
 const DOMINIO_ALUNO_PADRAO = 'academico.ifsul.edu.br';
 const DOMINIO_PROFESSOR_PADRAO = 'ifsul.edu.br';

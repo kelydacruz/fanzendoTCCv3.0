@@ -1,7 +1,8 @@
-import Ideia from '../models/ideia.js';
-import Comentario from '../models/comentario.js';
-import ConversaIdeia from '../models/conversaIdeia.js';
-import MensagemIdeia from '../models/mensagemIdeia.js';
+// Persistência e estados das ideias. As regras do formulário ficam em ideiaRegras.js.
+import Ideia from './ideia.js';
+import Comentario from './comentario.js';
+import ConversaIdeia from './conversaIdeia.js';
+import MensagemIdeia from './mensagemIdeia.js';
 import {
     ideias,
     comentarios,
@@ -9,9 +10,9 @@ import {
     mensagensIdeia,
     novoId,
 } from '../data/mock.js';
-import { usandoMongo, idValido } from './banco.js';
-import { normalizarTexto, escaparRegex } from './texto.js';
-import { preencherPublicacaoDemo } from './dadosDemo.js';
+import { usandoMongo, idValido } from '../config/banco.js';
+import { normalizarTexto, escaparRegex } from '../services/texto.js';
+import { preencherPublicacaoDemo } from '../data/relacionamentos.js';
 
 // Funções de ideias: cada consulta usa MongoDB ou os dados locais de demonstração.
 export async function listarIdeias({

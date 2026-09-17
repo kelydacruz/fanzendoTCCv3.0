@@ -1,4 +1,4 @@
-import { normalizarTexto } from './texto.js';
+import { normalizarTexto } from '../services/texto.js';
 
 const nomes = {
     js: 'JavaScript', javascript: 'JavaScript', ts: 'TypeScript', typescript: 'TypeScript',

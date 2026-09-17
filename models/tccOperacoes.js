@@ -1,10 +1,11 @@
-import Tcc from '../models/tcc.js';
-import Ideia from '../models/ideia.js';
-import Comentario from '../models/comentario.js';
+// Persistência dos TCCs. Validação de publicação e visibilidade ficam em tccRegras.js.
+import Tcc from './tcc.js';
+import Ideia from './ideia.js';
+import Comentario from './comentario.js';
 import { tccs, ideias, comentarios, novoId } from '../data/mock.js';
-import { usandoMongo, idValido } from './banco.js';
-import { normalizarTexto, escaparRegex } from './texto.js';
-import { autorDemo, preencherPublicacaoDemo, usuarioInstitucional } from './dadosDemo.js';
+import { usandoMongo, idValido } from '../config/banco.js';
+import { normalizarTexto, escaparRegex } from '../services/texto.js';
+import { autorDemo, preencherPublicacaoDemo, usuarioInstitucional } from '../data/relacionamentos.js';
 
 // Funções de tccs: cada consulta usa MongoDB ou os dados locais de demonstração.
 export async function listarTccs({

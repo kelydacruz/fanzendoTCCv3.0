@@ -1,8 +1,9 @@
-import Usuario from '../models/usuario.js';
+// Consultas e alterações de usuários. O esquema dos campos fica em usuario.js.
+import Usuario from './usuario.js';
 import { usuarios, novoId } from '../data/mock.js';
-import { usandoMongo, idValido } from './banco.js';
-import { normalizarTexto, escaparRegex } from './texto.js';
-import { usuarioPublico } from './dadosDemo.js';
+import { usandoMongo, idValido } from '../config/banco.js';
+import { normalizarTexto, escaparRegex } from '../services/texto.js';
+import { usuarioPublico } from '../data/relacionamentos.js';
 
 // Funções de usuarios: cada consulta usa MongoDB ou os dados locais de demonstração.
 export async function buscarUsuarioPorEmail(email) {

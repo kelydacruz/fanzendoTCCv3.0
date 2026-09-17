@@ -1,11 +1,11 @@
-import { usandoMongo } from './banco.js';
+import { usandoMongo } from '../config/banco.js';
 import { mongoose } from '../config/conexao.js';
-import Denuncia from '../models/denuncia.js';
-import { buscarUsuarioPorId } from './usuarios.js';
-import { buscarTccPorId } from './tccs.js';
-import { buscarIdeiaPorId } from './ideias.js';
-import { listarComentarios } from './comentarios.js';
-import { listarMensagensIdeia } from './mensagens.js';
+import Denuncia from './denuncia.js';
+import { buscarUsuarioPorId } from './usuarioOperacoes.js';
+import { buscarTccPorId } from './tccOperacoes.js';
+import { buscarIdeiaPorId } from './ideiaOperacoes.js';
+import { listarComentarios } from './comentarioOperacoes.js';
+import { listarMensagensIdeia } from './mensagemOperacoes.js';
 import { obterId } from './permissoes.js';
 import { randomUUID } from 'node:crypto';
 const demonstracao = [];

@@ -1,9 +1,9 @@
-import Tcc from '../models/tcc.js';
-import Ideia from '../models/ideia.js';
-import Comentario from '../models/comentario.js';
+import Tcc from './tcc.js';
+import Ideia from './ideia.js';
+import Comentario from './comentario.js';
 import { comentarios, novoId } from '../data/mock.js';
-import { usandoMongo, idValido } from './banco.js';
-import { autorDemo } from './dadosDemo.js';
+import { usandoMongo, idValido } from '../config/banco.js';
+import { autorDemo } from '../data/relacionamentos.js';
 
 // Funções de comentarios: cada consulta usa MongoDB ou os dados locais de demonstração.
 export async function listarComentarios(alvoTipo, alvoId) {

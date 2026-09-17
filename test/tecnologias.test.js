@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizarTecnologias, resumirTecnologias } from '../services/tecnologias.js';
+import { normalizarTecnologias, resumirTecnologias } from '../models/tecnologias.js';
 
 test('padroniza nomes, separadores e remove repetições por TCC', () => {
     assert.deepEqual(normalizarTecnologias(' js, JavaScript; NODEJS\nnode.js, CSS3, css, Ferramenta X, ferramenta x'),

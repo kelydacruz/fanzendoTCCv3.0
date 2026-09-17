@@ -1,124 +1,32 @@
-import { normalizarTecnologias, resumirTecnologias } from '../services/tecnologias.js';
+import { resumirTecnologias } from '../models/tecnologias.js';
 import {
     atualizarTcc,
-    avaliarTcc,
     buscarTccDoAluno,
     buscarTccPorId,
     cadastrarTcc,
     excluirTcc,
     listarTccs,
-    listarTccsDoOrientador,
     listarTccsRelacionados,
     obterPdfTcc,
     registrarDownloadTcc,
     registrarVisualizacaoTcc,
-} from '../services/tccs.js';
-import { buscarIdeiaReservadaPeloAluno, liberarIdeia, marcarIdeiaUsada } from '../services/ideias.js';
-import { buscarUsuarioPorId, listarProfessores } from '../services/usuarios.js';
-import { cadastrarComentario, listarComentarios } from '../services/comentarios.js';
-import { criarNotificacao } from '../services/notificacoes.js';
-import { listarCursos, listarTurmas } from '../services/cadastros.js';
-import { validarConteudo } from '../services/filtroConteudo.js';
-import { separarLista } from '../services/texto.js';
-import { obterId, usuarioEhAdmin, usuarioEhDono } from '../services/permissoes.js';
-import { comentarioValido, textoComTamanho } from '../services/validacao.js';
+} from '../models/tccOperacoes.js';
+import { buscarIdeiaReservadaPeloAluno, liberarIdeia } from '../models/ideiaOperacoes.js';
+import { cadastrarComentario, listarComentarios } from '../models/comentarioOperacoes.js';
+import { criarNotificacao } from '../models/notificacaoOperacoes.js';
+import { validarConteudo } from '../models/filtroConteudo.js';
+import { obterId, usuarioEhDono } from '../models/permissoes.js';
+import { comentarioValido } from '../services/validacao.js';
 
-function usuarioInstitucional(usuario) {
-    return ['aluno', 'professor', 'admin'].includes(usuario?.perfil);
-}
-
-function usuarioEhOrientador(usuario, tcc) {
-    return usuario?.perfil === 'professor'
-        && obterId(usuario) === obterId(tcc?.orientadorUsuario || tcc?.orientadorId);
-}
-
-function podeVisualizar(usuario, tcc) {
-    if (!tcc) return false;
-    if (!tcc.status || tcc.status === 'publicado') {
-        return tcc.visibilidade !== 'interno' || usuarioInstitucional(usuario);
-    }
-    return usuarioEhDono(usuario, tcc) || usuarioEhOrientador(usuario, tcc) || usuarioEhAdmin(usuario);
-}
-
-async function opcoesFormulario(alunoId) {
-    const [professores, cursos, turmas, ideiaEmDesenvolvimento] = await Promise.all([
-        listarProfessores(),
-        listarCursos({ somenteAtivos: true }),
-        listarTurmas({ somenteAtivas: true }),
-        buscarIdeiaReservadaPeloAluno(alunoId),
-    ]);
-    return { professores, cursos, turmas, ideiaEmDesenvolvimento };
-}
-
-function localizarOpcao(opcoes, valor, nomeAlternativo = '') {
-    return opcoes.find((opcao) => obterId(opcao) === String(valor || ''))
-        || opcoes.find((opcao) => opcao.nome === nomeAlternativo)
-        || null;
-}
-
-async function contextoDoFormulario(body, alunoId) {
-    const opcoes = await opcoesFormulario(alunoId);
-    const curso = localizarOpcao(opcoes.cursos, body.cursoCadastro, String(body.curso || '').trim());
-    const turma = opcoes.turmas.find((item) => obterId(item) === String(body.turmaCadastro || ''))
-        || opcoes.turmas.find((item) => item.nome === String(body.turma || '').trim())
-        || null;
-    const orientador = await buscarUsuarioPorId(body.orientadorUsuario);
-    const orientadorValido = orientador?.perfil === 'professor' && orientador.ativo !== false
-        ? orientador
-        : null;
-    const ideiaId = String(body.ideiaOrigem || '');
-    const ideia = ideiaId && obterId(opcoes.ideiaEmDesenvolvimento) === ideiaId
-        ? opcoes.ideiaEmDesenvolvimento
-        : null;
-    return { ...opcoes, curso, turma, orientador: orientadorValido, ideia };
-}
-
-function dadosDoFormulario(body, arquivo, contexto) {
-    const turma = contexto.turma;
-    const dados = {
-        titulo: String(body.titulo || '').trim(),
-        tema: String(body.tema || '').trim(),
-        resumo: String(body.resumo || '').trim(),
-        curso: contexto.curso?.nome || '',
-        cursoCadastro: obterId(contexto.curso) || null,
-        area: String(body.area || '').trim(),
-        turma: turma ? `${turma.nome} — ${turma.ano}` : '',
-        turmaCadastro: obterId(turma) || null,
-        orientador: contexto.orientador?.nome || '',
-        orientadorUsuario: obterId(contexto.orientador) || null,
-        ideiaOrigem: obterId(contexto.ideia) || null,
-        visibilidade: ['publico', 'interno'].includes(body.visibilidade) ? body.visibilidade : '',
-        ano: Number(turma?.ano),
-        coautores: separarLista(body.coautores),
-        palavrasChave: separarLista(body.palavrasChave),
-        tecnologias: normalizarTecnologias(body.tecnologias),
-    };
-    if (arquivo) dados.pdf = { dados: arquivo.buffer, nome: arquivo.originalname, tipo: arquivo.mimetype };
-    return dados;
-}
-
-function validarDados(dados, contexto) {
-    const erros = {};
-    if (dados.tecnologias.length > 15 || dados.tecnologias.some((nome) => nome.length > 40)) {
-        erros.tecnologias = 'Informe até 15 tecnologias, com no máximo 40 caracteres por nome.';
-    }
-    if (!textoComTamanho(dados.titulo, 3, 180)) erros.titulo = 'Informe um título entre 3 e 180 caracteres.';
-    if (!textoComTamanho(dados.tema, 2, 100)) erros.tema = 'Informe o tema do trabalho.';
-    if (!textoComTamanho(dados.resumo, 30, 3000)) erros.resumo = 'O resumo deve ter entre 30 e 3.000 caracteres.';
-    if (!contexto.curso) erros.cursoCadastro = 'Selecione um curso cadastrado pela administração.';
-    if (!textoComTamanho(dados.area, 2, 100)) erros.area = 'Informe a área do conhecimento.';
-    if (contexto.turma && (!Number.isInteger(dados.ano) || dados.ano < 1980 || dados.ano > new Date().getFullYear())) erros.turmaCadastro = 'Selecione uma turma do ano atual ou de anos anteriores.';
-    if (!contexto.turma) erros.turmaCadastro = 'Selecione uma turma cadastrada pela administração.';
-    if (contexto.turma && contexto.curso
-        && obterId(contexto.turma.curso || contexto.turma.cursoId) !== obterId(contexto.curso)) {
-        erros.turmaCadastro = 'A turma selecionada não pertence ao curso escolhido.';
-    }
-    if (!contexto.orientador) erros.orientadorUsuario = 'Selecione um professor orientador ativo e confirmado.';
-    if (!['publico', 'interno'].includes(dados.visibilidade)) erros.visibilidade = 'Escolha se o TCC será público ou interno.';
-    if (dados.coautores.some((nome) => !textoComTamanho(nome, 1, 100))) erros.coautores = 'Cada coautor pode ter no máximo 100 caracteres.';
-    if (dados.palavrasChave.some((palavra) => !textoComTamanho(palavra, 1, 50))) erros.palavrasChave = 'Cada palavra-chave pode ter no máximo 50 caracteres.';
-    return erros;
-}
+import {
+    usuarioInstitucional,
+    usuarioEhOrientador,
+    podeVisualizar,
+    opcoesFormulario,
+    contextoDoFormulario,
+    dadosDoFormulario,
+    validarDados,
+} from '../models/tccRegras.js';
 
 async function renderFormulario(res, pagina, status, erro, dados, alunoId, erros = {}) {
     const opcoes = await opcoesFormulario(alunoId);
@@ -354,69 +262,5 @@ export default class TccController {
             }
         };
 
-        this.orientacoes = async (req, res, next) => {
-            try {
-                const todos = await listarTccsDoOrientador(req.session.usuario.id);
-                const abas = [
-                    { valor: 'em_analise', nome: 'Pendentes' },
-                    { valor: 'correcao_solicitada', nome: 'Aguardando correção' },
-                    { valor: 'publicado', nome: 'Aprovados' },
-                    { valor: 'rejeitado', nome: 'Rejeitados' },
-                ];
-                const situacao = abas.some((aba) => aba.valor === req.query.situacao) ? req.query.situacao : 'em_analise';
-                const statusDoTcc = (tcc) => tcc.status || 'publicado';
-                const tccs = todos.filter((tcc) => statusDoTcc(tcc) === situacao);
-                abas.forEach((aba) => { aba.total = todos.filter((tcc) => statusDoTcc(tcc) === aba.valor).length; });
-                return res.render(`${caminhoBase}orientacoes`, { title: 'TCCs orientados', tccs, abas, situacao });
-            } catch (erro) {
-                return next(erro);
-            }
-        };
-
-        this.avaliar = async (req, res, next) => {
-            try {
-                const tcc = await buscarTccPorId(req.params.id);
-                if (!tcc || !usuarioEhOrientador(req.session.usuario, tcc)) return res.redirect('/orientacoes?mensagem=Você não é o orientador deste TCC.');
-                if (!['em_analise', 'correcao_solicitada'].includes(tcc.status)) return res.redirect(`/tcc/detalhes/${req.params.id}?mensagem=Este TCC já foi avaliado.`);
-                if (!['aprovar', 'corrigir'].includes(req.body.acao)) return res.redirect('/orientacoes?mensagem=Ação inválida.');
-                const status = req.body.acao === 'aprovar' ? 'publicado' : 'correcao_solicitada';
-                const feedback = String(req.body.feedbackOrientador || '').trim();
-                if (feedback.length > 2000) return res.redirect(`/tcc/detalhes/${req.params.id}?mensagem=O parecer deve ter até 2.000 caracteres.`);
-                if (status === 'correcao_solicitada' && !textoComTamanho(feedback, 5, 2000)) {
-                    return res.redirect(`/tcc/detalhes/${req.params.id}?mensagem=Explique as correções necessárias.`);
-                }
-                await avaliarTcc(req.params.id, { status, feedbackOrientador: feedback });
-                const autorId = obterId(tcc.autor || tcc.autorId);
-                await criarNotificacao({
-                    destinatario: autorId,
-                    remetente: req.session.usuario.id,
-                    tipo: status === 'publicado' ? 'tcc_aprovado' : 'correcao_solicitada',
-                    mensagem: status === 'publicado'
-                        ? `Seu TCC foi aprovado no acervo ${tcc.visibilidade === 'interno' ? 'interno' : 'público'}.`
-                        : 'O professor orientador solicitou correções no seu TCC.',
-                    link: `/tcc/detalhes/${req.params.id}`,
-                });
-
-                if (status === 'publicado') {
-                    const ideiaId = obterId(tcc.ideiaOrigem || tcc.ideiaOrigemId);
-                    const ideia = ideiaId ? await marcarIdeiaUsada(ideiaId, req.params.id) : null;
-                    const autorIdeiaId = obterId(ideia?.autor || ideia?.autorId);
-                    if (ideia && autorIdeiaId && autorIdeiaId !== autorId) {
-                        await criarNotificacao({
-                            destinatario: autorIdeiaId,
-                            remetente: req.session.usuario.id,
-                            tipo: 'ideia_usada',
-                            mensagem: `A ideia “${ideia.titulo}” foi utilizada em um TCC aprovado.`,
-                            link: `/ideia/detalhes/${ideiaId}`,
-                        });
-                    }
-                }
-
-                const texto = status === 'publicado' ? 'TCC aprovado e publicado com sucesso. Consulte a aba Aprovados.' : 'Correções enviadas ao aluno com sucesso. O trabalho está em Aguardando correção.';
-                return res.redirect(`/orientacoes?mensagem=${encodeURIComponent(texto)}`);
-            } catch (erro) {
-                return next(erro);
-            }
-        };
     }
 }

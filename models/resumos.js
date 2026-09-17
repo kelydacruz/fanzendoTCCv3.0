@@ -1,10 +1,10 @@
-import Usuario from '../models/usuario.js';
-import Tcc from '../models/tcc.js';
-import Ideia from '../models/ideia.js';
-import Comentario from '../models/comentario.js';
-import Curso from '../models/curso.js';
-import Turma from '../models/turma.js';
-import AreaAtuacao from '../models/areaAtuacao.js';
+import Usuario from './usuario.js';
+import Tcc from './tcc.js';
+import Ideia from './ideia.js';
+import Comentario from './comentario.js';
+import Curso from './curso.js';
+import Turma from './turma.js';
+import AreaAtuacao from './areaAtuacao.js';
 import {
     usuarios,
     tccs,
@@ -14,7 +14,7 @@ import {
     areasAtuacao,
     turmas,
 } from '../data/mock.js';
-import { usandoMongo } from './banco.js';
+import { usandoMongo } from '../config/banco.js';
 
 // Funções de resumos: cada consulta usa MongoDB ou os dados locais de demonstração.
 export async function resumoDoPainel(usuarioId) {
@@ -61,4 +61,3 @@ export async function resumoAdministrativo() {
     };
 }
 
-// Mantém a autoria e impede que a conta removida volte a acessar o sistema.

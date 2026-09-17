@@ -1,9 +1,9 @@
-import ConversaIdeia from '../models/conversaIdeia.js';
-import MensagemIdeia from '../models/mensagemIdeia.js';
+import ConversaIdeia from './conversaIdeia.js';
+import MensagemIdeia from './mensagemIdeia.js';
 import { conversasIdeia, mensagensIdeia, novoId } from '../data/mock.js';
-import { usandoMongo, idValido } from './banco.js';
-import { autorDemo, preencherConversaDemo } from './dadosDemo.js';
-import { buscarIdeiaPorId } from './ideias.js';
+import { usandoMongo, idValido } from '../config/banco.js';
+import { autorDemo, preencherConversaDemo } from '../data/relacionamentos.js';
+import { buscarIdeiaPorId } from './ideiaOperacoes.js';
 
 // Funções de mensagens: cada consulta usa MongoDB ou os dados locais de demonstração.
 export async function solicitarConversaIdeia(ideiaId, alunoId) {
