@@ -6,10 +6,13 @@
     <meta name="theme-color" content="#1b7150">
     <meta name="description" content="Plataforma para publicação e consulta de TCCs e ideias">
     <title><%= title %> | AcervoTCC</title>
+    <script src="/public/js/tema.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/public/css/style.css">
+    <link rel="stylesheet" href="/public/css/temas.css">
+    <link rel="stylesheet" href="/public/css/elementos.css">
 </head>
 <body class="<%= caminhoAtual.startsWith('/admin') ? 'pagina-admin' : '' %>">
     <a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
@@ -46,6 +49,11 @@
             </nav>
 
             <div class="acoes-usuario">
+                <button class="tema-botao" type="button" data-alternar-tema
+                    aria-label="Tema escuro" aria-pressed="false" title="Ativar tema escuro" hidden>
+                    <svg class="icone tema-lua" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 13.2A9 9 0 0 1 10.8 3.2 9 9 0 1 0 20.8 13.2Z"/></svg>
+                    <svg class="icone tema-sol" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg>
+                </button>
                 <% if (usuario) { %>
                     <a class="link-mensagens <%= caminhoAtual.startsWith('/mensagens') ? 'ativo' : '' %>" href="/mensagens" aria-label="Mensagens" title="Mensagens" <%- caminhoAtual.startsWith('/mensagens') ? 'aria-current="page"' : '' %>>
                         <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h3v3l5-3h8a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Z"/><path d="M7 9h10M7 13h7"/></svg>

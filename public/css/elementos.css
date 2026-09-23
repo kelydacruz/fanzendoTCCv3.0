@@ -1,0 +1,79 @@
+/* Elementos decorativos em CSS: sem imagens de livros ou documentos. */
+.elementos-abstratos {
+    position: relative;
+    isolation: isolate;
+    width: min(100%, 470px);
+    aspect-ratio: 1.15;
+    justify-self: center;
+    overflow: hidden;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at center, var(--luz), transparent 67%);
+}
+.elementos-grade {
+    position: absolute;
+    inset: 8%;
+    opacity: .6;
+    background-image: radial-gradient(var(--linha-elemento) 1px, transparent 1px);
+    background-size: 23px 23px;
+    mask-image: radial-gradient(ellipse, #000, transparent 72%);
+}
+.orbita {
+    position: absolute;
+    left: 15%; top: 10%; width: 70%; height: 80%;
+    border: 1px solid var(--linha-elemento);
+    border-radius: 50%;
+    transform: rotate(-32deg) scaleY(.72);
+}
+.orbita-interna { transform: rotate(38deg) scaleY(.72); }
+.elemento-nucleo {
+    position: absolute;
+    inset: 28% 30%;
+    border: 1px solid var(--linha-elemento);
+    border-radius: 32%;
+    transform: rotate(-22deg);
+    background: linear-gradient(140deg, var(--branco), var(--luz));
+    box-shadow: inset 0 1px 0 var(--brilho), 0 24px 65px rgb(33 145 103 / 13%);
+}
+.elemento-nucleo::after {
+    content: ''; position: absolute; inset: 23%;
+    border: 1px solid var(--azul); border-radius: 50%; opacity: .6;
+}
+.elemento-ponto {
+    position: absolute; width: 14px; height: 14px;
+    border-radius: 50%; background: var(--azul);
+    box-shadow: 0 0 0 7px var(--azul-claro);
+}
+.ponto-um { top: 22%; left: 21%; }
+.ponto-dois { bottom: 20%; right: 24%; width: 9px; height: 9px; }
+.ponto-tres { top: 30%; right: 15%; width: 6px; height: 6px; }
+.elemento-linha {
+    position: absolute; height: 1px; width: 22%;
+    background: linear-gradient(90deg, transparent, var(--linha-elemento));
+    transform: rotate(-32deg);
+}
+.linha-um { top: 66%; left: 6%; }
+.linha-dois { top: 24%; right: 5%; }
+.elemento-brilho { position: absolute; width: 20px; height: 20px; }
+.elemento-brilho::before, .elemento-brilho::after {
+    content: ''; position: absolute; background: var(--azul); border-radius: 50%;
+}
+.elemento-brilho::before { width: 1px; height: 100%; left: 50%; }
+.elemento-brilho::after { height: 1px; width: 100%; top: 50%; }
+.brilho-um { top: 13%; right: 31%; }
+.brilho-dois { bottom: 17%; left: 31%; transform: scale(.65); }
+/* O Sobre usa a mesma linguagem visual, com uma composição diferente. */
+.elementos-sobre .orbita { border-radius: 28%; transform: rotate(-28deg) scale(.9); }
+.elementos-sobre .orbita-interna { transform: rotate(26deg) scale(.78); }
+.elementos-sobre .elemento-nucleo { border-radius: 50%; transform: none; inset: 30% 32%; }
+.assinatura-marca {
+    display: grid; place-items: center; width: 48px; height: 48px; flex-shrink: 0;
+    border: 1px solid var(--linha-elemento); border-radius: 50%;
+    color: var(--azul); background: var(--branco); font-weight: 700;
+    box-shadow: 0 0 28px var(--luz);
+}
+@media (max-width: 900px) {
+    .elementos-abstratos { max-width: 340px; }
+}
+@media (max-width: 600px) {
+    .elementos-abstratos { max-width: 260px; }
+}

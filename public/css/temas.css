@@ -1,0 +1,106 @@
+/* Paleta compartilhada. O atributo data-tema é controlado por public/js/tema.js. */
+:root {
+    color-scheme: light;
+    --fundo-contraste: #153d32;
+    --brilho: #fff;
+    --luz: #d9f2e6;
+    --linha-elemento: #99c9b4;
+}
+:root[data-tema="escuro"] {
+    color-scheme: dark;
+    --azul: #83dfb8;
+    --azul-escuro: #edf7f1;
+    --azul-claro: #233d31;
+    --verde-claro: #233d31;
+    --texto: #dce9e1;
+    --texto-suave: #adc1b5;
+    --linha: #345043;
+    --fundo: #101c17;
+    --branco: #192a22;
+    --vermelho: #ffadb5;
+    --superficie-azul: #14271e;
+    --fundo-contraste: #123d2d;
+    --brilho: rgb(188 234 209 / 8%);
+    --luz: #254b39;
+    --linha-elemento: #527f68;
+    --sombra-suave: 0 3px 12px rgb(0 0 0 / 12%);
+    --sombra: 0 12px 30px rgb(0 0 0 / 22%);
+}
+.tema-botao {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 42px; height: 42px; flex-shrink: 0; padding: 9px;
+    border: 1px solid var(--linha); border-radius: 50%;
+    background: var(--branco); color: var(--azul);
+}
+.tema-botao:hover { background: var(--azul-claro); }
+.tema-sol { display: none; }
+[data-tema="escuro"] .tema-sol { display: block; }
+[data-tema="escuro"] .tema-lua { display: none; }
+
+/* Contraste dos botões e controles em ambos os temas. */
+.btn-primario:hover { background-color: #125c43; border-color: #125c43; }
+input::placeholder, textarea::placeholder { color: var(--texto-suave); opacity: 1; }
+[data-tema="escuro"] .btn-primario { color: #10291d; }
+[data-tema="escuro"] .btn-primario:hover { background: #a2ebca; border-color: #a2ebca; }
+[data-tema="escuro"] :is(input, select, textarea, .btn-secundario, .btn-claro, .btn-perigo) { border-color: #547765; }
+[data-tema="escuro"] :is(.btn-secundario:hover, .btn-claro:hover, input:disabled) { background: #233a2e; }
+[data-tema="escuro"] :is(label, .indicador-ativo, input:disabled, .btn-desativado) { color: var(--texto-suave); }
+[data-tema="escuro"] .btn-desativado { background: var(--azul-claro); }
+[data-tema="escuro"] .btn-perigo:hover { background: #492830; }
+[data-tema="escuro"] ::selection { background: #83dfb8; color: #10291d; }
+
+/* Superfícies: o escuro abrange o acervo, perfil, formulários e administração. */
+[data-tema="escuro"] :is(.sobre-hero, .secao-azul, .secao-verde, .aprender-hero, .conversa-mensagens) {
+    background: var(--superficie-azul); border-color: var(--linha);
+}
+[data-tema="escuro"] :is(.hero, .hero-publico, .sobre-hero, .secao-formulario) {
+    background-color: var(--superficie-azul);
+    background-image: radial-gradient(ellipse at 80% 25%, #1f3e2e, transparent 62%);
+    border-color: var(--linha);
+}
+[data-tema="escuro"] :is(.hero-painel, .hero-publico-card, .aprender-resumo, .formulario-layout > .formulario) {
+    border-color: var(--linha); box-shadow: var(--sombra);
+}
+[data-tema="escuro"] :is(.card-tcc, .card-ideia) {
+    background: linear-gradient(var(--superficie-azul) 0 76px, var(--branco) 76px);
+}
+[data-tema="escuro"] :is(.panorama, .numeros-painel article, .metricas-admin article) {
+    background: linear-gradient(120deg, var(--branco), var(--superficie-azul));
+    border-color: var(--linha);
+}
+[data-tema="escuro"] :is(.sobre-papeis article, .sobre-papeis article:nth-child(even), .sobre-convite,
+    .usuario-avatar, .perfil-avatar, .confirmacao-icone, .documento-icone, .documento-miniatura,
+    .hero-publico-icone, .aviso-fluxo, .acompanhamento-tcc, .ideia-vinculada-form, .notificacao-item.nao-lida) {
+    background: var(--azul-claro); border-color: var(--linha);
+}
+[data-tema="escuro"] :is(.sobre-abertura p, .tags span, .tabela-admin th) { color: var(--texto-suave); }
+[data-tema="escuro"] :is(.tags span, .tabela-admin th, .tabela-admin tbody tr:hover, .modulo-aprender summary:hover) {
+    background: var(--superficie-azul);
+}
+[data-tema="escuro"] :is(.busca-principal, .lista-dados div, .mensagem-chat, .sobre-etapas li, .credenciais-demo) {
+    border-color: var(--linha);
+}
+[data-tema="escuro"] .topo-pagina::after { border-color: #203f30; }
+[data-tema="escuro"] .mensagem-chat.minha { border-color: #3c7056; }
+[data-tema="escuro"] .codigo-erro { color: var(--azul); }
+
+/* Estados mantêm texto e cor: sucesso, pendência e erro continuam distinguíveis. */
+[data-tema="escuro"] :is(.etiqueta, .status, .dificuldade, .origem-externa) {
+    color: #b4e8cc; background: #294836;
+}
+[data-tema="escuro"] :is(.status-em-analise, .status-correcao-solicitada, .status-pendente, .aviso-demo) {
+    color: #f6d590; background: #3d3420; border-color: #62502c;
+}
+[data-tema="escuro"] :is(.erro-form, .status-rejeitado, .status-rejeitada, .status-recusada) {
+    color: #ffc1c7; background: #45282f; border-color: #82505a;
+}
+[data-tema="escuro"] .campo:has(.erro-campo) :is(input, select, textarea) {
+    border-color: #ffadb5; background: #35252a;
+}
+[data-tema="escuro"] :is(.mensagem, .sucesso-form) {
+    color: #b9efd0; background: #203e2d; border-color: #497259;
+}
+@media (max-width: 600px) {
+    .acoes-usuario { margin-left: auto; }
+    .tema-botao { width: 40px; height: 40px; }
+}

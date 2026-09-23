@@ -12,10 +12,7 @@
             </div>
             <span class="sobre-nota"><%= totalTccs %> TCCs públicos para consultar. Conheça também <a href="/sobre">a proposta do AcervoTCC</a>.</span>
         </div>
-        <div class="inicio-ilustracao" aria-hidden="true">
-            <img src="/public/img/biblioteca-inicio.svg" width="560" height="460" alt="" fetchpriority="high">
-            <span class="inicio-legenda">Explore. Descubra. Desenvolva.</span>
-        </div>
+        <%- include('partials/elementos-abstratos', { variante: 'inicio' }) %>
     </div>
 </section>
 
