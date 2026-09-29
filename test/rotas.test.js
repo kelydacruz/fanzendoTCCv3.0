@@ -88,7 +88,9 @@ async function cadastrarAlunoParaTeste() {
     });
     assert.equal(resposta.status, 302);
     assert.match(resposta.headers.get('location'), /^\/painel/);
-    return resposta.headers.get('set-cookie').split(';')[0];
+    const cookie = resposta.headers.get('set-cookie').split(';')[0];
+    cookiesDeTeste.set('fluxo@academico.ifsul.edu.br:senha-segura-123', cookie);
+    return cookie;
 }
 
 test('oferece início público e mantém o acervo como consulta sem login', async () => {
@@ -390,7 +392,7 @@ test('mostra cursos e turmas do administrador e aponta cada campo inválido do T
         tema: 'Acessibilidade digital',
         resumo: 'Aplicação web criada para organizar serviços escolares e facilitar o acesso de estudantes a informações acadêmicas importantes.',
         cursoCadastro: 'curso-informatica',
-        area: 'Desenvolvimento web',
+        area: 'Desenvolvimento de Sistemas',
         turmaCadastro: 'turma-info-2025',
         orientadorUsuario: 'usuario-professora',
         visibilidade: 'interno',
@@ -888,4 +890,30 @@ test('edição preserva curso inativo da turma e rejeita novos vínculos com cur
     await assert.rejects(cadastrarTurma({ nome: 'Nova turma', ano: 2025, curso: curso.id }), /curso ativo/);
     await excluirTurma(turma.id);
     await excluirCurso(curso.id);
+});
+
+test('edição mantém o endereço do TCC e os dados após rejeição pelo filtro de conteúdo', async () => {
+    const { tccs, usuarios } = await import('../data/mock.js');
+    const { listarTermosProibidos } = await import('../models/filtroConteudo.js');
+    const aluno = usuarios.find((item) => item.email === 'fluxo@academico.ifsul.edu.br');
+    const tcc = tccs.find((item) => item.autorId === aluno.id);
+    const cookie = await entrar(aluno.email, 'senha-segura-123');
+    const caminho = `/tcc/edt/${tcc.id}`;
+    const resposta = await enviarFormulario(caminho, {
+        titulo: listarTermosProibidos()[0],
+        tema: tcc.tema,
+        resumo: tcc.resumo,
+        cursoCadastro: tcc.cursoCadastroId,
+        turmaCadastro: tcc.turmaCadastroId,
+        orientadorUsuario: tcc.orientadorId,
+        area: tcc.area,
+        visibilidade: tcc.visibilidade,
+    }, cookie);
+    assert.equal(resposta.status, 400);
+    const html = await resposta.text();
+    assert.ok(html.includes(`action="${caminho}"`));
+    assert.ok(html.includes(`href="/tcc/detalhes/${tcc.id}"`));
+    assert.match(html, /termo não permitido/);
+    assert.match(html, /<select id="area"/);
+    assert.ok(html.includes(`value="${tcc.area}" selected`));
 });

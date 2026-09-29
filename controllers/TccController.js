@@ -29,7 +29,9 @@ import {
 } from '../models/tccRegras.js';
 
 async function renderFormulario(res, pagina, status, erro, dados, alunoId, erros = {}) {
-    const opcoes = await opcoesFormulario(alunoId);
+    const tccAtual = pagina === 'edt' ? await buscarTccDoAluno(alunoId) : null;
+    const opcoes = await opcoesFormulario(alunoId, tccAtual);
+    if (tccAtual) dados = { ...tccAtual, ...dados, id: obterId(tccAtual) };
     return res.status(status).render(`tcc/${pagina}`, {
         title: pagina === 'add' ? 'Enviar TCC' : 'Editar TCC',
         erro,
@@ -170,7 +172,7 @@ export default class TccController {
                 if (!usuarioEhDono(req.session.usuario, tcc)) return res.redirect(`/tcc/detalhes/${req.params.id}?mensagem=Você só pode editar seu próprio TCC.`);
                 if (!['em_analise', 'correcao_solicitada'].includes(tcc.status)) return res.redirect(`/tcc/detalhes/${req.params.id}?mensagem=Este TCC não está disponível para edição.`);
 
-                const contexto = await contextoDoFormulario(req.body, req.session.usuario.id);
+                const contexto = await contextoDoFormulario(req.body, req.session.usuario.id, tcc);
                 const dados = dadosDoFormulario(req.body, req.file, contexto);
                 validarConteudo(dados.titulo, dados.tema, dados.resumo, dados.palavrasChave.join(' '), dados.tecnologias.join(' '));
                 const erros = validarDados(dados, contexto);

@@ -17,7 +17,7 @@
         <select id="cursoCadastro" name="cursoCadastro" required>
             <option value="">Selecione o curso</option>
             <% cursos.forEach((curso) => { %>
-                <option value="<%= idTexto(curso) %>" <%= cursoSelecionado === idTexto(curso) || (!cursoSelecionado && dados.curso === curso.nome) ? 'selected' : '' %>><%= curso.nome %> (<%= curso.sigla %>)</option>
+                <option value="<%= idTexto(curso) %>" <%= cursoSelecionado === idTexto(curso) || (!cursoSelecionado && dados.curso === curso.nome) ? 'selected' : '' %>><%= curso.nome %> (<%= curso.sigla %>)<%= curso.ativo ? '' : ' — inativo, mantido neste TCC' %></option>
             <% }) %>
         </select>
         <% if (erros?.cursoCadastro) { %><small class="erro-campo"><%= erros.cursoCadastro %></small><% } %>
@@ -25,7 +25,13 @@
 
     <div class="campo">
         <label for="area">Área do conhecimento *</label>
-        <input id="area" name="area" value="<%= dados.area || '' %>" required maxlength="100" placeholder="Ex.: Desenvolvimento web">
+        <select id="area" name="area" required aria-invalid="<%= erros?.area ? 'true' : 'false' %>">
+            <option value="">Selecione a área</option>
+            <% areas.forEach((area) => { %>
+                <option value="<%= area.nome %>" <%= dados.area === area.nome ? 'selected' : '' %>><%= area.nome %><%= area.historica ? ' (área já registrada neste TCC)' : '' %></option>
+            <% }) %>
+        </select>
+        <% if (!areas.length) { %><small class="ajuda-campo">Nenhuma área está disponível. Peça à administração para cadastrar uma área.</small><% } %>
         <% if (erros?.area) { %><small class="erro-campo"><%= erros.area %></small><% } %>
     </div>
 
@@ -36,7 +42,7 @@
             <option value="">Selecione a turma</option>
             <% turmas.forEach((turma) => { %>
                 <% const turmaDoCurso = idTexto(turma.curso || turma.cursoId); %>
-                <option value="<%= idTexto(turma) %>" data-curso="<%= turmaDoCurso %>" <%= turmaSelecionada === idTexto(turma) || (!turmaSelecionada && String(dados.turma || '').startsWith(turma.nome) && String(dados.ano) === String(turma.ano)) ? 'selected' : '' %>><%= turma.nome %> — <%= turma.ano %> · <%= turma.curso?.sigla || turma.curso?.nome || '' %></option>
+                <option value="<%= idTexto(turma) %>" data-curso="<%= turmaDoCurso %>" <%= turmaSelecionada === idTexto(turma) || (!turmaSelecionada && String(dados.turma || '').startsWith(turma.nome) && String(dados.ano) === String(turma.ano)) ? 'selected' : '' %>><%= turma.nome %> — <%= turma.ano %> · <%= turma.curso?.sigla || turma.curso?.nome || '' %><%= turma.ativo ? '' : ' — inativa, mantida neste TCC' %></option>
             <% }) %>
         </select>
         <% if (erros?.turmaCadastro) { %><small class="erro-campo"><%= erros.turmaCadastro %></small><% } %>

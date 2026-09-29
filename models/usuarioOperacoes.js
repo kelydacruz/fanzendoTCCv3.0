@@ -156,7 +156,7 @@ export async function listarProfessores() {
             .lean();
     }
     return usuarios
-        .filter((usuario) => usuario.perfil === 'professor' && usuario.ativo !== false)
+        .filter((usuario) => usuario.perfil === 'professor' && usuario.ativo !== false && usuario.emailVerificado === true)
         .map(usuarioPublico);
 }
 

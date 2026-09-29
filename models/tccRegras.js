@@ -1,8 +1,9 @@
 import { normalizarTecnologias } from './tecnologias.js';
 import { buscarIdeiaReservadaPeloAluno } from './ideiaOperacoes.js';
-import { buscarUsuarioPorId, listarProfessores } from './usuarioOperacoes.js';
+import { listarProfessores } from './usuarioOperacoes.js';
 import { listarCursos } from './cursoOperacoes.js';
 import { listarTurmas } from './turmaOperacoes.js';
+import { listarAreasAtuacao } from './areaOperacoes.js';
 import { separarLista } from '../services/texto.js';
 import { obterId, usuarioEhAdmin, usuarioEhDono } from './permissoes.js';
 import { textoComTamanho } from '../services/validacao.js';
@@ -25,14 +26,26 @@ export function podeVisualizar(usuario, tcc) {
     return usuarioEhDono(usuario, tcc) || usuarioEhOrientador(usuario, tcc) || usuarioEhAdmin(usuario);
 }
 
-export async function opcoesFormulario(alunoId) {
-    const [professores, cursos, turmas, ideiaEmDesenvolvimento] = await Promise.all([
+export async function opcoesFormulario(alunoId, tccAtual = null) {
+    const [professores, todosCursos, todasTurmas, areasAtivas, ideiaEmDesenvolvimento] = await Promise.all([
         listarProfessores(),
-        listarCursos({ somenteAtivos: true }),
-        listarTurmas({ somenteAtivas: true }),
+        listarCursos(),
+        listarTurmas(),
+        listarAreasAtuacao({ somenteAtivas: true }),
         buscarIdeiaReservadaPeloAluno(alunoId),
     ]);
-    return { professores, cursos, turmas, ideiaEmDesenvolvimento };
+    const cursoAtual = obterId(tccAtual?.cursoCadastro || tccAtual?.cursoCadastroId);
+    const turmaAtual = obterId(tccAtual?.turmaCadastro || tccAtual?.turmaCadastroId);
+    // Cadastros desativados só podem ser mantidos no trabalho que já os utiliza.
+    const cursos = todosCursos.filter((curso) => curso.ativo || obterId(curso) === cursoAtual);
+    const cursosAtivos = new Set(todosCursos.filter((curso) => curso.ativo).map(obterId));
+    const turmas = todasTurmas.filter((turma) => obterId(turma) === turmaAtual
+        || (turma.ativo && cursosAtivos.has(obterId(turma.curso || turma.cursoId))));
+    const areas = [...areasAtivas];
+    if (tccAtual?.area && !areas.some((area) => area.nome === tccAtual.area)) {
+        areas.push({ nome: tccAtual.area, historica: true });
+    }
+    return { professores, cursos, turmas, areas, ideiaEmDesenvolvimento };
 }
 
 export function localizarOpcao(opcoes, valor, nomeAlternativo = '') {
@@ -41,21 +54,19 @@ export function localizarOpcao(opcoes, valor, nomeAlternativo = '') {
         || null;
 }
 
-export async function contextoDoFormulario(body, alunoId) {
-    const opcoes = await opcoesFormulario(alunoId);
+export async function contextoDoFormulario(body, alunoId, tccAtual = null) {
+    const opcoes = await opcoesFormulario(alunoId, tccAtual);
     const curso = localizarOpcao(opcoes.cursos, body.cursoCadastro, String(body.curso || '').trim());
     const turma = opcoes.turmas.find((item) => obterId(item) === String(body.turmaCadastro || ''))
         || opcoes.turmas.find((item) => item.nome === String(body.turma || '').trim())
         || null;
-    const orientador = await buscarUsuarioPorId(body.orientadorUsuario);
-    const orientadorValido = orientador?.perfil === 'professor' && orientador.ativo !== false
-        ? orientador
-        : null;
+    const orientador = opcoes.professores.find((professor) => obterId(professor) === String(body.orientadorUsuario || '')) || null;
+    const area = opcoes.areas.find((item) => item.nome === String(body.area || '').trim()) || null;
     const ideiaId = String(body.ideiaOrigem || '');
     const ideia = ideiaId && obterId(opcoes.ideiaEmDesenvolvimento) === ideiaId
         ? opcoes.ideiaEmDesenvolvimento
         : null;
-    return { ...opcoes, curso, turma, orientador: orientadorValido, ideia };
+    return { ...opcoes, curso, turma, orientador, area, ideia };
 }
 
 export function dadosDoFormulario(body, arquivo, contexto) {
@@ -66,7 +77,7 @@ export function dadosDoFormulario(body, arquivo, contexto) {
         resumo: String(body.resumo || '').trim(),
         curso: contexto.curso?.nome || '',
         cursoCadastro: obterId(contexto.curso) || null,
-        area: String(body.area || '').trim(),
+        area: contexto.area?.nome || '',
         turma: turma ? `${turma.nome} — ${turma.ano}` : '',
         turmaCadastro: obterId(turma) || null,
         orientador: contexto.orientador?.nome || '',
@@ -91,7 +102,7 @@ export function validarDados(dados, contexto) {
     if (!textoComTamanho(dados.tema, 2, 100)) erros.tema = 'Informe o tema do trabalho.';
     if (!textoComTamanho(dados.resumo, 30, 3000)) erros.resumo = 'O resumo deve ter entre 30 e 3.000 caracteres.';
     if (!contexto.curso) erros.cursoCadastro = 'Selecione um curso cadastrado pela administração.';
-    if (!textoComTamanho(dados.area, 2, 100)) erros.area = 'Informe a área do conhecimento.';
+    if (!contexto.area) erros.area = 'Selecione uma área cadastrada pela administração.';
     if (contexto.turma && (!Number.isInteger(dados.ano) || dados.ano < 1980 || dados.ano > new Date().getFullYear())) erros.turmaCadastro = 'Selecione uma turma do ano atual ou de anos anteriores.';
     if (!contexto.turma) erros.turmaCadastro = 'Selecione uma turma cadastrada pela administração.';
     if (contexto.turma && contexto.curso
